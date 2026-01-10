@@ -42,11 +42,11 @@ A state-of-the-art, responsive travel portal designed for enterprises to manage 
 ### Phase 1: Foundation & Setup [CURRENT]
 - [x] Initialize Next.js Project (App Router).
 - [x] Configure PostgreSQL Database Connection (Added `docker-compose.yml`).
-- [x] Setup Prisma ORM (Schema design).
-- [x] Setup Basic Project Structure (Folders, Design Tokens in CSS).
+- [x] Setup Prisma ORM (Schema design, Client Singleton in `src/lib/prisma.ts`).
+- [x] Setup Basic Project Structure (Folders, Design Tokens in CSS, Utils).
 - [x] Create `SPECS.md`.
 
-### Phase 2: Design System & Layouts
+### Phase 2: Design System & Layouts [NEXT]
 - [ ] Define Global CSS Variables (Colors: Premium Palette, Typography: Inter/Outfit).
 - [ ] Create Reusable UI Components (Buttons, Cards, Inputs, Modals).
 - [ ] Implement Responsive Layout Wrappers (Sidebar, Header).
