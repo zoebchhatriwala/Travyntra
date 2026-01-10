@@ -1,32 +1,37 @@
 :root {
   /* Brand Colors - Deep Indigo & Vibrant Teal */
-  --c-primary-hue: 230;
-  --c-primary-sat: 85%;
-  --c-primary-light: 60%;
-  
-  --c-secondary-hue: 170;
-  --c-secondary-sat: 85%;
-  --c-secondary-light: 45%;
+  --c-primary-hue: 225;
+  --c-primary-sat: 70%;
+  --c-primary-light: 45%;
+  /* Darker default for better visibility */
+
+  --c-secondary-hue: 180;
+  --c-secondary-sat: 90%;
+  --c-secondary-light: 35%;
 
   /* Semantic Colors */
   --color-primary: hsl(var(--c-primary-hue), var(--c-primary-sat), var(--c-primary-light));
-  --color-primary-dark: hsl(var(--c-primary-hue), var(--c-primary-sat), 40%);
-  --color-primary-light: hsl(var(--c-primary-hue), var(--c-primary-sat), 90%); /* Surface tint */
+  --color-primary-dark: hsl(var(--c-primary-hue), var(--c-primary-sat), 25%);
+  --color-primary-light: hsl(var(--c-primary-hue), var(--c-primary-sat), 94%);
+  /* Very subtle tint for backgrounds */
 
   --color-secondary: hsl(var(--c-secondary-hue), var(--c-secondary-sat), var(--c-secondary-light));
-  
-  --color-success: hsl(150, 80%, 40%);
-  --color-warning: hsl(35, 90%, 55%);
-  --color-danger: hsl(0, 80%, 55%);
 
-  /* Neutrals */
-  --color-background: hsl(220, 20%, 98%);
-  --color-surface: hsl(0, 0%, 100%);
-  --color-surface-hover: hsl(220, 20%, 96%);
-  
-  --color-text-main: hsl(220, 40%, 10%);
-  --color-text-muted: hsl(220, 20%, 45%);
-  --color-border: hsl(220, 15%, 90%);
+  --color-success: hsl(150, 80%, 35%);
+  --color-warning: hsl(35, 95%, 50%);
+  --color-danger: hsl(350, 85%, 55%);
+
+  /* Neutrals - High Contrast */
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-hover: #f1f5f9;
+
+  --color-text-main: #0f172a;
+  /* Slate 900 */
+  --color-text-muted: #475569;
+  /* Slate 600 */
+  --color-border: #e2e8f0;
+  /* Slate 200 */
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -64,8 +69,9 @@
     --color-text-main: hsl(0, 0%, 98%);
     --color-text-muted: hsl(220, 10%, 65%);
     --color-border: hsl(225, 15%, 20%);
-    
-    --color-primary-light: hsl(var(--c-primary-hue), var(--c-primary-sat), 15%); /* Surface tint */
+
+    --color-primary-light: hsl(var(--c-primary-hue), var(--c-primary-sat), 15%);
+    /* Surface tint */
   }
 }
 
@@ -90,7 +96,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   font-weight: 600;
   letter-spacing: -0.02em;

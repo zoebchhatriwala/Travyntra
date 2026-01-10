@@ -22,9 +22,9 @@ export default function Home() {
             <p className={styles.subheadline}>
               A unified platform to manage journeys, streamline operations, and deliver seamless travel experiences — no matter the scale.
             </p>
-            <div className={styles.actions}>
-              <Link href="/register" className={styles.btnPrimary}>Start Now</Link>
-              <Link href="/login" className={styles.btnSecondary}>Log In</Link>
+            <div className={styles.heroActions}>
+              <Link href="/register" className={`${styles.btnPrimary} ${styles.heroBtnPrimary}`}>Start Now</Link>
+              <Link href="/login" className={`${styles.btnSecondary} ${styles.heroBtnSecondary}`}>Log In</Link>
             </div>
           </div>
         </section>

@@ -57,26 +57,43 @@
 
 /* Hero */
 .hero {
-  padding-block: 6rem;
+  padding-block: 8rem;
   text-align: center;
-  background: radial-gradient(circle at 50% 0%, var(--color-primary-light) 0%, transparent 60%);
+  /* Dark Gradient Background for Bold Contrast */
+  background: linear-gradient(135deg, var(--color-text-main) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 1000px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .headline {
   font-size: 4.5rem;
   line-height: 1.1;
   margin-bottom: var(--space-6);
-  background: linear-gradient(135deg, var(--color-primary) 20%, var(--color-secondary) 120%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
+  /* Explicit white for contrast against dark hero */
   width: fit-content;
   margin-inline: auto;
+  letter-spacing: -0.02em;
 }
 
 .subheadline {
   font-size: 1.25rem;
-  color: var(--color-text-muted);
+  color: #94a3b8;
+  /* Slate 400 - Light grey for readability on dark */
   max-width: 600px;
   margin-inline: auto;
   margin-bottom: var(--space-8);
@@ -123,25 +140,31 @@
   background: var(--color-surface-hover);
 }
 
-/* About Grid */
-.about {
-  padding-block: 6rem;
-  background-color: white;
-  border-top: 1px solid var(--color-border);
+.heroActions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-8);
-  margin-bottom: var(--space-12);
+.heroBtnPrimary {
+  background: white;
+  color: var(--color-primary-dark);
 }
 
-.card {
-  padding: 2rem;
-  background-color: var(--color-background);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
+.heroBtnPrimary:hover {
+  background: var(--color-surface-hover);
+  transform: translateY(-2px);
+}
+
+.heroBtnSecondary {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.heroBtnSecondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
 }
 
 .card h3 {
@@ -163,6 +186,28 @@
   color: var(--color-text-main);
   line-height: 1.6;
 }
+
+/* About Grid */
+.about {
+  padding-block: 6rem;
+  background-color: white;
+  border-top: 1px solid var(--color-border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+.card {
+  padding: 2rem;
+  background-color: var(--color-background);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+}
+
 
 /* Footer */
 .footer {
@@ -186,7 +231,15 @@
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding-block: 4rem;
+  }
+
   .headline {
     font-size: 3rem;
+  }
+
+  .longform {
+    font-size: 1.125rem;
   }
 }
