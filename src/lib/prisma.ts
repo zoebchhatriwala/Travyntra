@@ -14,15 +14,18 @@ const getDatabaseUrl = () => {
     return `postgresql://${user}:${password}@${host}:${port}/${dbName}`;
 };
 
+// Shim the environment variable so Prisma Client picks it up naturally
+// This avoids the "Unknown property datasources" error in recent Prisma versions
+// while still respecting the user's wish to use individual env vars.
+const url = getDatabaseUrl();
+if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = url;
+}
+
 export const prisma =
     globalForPrisma.prisma ||
     new PrismaClient({
         log: ['query'],
-        datasources: {
-            db: {
-                url: getDatabaseUrl(),
-            },
-        },
-    } as any);
+    });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
