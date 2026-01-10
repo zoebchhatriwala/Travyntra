@@ -41,8 +41,8 @@ A state-of-the-art, responsive travel portal designed for enterprises to manage 
 
 ### Phase 1: Foundation & Setup [CURRENT]
 - [x] Initialize Next.js Project (App Router).
-- [ ] Configure PostgreSQL Database Connection.
-- [ ] Setup Prisma ORM (Schema design).
+- [x] Configure PostgreSQL Database Connection (Added `docker-compose.yml`).
+- [x] Setup Prisma ORM (Schema design).
 - [x] Setup Basic Project Structure (Folders, Design Tokens in CSS).
 - [x] Create `SPECS.md`.
 

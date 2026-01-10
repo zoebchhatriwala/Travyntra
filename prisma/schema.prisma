@@ -1,14 +1,163 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// Enums
+enum UserRole {
+  SUPER_ADMIN // Travel Agent
+  COMPANY_ADMIN
+  EMPLOYEE
+}
+
+enum RequestStatus {
+  DRAFT
+  PENDING_COMPANY_APPROVAL
+  PENDING_AGENT_ACTION
+  IN_PROGRESS
+  APPROVED
+  BOOKED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum DocType {
+  PASSPORT
+  VISA
+  TICKET
+  INVOICE
+  OTHER
+}
+
+// Models
+
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  domain      String?  @unique // For auto-associating employees potentially
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  requests    TripRequest[]
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String?
+  password    String   // Hashed
+  role        UserRole @default(EMPLOYEE)
+  
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
+  
+  isActive    Boolean  @default(false) // Requires approval for new signups
+  
+  requests        TripRequest[]
+  actions         WorkflowAction[]
+  messages        Message[]
+  documents       Document[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TripRequest {
+  id          String        @id @default(uuid())
+  
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id])
+  
+  status      RequestStatus @default(DRAFT)
+  
+  // Trip Details
+  title       String        // e.g. "Conference in London"
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  purpose     String?
+  budget      Decimal?
+  
+  // JSONB for flexible fields (flights, hotels specific preferences)
+  preferences Json?
+  
+  messages    Message[]
+  documents   Document[]
+  workflow    WorkflowAction[]
+  expenses    Expense[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkflowAction {
+  id          String   @id @default(uuid())
+  requestId   String
+  request     TripRequest @relation(fields: [requestId], references: [id])
+  
+  actorId     String
+  actor       User     @relation(fields: [actorId], references: [id])
+  
+  action      String   // "SUBMITTED", "APPROVED_BY_MANAGER", "REJECTED", "BOOKED"
+  comment     String?
+  
+  timestamp   DateTime @default(now())
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  requestId   String
+  request     TripRequest @relation(fields: [requestId], references: [id])
+  
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+  
+  content     String
+  readAt      DateTime?
+  
+  createdAt   DateTime @default(now())
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  
+  requestId   String?
+  request     TripRequest? @relation(fields: [requestId], references: [id])
+  
+  uploaderId  String
+  uploader    User     @relation(fields: [uploaderId], references: [id])
+  
+  name        String
+  s3Key       String
+  url         String
+  type        DocType  @default(OTHER)
+  
+  createdAt   DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  requestId   String
+  request     TripRequest @relation(fields: [requestId], references: [id])
+  
+  amount      Decimal
+  currency    String   @default("USD")
+  category    String   // Flight, Hotel, Meal
+  description String?
+  
+  receiptUrl  String?
+  
+  incurredAt  DateTime
+  createdAt   DateTime @default(now())
 }
