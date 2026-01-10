@@ -46,11 +46,13 @@ A state-of-the-art, responsive travel portal designed for enterprises to manage 
 - [x] Setup Basic Project Structure (Folders, Design Tokens in CSS, Utils).
 - [x] Create `SPECS.md`.
 
-### Phase 2: Design System & Layouts [NEXT]
-- [ ] Define Global CSS Variables (Colors: Premium Palette, Typography: Inter/Outfit).
-- [ ] Create Reusable UI Components (Buttons, Cards, Inputs, Modals).
-- [ ] Implement Responsive Layout Wrappers (Sidebar, Header).
-- [ ] Create Dashboard Shells for each Role.
+### Phase 2: Design System & Layouts [CURRENT]
+- [x] Define Global CSS Variables (Colors: Premium Palette, Typography: Inter/Outfit).
+- [x] Create Reusable UI Components (Buttons, Cards, Inputs).
+- [x] Create Modal Component (Dialog).
+- [x] Implement Responsive Layout Wrappers (Sidebar, Header).
+- [x] Create generic `DashboardShell` component.
+- [ ] Create Dashboard Shells for each Role (Employee, Company, Admin).
 
 ### Phase 3: Authentication & RBAC
 - [ ] Setup NextAuth.js.

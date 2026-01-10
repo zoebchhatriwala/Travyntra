@@ -1,0 +1,100 @@
+.base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.base:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.base:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+}
+
+/* Variants */
+.default {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.default:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.destructive {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.destructive:hover {
+    opacity: 0.9;
+}
+
+.outline {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text-main);
+}
+
+.outline:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.secondary {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.secondary:hover {
+    opacity: 0.9;
+}
+
+.ghost {
+    background-color: transparent;
+    color: var(--color-text-main);
+}
+
+.ghost:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.link {
+    background-color: transparent;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Sizes */
+.size_default {
+    height: 2.5rem;
+    padding-inline: 1rem;
+}
+
+.size_sm {
+    height: 2.25rem;
+    border-radius: var(--radius-sm);
+    padding-inline: 0.75rem;
+}
+
+.size_lg {
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    padding-inline: 2rem;
+}
+
+.size_icon {
+    height: 2.5rem;
+    width: 2.5rem;
+    padding: 0;
+}
