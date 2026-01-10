@@ -1,4 +1,4 @@
-# Enterprise Travel Portal - Project Specifications
+# Travyntra - Enterprise Travel Portal - Project Specifications
 
 ## 1. Project Overview
 A state-of-the-art, responsive travel portal designed for enterprises to manage travel requests, approval workflows, expenses, and analytics. The platform connects companies with a travel agency (Admin) who fulfills these requests.

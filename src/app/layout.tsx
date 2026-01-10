@@ -14,8 +14,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Traverse | Enterprise Travel Portal",
-  description: "Seamless travel management for modern enterprises.",
+  title: "Travyntra | Travel, Simplified at Scale",
+  description: "A unified platform to manage journeys, streamline operations, and deliver seamless travel experiences.",
 };
 
 export default function RootLayout({

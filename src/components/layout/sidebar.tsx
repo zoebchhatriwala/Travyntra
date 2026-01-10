@@ -31,7 +31,7 @@ export function Sidebar({ items, user }: SidebarProps) {
             <div className={styles.header}>
                 <div className={styles.brand}>
                     {/* Logo could go here */}
-                    <span>Traverse</span>
+                    <span>Travyntra</span>
                 </div>
             </div>
 

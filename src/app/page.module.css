@@ -2,37 +2,83 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-background);
 }
 
 .header {
-  padding-block: var(--space-4);
+  padding-block: var(--space-6);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.03em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.navLink {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: var(--color-primary);
+}
+
+.navLink.cta {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+}
+
+.navLink.cta:hover {
+  background-color: var(--color-primary-dark);
 }
 
 .main {
   flex: 1;
-  padding-block: var(--space-12);
 }
 
+/* Hero */
 .hero {
+  padding-block: 6rem;
   text-align: center;
-  max-width: 600px;
-  margin-inline: auto;
+  background: radial-gradient(circle at 50% 0%, var(--color-primary-light) 0%, transparent 60%);
 }
 
-.hero h2 {
-  font-size: 3rem;
-  margin-bottom: var(--space-4);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+.headline {
+  font-size: 4.5rem;
+  line-height: 1.1;
+  margin-bottom: var(--space-6);
+  background: linear-gradient(135deg, var(--color-primary) 20%, var(--color-secondary) 120%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  width: fit-content;
+  margin-inline: auto;
 }
 
-.hero p {
+.subheadline {
   font-size: 1.25rem;
   color: var(--color-text-muted);
+  max-width: 600px;
+  margin-inline: auto;
   margin-bottom: var(--space-8);
 }
 
@@ -44,41 +90,103 @@
 
 .btnPrimary,
 .btnSecondary {
-  padding: var(--space-3) var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
   border-radius: var(--radius-full);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: none;
   font-size: 1rem;
 }
 
 .btnPrimary {
   background: var(--color-primary);
   color: white;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .btnPrimary:hover {
   background: var(--color-primary-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
 }
 
 .btnSecondary {
-  background: transparent;
+  background: white;
   color: var(--color-text-main);
   border: 1px solid var(--color-border);
 }
 
 .btnSecondary:hover {
   background: var(--color-surface-hover);
-  border-color: var(--color-text-main);
 }
 
+/* About Grid */
+.about {
+  padding-block: 6rem;
+  background-color: white;
+  border-top: 1px solid var(--color-border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+.card {
+  padding: 2rem;
+  background-color: var(--color-background);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.card p {
+  color: var(--color-text-muted);
+}
+
+.longform {
+  max-width: 800px;
+  margin-inline: auto;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+  line-height: 1.6;
+}
+
+/* Footer */
 .footer {
-  padding-block: var(--space-6);
+  padding-block: var(--space-12);
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
   text-align: center;
+}
+
+.footerTag {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-bottom: var(--space-4);
+  color: var(--color-primary);
+}
+
+.copy {
   color: var(--color-text-muted);
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .headline {
+    font-size: 3rem;
+  }
 }
