@@ -54,12 +54,12 @@ A state-of-the-art, responsive travel portal designed for enterprises to manage 
 - [x] Create generic `DashboardShell` component.
 - [ ] Create Dashboard Shells for each Role (Employee, Company, Admin).
 
-### Phase 3: Authentication & RBAC
-- [ ] Setup NextAuth.js.
-- [ ] Implement Login / Registration Flow.
+### Phase 3: Authentication & RBAC [CURRENT]
+- [x] Setup NextAuth.js (Credentials Provider, JWT).
+- [x] Implement Login / Registration Flow (UI & API).
 - [ ] Company Registration (by Admin only).
-- [ ] Employee Registration (Public URL associated with Company -> Pending Approval).
-- [ ] Role-based Middleware protection.
+- [x] Employee Registration (Public URL associated with Company -> Pending Approval).
+- [x] Role-based Middleware protection (Basic Auth Guard implemented).
 
 ### Phase 4: Core Features - Requests & Workflows
 - [ ] Travel Request Form (Dynamic fields).

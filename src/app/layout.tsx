@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
+import { AuthProvider } from "@/components/providers/session-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable}`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

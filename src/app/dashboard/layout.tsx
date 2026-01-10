@@ -7,13 +7,21 @@ import {
     Receipt,
     Settings
 } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+import { redirect } from "next/navigation";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-    // Mock user for now
+export default async function Layout({ children }: { children: React.ReactNode }) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        redirect("/login");
+    }
+
     const user = {
-        name: "John Doe",
-        role: "Employee",
-        email: "john@example.com"
+        name: session.user?.name || "User",
+        role: session.user?.role || "Employee",
+        email: session.user?.email || "",
     };
 
     const navItems = [
