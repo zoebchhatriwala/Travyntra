@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 import { z } from "zod";
 
-const userSchema = z.object({
+const registrationSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
     name: z.string().min(1),
-    role: z.enum(["EMPLOYEE", "COMPANY_ADMIN"]).optional(), // Basic self-registration
+    type: z.enum(["COMPANY", "AGENT"]),
+    companyName: z.string().min(2).optional(),
 });
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { email, password, name, role } = userSchema.parse(body);
+        const validatedData = registrationSchema.parse(body);
+        const { email, password, name, type, companyName } = validatedData;
 
         const existingUser = await prisma.user.findUnique({
             where: { email },
@@ -21,32 +24,66 @@ export async function POST(req: Request) {
 
         if (existingUser) {
             return NextResponse.json(
-                { message: "User with this email already exists" },
+                { message: "An account with this email already exists" },
                 { status: 409 }
             );
         }
 
         const hashedPassword = await hash(password, 10);
 
-        const user = await prisma.user.create({
-            data: {
-                email,
-                name,
-                password: hashedPassword,
-                role: (role as any) || "EMPLOYEE",
-                isActive: false,
-            },
-        });
+        if (type === "COMPANY") {
+            if (!companyName) {
+                return NextResponse.json(
+                    { message: "Company name is required for company registration" },
+                    { status: 400 }
+                );
+            }
 
-        return NextResponse.json(
-            { user: { id: user.id, email: user.email, name: user.name } },
-            { status: 201 }
-        );
+            // Create Company first
+            const newCompany = await prisma.company.create({
+                data: {
+                    name: companyName,
+                },
+            });
+
+            // Create Admin User for that company
+            const user = await prisma.user.create({
+                data: {
+                    email,
+                    name,
+                    password: hashedPassword,
+                    role: UserRole.COMPANY_ADMIN,
+                    companyId: newCompany.id,
+                    isActive: false, // Requires activation by platform owner
+                },
+            });
+
+            return NextResponse.json(
+                { user: { id: user.id, email: user.email, company: newCompany.name } },
+                { status: 201 }
+            );
+        } else {
+            // Registering as an Agent
+            const user = await prisma.user.create({
+                data: {
+                    email,
+                    name,
+                    password: hashedPassword,
+                    role: UserRole.TRAVEL_AGENT,
+                    isActive: false, // Agents must be manually vetted and activated
+                },
+            });
+
+            return NextResponse.json(
+                { user: { id: user.id, email: user.email, role: "AGENT" } },
+                { status: 201 }
+            );
+        }
     } catch (error) {
         if (error instanceof z.ZodError) {
-            return NextResponse.json({ message: "Invalid input", errors: (error as any).errors }, { status: 400 });
+            return NextResponse.json({ message: "Invalid input", errors: error }, { status: 400 });
         }
-        console.error("Registration validation error:", error);
-        return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+        console.error("Registration error:", error);
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }

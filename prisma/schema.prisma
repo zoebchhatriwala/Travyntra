@@ -11,7 +11,8 @@ datasource db {
 
 // Enums
 enum UserRole {
-  SUPER_ADMIN // Travel Agent
+  SUPER_ADMIN
+  TRAVEL_AGENT
   COMPANY_ADMIN
   EMPLOYEE
 }

@@ -4,14 +4,16 @@ import * as React from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff, Loader2, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
+    const [showPassword, setShowPassword] = React.useState(false);
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -31,7 +33,7 @@ export default function LoginPage() {
         setIsLoading(false);
 
         if (result?.error) {
-            setError("Invalid credentials. Please try again.");
+            setError("The email or password you entered is incorrect.");
             return;
         }
 
@@ -40,58 +42,92 @@ export default function LoginPage() {
     }
 
     return (
-        <Card>
-            <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-                <CardDescription className="text-center">
-                    Enter your email and password to access your account
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-                <form onSubmit={onSubmit}>
-                    <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <label htmlFor="email">Email</label>
+        <div className="space-y-8">
+            <div className="space-y-3">
+                <h1 className="text-4xl font-black tracking-tight text-slate-900">Welcome back.</h1>
+                <p className="text-lg text-slate-500 font-medium">Enter your credentials to access your portal.</p>
+            </div>
+
+            <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100">
+                <form onSubmit={onSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">
+                            Business Email
+                        </Label>
+                        <div className="relative group">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
                                 id="email"
                                 name="email"
-                                placeholder="name@company.com"
                                 type="email"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                autoCorrect="off"
-                                disabled={isLoading}
+                                placeholder="name@company.com"
+                                className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <label htmlFor="password">Password</label>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center px-1">
+                            <Label htmlFor="password" className="text-sm font-bold text-slate-700">
+                                Password
+                            </Label>
+                            <button type="button" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
+                                Forgot password?
+                            </button>
+                        </div>
+                        <div className="relative group">
+                            <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
                                 id="password"
                                 name="password"
-                                type="password"
-                                disabled={isLoading}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                className="h-14 pl-12 pr-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
                                 required
+                                disabled={isLoading}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
-                        {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
-                        <Button disabled={isLoading}>
-                            {isLoading && (
-                                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            )}
-                            Sign In
-                        </Button>
                     </div>
+
+                    {error && (
+                        <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
+                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                            {error}
+                        </div>
+                    )}
+
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="animate-spin h-6 w-6" />
+                        ) : (
+                            "Sign In"
+                        )}
+                    </Button>
                 </form>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4 text-center">
-                <div className="text-sm text-muted-foreground">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/register" className="underline underline-offset-4 hover:text-primary">
-                        Register
-                    </Link>
+
+                <div className="mt-8 pt-8 border-t border-slate-50 text-center">
+                    <p className="text-slate-500 font-medium">
+                        New to the platform?{" "}
+                        <Link href="/register" className="font-black text-indigo-600 hover:text-indigo-700 hover:underline">
+                            Join your workspace
+                        </Link>
+                    </p>
                 </div>
-            </CardFooter>
-        </Card>
+            </div>
+        </div>
     );
 }
