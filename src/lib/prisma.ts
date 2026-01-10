@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -14,17 +16,14 @@ const getDatabaseUrl = () => {
     return `postgresql://${user}:${password}@${host}:${port}/${dbName}`;
 };
 
-// Shim the environment variable so Prisma Client picks it up naturally
-// This avoids the "Unknown property datasources" error in recent Prisma versions
-// while still respecting the user's wish to use individual env vars.
-const url = getDatabaseUrl();
-if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = url;
-}
+const connectionString = getDatabaseUrl();
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
 
 export const prisma =
     globalForPrisma.prisma ||
     new PrismaClient({
+        adapter,
         log: ['query'],
     });
 
