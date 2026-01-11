@@ -83,6 +83,44 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Activity Log**: Every status change, comment, and file upload is tracked in an immutable audit trail.
 - **Contextual Chat**: Real-time communication between the Employee, their internal Approvers, and the fulfillment Agency.
 - **File Management**: Secure upload/download of Passports, Visas, and Tickets.
+- **Design Inspiration**: Modeled after **Slack Threads** or Linear Issues — a central timeline where context (conversation) and state (status changes, approvals) coexist.
+
+### 👥 Collaborators & Access Control
+- **Automatic Collaboration**: Users mentioned with `@username` in discussions are automatically added as collaborators.
+- **Collaborator Access**: Collaborators gain read access to the request and can participate in discussions.
+- **Notification System**: Collaborators receive notifications for:
+  - Status changes
+  - New messages (especially when mentioned)
+  - Approval actions
+  - Document uploads
+- **Visibility**: Collaborators can view request details but cannot modify core information unless they are approvers.
+
+### 🎫 Group Trips & Parent Requests
+- **Company Trips**: Multiple employees can file individual requests that are part of a larger company trip.
+- **Parent-Child Relationship**: Requests can be linked to a parent "Group Trip" for:
+  - Consolidated tracking
+  - Bulk approvals
+  - Shared itinerary visibility
+- **Use Cases**: Team offsites, conferences, client visits, training programs.
+
+### 🔔 Notification System
+- **Real-time Alerts**: Users receive notifications for:
+  - Requests requiring their approval
+  - Status updates on their requests
+  - Mentions in discussions
+  - New messages on requests they're collaborating on
+- **Notification Center**: Centralized inbox showing all notifications with read/unread status.
+- **Email Digests**: Optional daily/weekly summaries of pending actions.
+
+### 📊 Admin Request Dashboard
+- **Company Admins** have a comprehensive view of all requests:
+  - Filter by status, employee, date range, destination
+  - Bulk actions (approve, reject, reassign)
+  - Analytics: approval times, common destinations, budget trends
+  - Export capabilities for reporting
+- **Approval Queue**: Dedicated view showing requests pending admin approval.
+- **Workflow Monitoring**: Visual representation of where each request is in the approval chain.
+
 
 ### ✅ Fulfillment & Closure
 - A request is only "Complete" when the Agency uploads the final artifacts (Ticket/Visa).
@@ -94,30 +132,95 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Company View**: Centralized "Invoices" section to track liabilities and historical spend.
 - **Direct Link**: Every invoice is tied back to a specific Trip Request for reconciliation.
 
-## 5. Implementation Roadmap
+## 7. Implementation Roadmap & Status
 
-### Phase 1: The Fresh Foundation [CURRENT]
-- [x] **Specs & Cleanup**: Purged legacy V1 logic and design.
-- [x] **Design System**: Established "Travyntra Prime" tokens.
-- [x] **Brand Identity**: Implemented ecosystem-focused landing page.
+### Phase 1: Foundation & Design System ✅ COMPLETED
+- [x] **Specs & Cleanup**: Purged legacy V1 logic and design
+- [x] **Design System**: Established "Travyntra Prime" tokens with joyful pastels
+- [x] **Brand Identity**: Implemented ecosystem-focused landing page
+- [x] **Database Schema**: Complete Prisma schema with all entities
+- [x] **Authentication**: NextAuth.js with role-based access control
 
-### Phase 2: Multi-Tenant & Portal Logic [NEXT]
-- [ ] **Slug Routing**: Implement dynamic `/company/[slug]` portaling.
-- [ ] **Company Registration**: Multi-step signup for Companies and Staff.
-- [ ] **Company Settings**: Domain verification and workflow configuration UI.
+### Phase 2: Multi-Tenant Portal Logic ✅ COMPLETED
+- [x] **Slug Routing**: Dynamic `/company/[slug]` portaling implemented
+- [x] **Company Dashboard**: Employee dashboard with stats and request list
+- [x] **Admin Portal**: Company admin dashboard with staff management
+- [x] **Workflow Builder**: Visual workflow designer for approval chains
+- [x] **Staff Management**: Approve/reject employee registrations
+- [x] **Activity Logging**: Comprehensive audit trail system
 
-### Phase 3: The Request Workspace
-- [ ] **Form Engine**: Dynamic travel request submission.
-- [ ] **Workflow Runner**: The logic that moves requests between internal roles.
-- [ ] **Status Mapping**: Detailed state transitions (Pending Manager, Pending Agency, etc.).
+### Phase 3: Request Workspace ✅ MOSTLY COMPLETED
+- [x] **Request Form**: Dynamic travel request submission with validation
+- [x] **Workflow Integration**: Requests automatically linked to approval workflows
+- [x] **Request Details Page**: Overview tab with trip information
+- [x] **Discussion Thread**: Real-time chat with @mentions and file uploads
+- [x] **File Attachments**: Upload system (local dev, S3 production ready)
+- [x] **Status Management**: Request status tied to workflow progression
+- [ ] **Approval Actions UI**: Visual approval/reject interface (IN PROGRESS)
+- [ ] **Workflow Progress Tracker**: Timeline showing current approval step
 
-### Phase 4: Communication & Assets
-- [ ] **Unified Threads**: Per-request chat and activity log.
-- [ ] **Asset Management**: S3 integration for documents.
+### Phase 4: Communication & Collaboration 🔄 IN PROGRESS
+- [x] **Request-Specific Threads**: Dedicated discussion page per request
+- [x] **@Mentions**: Mention users in discussions
+- [x] **File Upload/Download**: Attachment system with previews
+- [x] **Message Rendering**: Rich text with mention highlighting
+- [x] **Database Schema**: Collaborators & group trips support added
+- [ ] **Auto-Add Collaborators**: Automatically add mentioned users
+- [ ] **Notification System**: Real-time alerts for events
+- [ ] **Notification Bell**: Header component with unread count
+- [ ] **Email Notifications**: Digest emails for pending actions
 
-### Phase 5: Financial Layer
-- [ ] **Invoicing Engine**: Automated and manual invoice generation.
-- [ ] **Financial Dashboard**: Receivable/Payable tracking.
+### Phase 5: Admin & Analytics 📋 PLANNED
+- [ ] **Admin Request Dashboard**: Comprehensive view of all company requests
+- [ ] **Advanced Filters**: Status, employee, date range, destination
+- [ ] **Bulk Actions**: Approve/reject multiple requests
+- [ ] **Analytics Widgets**: Approval times, budget trends, top destinations
+- [ ] **Export Functionality**: CSV/Excel export for reporting
+- [ ] **Approval Queue**: Dedicated view for pending approvals
+
+### Phase 6: Group Trips & Advanced Features 📋 PLANNED
+- [ ] **Group Trip Creation**: Parent trip with multiple linked requests
+- [ ] **Bulk Approvals**: Approve entire group at once
+- [ ] **Shared Itinerary**: Consolidated view for team trips
+- [ ] **Participant Management**: Add/remove employees from group trips
+
+### Phase 7: Agency Integration 📋 PLANNED
+- [ ] **Agency Portal**: Dashboard for travel agencies
+- [ ] **Bid Management**: Submit bids on company requests
+- [ ] **Fulfillment Console**: Upload tickets/visas
+- [ ] **Invoice Generation**: Create invoices for completed requests
+- [ ] **Financial Tracking**: Revenue and receivables dashboard
+
+### Phase 8: Financial Layer 📋 PLANNED
+- [ ] **Invoice Management**: Company view of all invoices
+- [ ] **Payment Tracking**: Mark invoices as paid/pending
+- [ ] **Budget Analytics**: Spending trends and forecasts
+- [ ] **Expense Reports**: Per-request and per-employee breakdowns
+
+---
+
+## Current Sprint Focus 🎯
+
+### Immediate Priorities
+1. **Notification System** (Core Infrastructure)
+   - Create notification actions
+   - Build notification bell component
+   - Implement real-time updates
+
+2. **Auto-Collaborators** (Enhance Existing Chat)
+   - Parse @mentions from messages
+   - Add mentioned users as collaborators
+   - Update access control logic
+
+3. **Approval Workflow UI** (High Business Value)
+   - Visual timeline component
+   - Approve/reject actions
+   - "My Approvals" page
+
+### Next Up
+- Admin request dashboard
+- Request analytics
+- Email notification system
 
 ---
 ---

@@ -121,6 +121,7 @@ model User {
   isBlocked   Boolean  @default(false) // For manual admin blocking
   
   requests        TripRequest[]
+  collaboratingRequests TripRequest[] @relation("RequestCollaborators")
   actions         WorkflowAction[]
   messages        Message[]
   documents       Document[]
@@ -173,6 +174,14 @@ model TripRequest {
   
   // JSONB for flexible fields (flights, hotels specific preferences)
   preferences Json?
+  
+  // Collaborators - users who have access to this request
+  collaborators User[]      @relation("RequestCollaborators")
+  
+  // Group Trip Support - for company trips where multiple employees file linked requests
+  parentTripId  String?
+  parentTrip    TripRequest?  @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
+  childTrips    TripRequest[] @relation("GroupTrip")
   
   messages    Message[]
   documents   Document[]
