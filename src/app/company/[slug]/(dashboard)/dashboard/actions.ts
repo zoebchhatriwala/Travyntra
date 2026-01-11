@@ -109,6 +109,36 @@ export async function getEmployeeRequests({
     };
 }
 
+export async function getCompanyGroupTrips() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.companyId) return [];
+
+    const groupTrips = await (prisma.tripRequest as any).findMany({
+        where: {
+            companyId: session.user.companyId,
+            isGroup: true,
+            status: {
+                notIn: ['CANCELLED', 'REJECTED']
+            }
+        },
+        orderBy: {
+            startDate: 'desc'
+        },
+        select: {
+            id: true,
+            title: true,
+            destination: true,
+            startDate: true,
+            endDate: true,
+            _count: {
+                select: { childTrips: true }
+            }
+        }
+    });
+
+    return groupTrips;
+}
+
 export async function getEmployeeAssets() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return [];
@@ -188,6 +218,8 @@ export async function createTripRequest(data: {
     purpose?: string;
     budget?: number;
     preferences?: any;
+    isGroup?: boolean;
+    parentTripId?: string;
 }) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || !session.user.companyId) {
@@ -206,7 +238,7 @@ export async function createTripRequest(data: {
         });
 
         // Create the trip request
-        const request = await prisma.tripRequest.create({
+        const request = await (prisma.tripRequest as any).create({
             data: {
                 userId: session.user.id,
                 companyId: session.user.companyId,
@@ -217,7 +249,18 @@ export async function createTripRequest(data: {
                 purpose: data.purpose,
                 budget: data.budget ? new Prisma.Decimal(data.budget) : undefined,
                 preferences: data.preferences ?? {},
+                isGroup: data.isGroup || false,
+                parentTripId: data.parentTripId || null,
                 status: workflow && workflow.steps.length > 0 ? 'PENDING_COMPANY_APPROVAL' : 'DRAFT',
+            }
+        });
+
+        // Add a system message to the discussion
+        await prisma.message.create({
+            data: {
+                requestId: request.id,
+                senderId: session.user.id,
+                content: `🚀 Trip request created: **${data.title}** to **${data.destination}**.`
             }
         });
 
@@ -280,6 +323,16 @@ export async function getTripRequest(requestId: string) {
                 workflow: {
                     orderBy: { timestamp: 'desc' },
                     include: { actor: { select: { name: true, role: true } } }
+                },
+                parentTrip: {
+                    select: { id: true, title: true }
+                },
+                childTrips: {
+                    include: {
+                        user: {
+                            select: { name: true, avatarUrl: true }
+                        }
+                    }
                 }
             }
         });
@@ -302,7 +355,14 @@ export async function getTripRequest(requestId: string) {
             }
         }
 
-        return request;
+        return {
+            ...request,
+            budget: request.budget ? Number(request.budget) : null,
+            childTrips: request.childTrips.map((child: any) => ({
+                ...child,
+                budget: child.budget ? Number(child.budget) : null,
+            })),
+        };
     } catch (e) {
         console.error("Error fetching request:", e);
         return null;
@@ -480,13 +540,27 @@ export async function updateTripRequest(requestId: string, data: {
     try {
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
-            select: { userId: true, status: true, companyId: true, title: true }
+            select: {
+                userId: true,
+                status: true,
+                companyId: true,
+                title: true,
+                destination: true,
+                startDate: true,
+                endDate: true,
+                purpose: true,
+                budget: true,
+                preferences: true
+            }
         });
 
         if (!request) return { error: "Request not found" };
 
-        // Only owner can update their request
-        if (request.userId !== session.user.id) {
+        const isOwner = request.userId === session.user.id;
+        const isAdmin = session.user.role === 'COMPANY_ADMIN' || session.user.role === 'SUPER_ADMIN';
+
+        // Only owner or admin can update
+        if (!isOwner && !isAdmin) {
             return { error: "You are not authorized to update this request" };
         }
 
@@ -504,11 +578,26 @@ export async function updateTripRequest(requestId: string, data: {
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
-                budget: data.budget ? new Prisma.Decimal(data.budget) : undefined,
-                preferences: data.preferences ?? {},
+                budget: data.budget !== undefined ? new Prisma.Decimal(data.budget) : undefined,
+                preferences: data.preferences ?? (request.preferences || {}),
                 updatedAt: new Date()
             }
         });
+
+        // Compute changes for the discussion message
+        const changes: string[] = [];
+        const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        if (data.title && data.title !== request.title) changes.push(`- **Title**: "${request.title}" → "${data.title}"`);
+        if (data.destination && data.destination !== request.destination) changes.push(`- **Destination**: ${request.destination} → ${data.destination}`);
+        if (data.startDate && data.startDate.getTime() !== new Date(request.startDate).getTime()) changes.push(`- **Start Date**: ${formatDate(request.startDate)} → ${formatDate(data.startDate)}`);
+        if (data.endDate && data.endDate.getTime() !== new Date(request.endDate).getTime()) changes.push(`- **End Date**: ${formatDate(request.endDate)} → ${formatDate(data.endDate)}`);
+        if (data.purpose && data.purpose !== request.purpose) changes.push(`- **Purpose**: Updated`);
+        if (data.budget !== undefined && Number(data.budget) !== Number(request.budget || 0)) {
+            changes.push(`- **Budget**: ${Number(request.budget || 0)} → ${data.budget}`);
+        }
+
+        const changeMsg = changes.length > 0 ? `\n\n**Changes:**\n${changes.join('\n')}` : '';
 
         // Log activity
         await prisma.activityLog.create({
@@ -516,8 +605,17 @@ export async function updateTripRequest(requestId: string, data: {
                 companyId: request.companyId,
                 actorId: session.user.id,
                 action: 'REQUEST_UPDATED',
-                description: `Trip request "${data.title || request.title}" was updated by the user`,
+                description: `Trip request "${data.title || request.title}" was updated by ${session.user.role === 'COMPANY_ADMIN' ? 'an admin' : 'the user'}`,
                 metadata: { requestId }
+            }
+        });
+
+        // Add a system message to the discussion
+        await prisma.message.create({
+            data: {
+                requestId,
+                senderId: session.user.id,
+                content: `**Request Updated** ${changeMsg}`
             }
         });
 

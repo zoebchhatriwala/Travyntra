@@ -1,5 +1,6 @@
 import { RequestForm } from "./_components/request-form";
 import { prisma } from "@/lib/prisma";
+import { getCompanyGroupTrips } from "../../actions";
 
 export default async function NewRequestPage({
     params,
@@ -8,10 +9,13 @@ export default async function NewRequestPage({
 }) {
     const { slug } = await params;
 
-    const company = await prisma.company.findUnique({
-        where: { slug },
-        select: { currency: true }
-    });
+    const [company, groupTrips] = await Promise.all([
+        prisma.company.findUnique({
+            where: { slug },
+            select: { currency: true }
+        }),
+        getCompanyGroupTrips()
+    ]);
 
     return (
         <div className="max-w-6xl mx-auto py-10 px-6">
@@ -23,7 +27,12 @@ export default async function NewRequestPage({
                 </p>
             </div>
 
-            <RequestForm slug={slug} currency={company?.currency || "USD"} />
+            <RequestForm
+                slug={slug}
+                currency={company?.currency || "USD"}
+                groupTrips={groupTrips as any}
+            />
         </div>
     );
 }
+

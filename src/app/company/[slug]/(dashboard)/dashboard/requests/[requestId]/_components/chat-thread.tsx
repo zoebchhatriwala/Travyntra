@@ -1,9 +1,11 @@
 "use client";
 
+import ReactMarkdown from 'react-markdown';
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, User as UserIcon, Loader2, Paperclip, X, Image as ImageIcon, Download, File } from "lucide-react";
+import { Send, User as UserIcon, Loader2, Paperclip, X, Image as ImageIcon, Download, File, Maximize2, Minimize2 } from "lucide-react";
 import { postTripMessage, uploadMessageAttachment } from "../../../actions";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -36,6 +38,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
     const [showMentions, setShowMentions] = useState(false);
     const [mentionSearch, setMentionSearch] = useState("");
     const [cursorPosition, setCursorPosition] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -179,21 +182,6 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
         return { text: content, attachments: [] };
     }
 
-    function renderMessageContent(text: string) {
-        if (!text) return null;
-        // Simple mention highlighting
-        const parts = text.split(/(@\w+)/g);
-        return parts.map((part, i) => {
-            if (part.startsWith('@')) {
-                return (
-                    <span key={i} className="font-bold bg-white/20 px-1.5 py-0.5 rounded">
-                        {part}
-                    </span>
-                );
-            }
-            return part;
-        });
-    }
 
     function getFileIcon(filename: string) {
         if (filename.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
@@ -203,11 +191,26 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
     }
 
     return (
-        <div className="flex flex-col h-[650px] bg-gradient-to-b from-white to-gray-50/30 rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+        <div className={cn(
+            "flex flex-col bg-gradient-to-b from-white to-gray-50/30 border border-gray-200 shadow-xl overflow-hidden transition-all duration-300",
+            isFullscreen
+                ? "fixed inset-0 z-50 rounded-none w-screen h-screen"
+                : "h-[750px] rounded-3xl"
+        )}>
             {/* Header */}
-            <div className="p-5 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-                <h3 className="font-bold text-gray-900 text-lg">Discussion</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Collaborate with your team in real-time</p>
+            <div className="p-5 border-b border-gray-200 bg-white/80 backdrop-blur-sm flex items-center justify-between">
+                <div>
+                    <h3 className="font-bold text-gray-900 text-lg">Discussion</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Collaborate with your team in real-time</p>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    className="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl"
+                >
+                    {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                </Button>
             </div>
 
             {/* Messages */}
@@ -245,9 +248,25 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                                         "px-4 py-3 text-sm leading-relaxed shadow-md transition-all hover:shadow-lg",
                                         isMe
                                             ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-2xl rounded-tr-md"
-                                            : "bg-white text-gray-800 rounded-2xl rounded-tl-md border border-gray-100"
+                                            : "bg-white text-gray-800 rounded-2xl rounded-tl-md border border-gray-100",
+                                        !isMe && (text.startsWith('🚀') || text.startsWith('📝')) && "bg-indigo-50/50 border-indigo-100 italic font-medium"
                                     )}>
-                                        {text && <div className="whitespace-pre-wrap break-words">{renderMessageContent(text)}</div>}
+                                        {text && (
+                                            <div className="break-words markdown-content">
+                                                <ReactMarkdown
+                                                    components={{
+                                                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0 leading-relaxed" {...props} />,
+                                                        a: ({ node, ...props }) => <a className="text-indigo-200 underline hover:text-white" {...props} />,
+                                                        strong: ({ node, ...props }) => <span className="font-bold" {...props} />,
+                                                        ul: ({ node, ...props }) => <ul className="list-disc list-inside my-1 space-y-0.5" {...props} />,
+                                                        ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-1 space-y-0.5" {...props} />,
+                                                        li: ({ node, ...props }) => <li className="ml-2" {...props} />,
+                                                    }}
+                                                >
+                                                    {text}
+                                                </ReactMarkdown>
+                                            </div>
+                                        )}
 
                                         {/* Render attachments */}
                                         {msgAttachments.length > 0 && (

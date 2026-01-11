@@ -2,7 +2,10 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 import { EmployeeNav } from "./_components/employee-nav";
+import { CompanyNav } from "../admin/_components/company-nav";
 
 export default async function EmployeeLayout({
     children,
@@ -12,13 +15,15 @@ export default async function EmployeeLayout({
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
+    const session = await getServerSession(authOptions);
+    const isAdmin = session?.user?.role === "COMPANY_ADMIN" || session?.user?.role === "SUPER_ADMIN";
 
     return (
         <div className="flex min-h-screen bg-[#FAFAFB]">
             {/* Sidebar */}
             <aside className="w-72 bg-white border-r border-gray-100 flex flex-col fixed inset-y-0 shadow-sm z-50">
                 <div className="p-8">
-                    <Link href={`/company/${slug}/dashboard`} className="flex items-center gap-3 group">
+                    <Link href={isAdmin ? `/company/${slug}/admin` : `/company/${slug}/dashboard`} className="flex items-center gap-3 group">
                         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
                             <Building2 size={24} />
                         </div>
@@ -27,17 +32,17 @@ export default async function EmployeeLayout({
                                 Travyntra
                             </span>
                             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mt-1">
-                                Staff Portal
+                                {isAdmin ? "Company Admin" : "Staff Portal"}
                             </span>
                         </div>
                     </Link>
                 </div>
 
-                <EmployeeNav slug={slug} />
+                {isAdmin ? <CompanyNav slug={slug} /> : <EmployeeNav slug={slug} />}
 
                 <div className="p-6 border-t border-gray-50 bg-gray-50/30 font-medium">
                     <p className="text-[10px] text-gray-400 text-center">
-                        Need help? Contact your manager.
+                        {isAdmin ? "Admin Console | Elevated Access" : "Need help? Contact your manager."}
                     </p>
                 </div>
             </aside>

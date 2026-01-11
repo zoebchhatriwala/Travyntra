@@ -7,13 +7,15 @@ import { prisma } from "@/lib/prisma";
 import { getRequestApprovalProgress } from "@/lib/actions/approvals";
 import { WorkflowProgressTracker } from "@/components/workflow/workflow-progress-tracker";
 import { ApprovalActions } from "@/components/workflow/approval-actions";
+import { GroupTripInfo } from "./_components/group-trip-info";
+import { RequestHeader } from "./_components/request-header";
 
 export default async function RequestOverviewPage({
     params,
 }: {
     params: Promise<{ slug: string; requestId: string }>;
 }) {
-    const { requestId } = await params;
+    const { requestId, slug } = await params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -43,6 +45,8 @@ export default async function RequestOverviewPage({
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            <RequestHeader request={request} currentUser={session!.user} slug={slug} />
+
             {/* Approval Actions - Show if user has pending approval */}
             {myPendingApproval && (
                 <ApprovalActions
@@ -65,6 +69,9 @@ export default async function RequestOverviewPage({
 
                 {/* Right Column: Widgets */}
                 <div className="space-y-6">
+                    {/* Group Trip Widget */}
+                    <GroupTripInfo request={request} slug={slug} />
+
                     {/* Documents Widget */}
                     <div className="p-6 rounded-3xl bg-indigo-900 text-white shadow-lg overflow-hidden relative min-h-[200px] flex flex-col justify-between">
                         <div className="relative z-10">

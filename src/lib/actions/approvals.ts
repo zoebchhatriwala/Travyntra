@@ -276,6 +276,37 @@ export async function processApproval({
         revalidatePath(`/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`);
         revalidatePath(`/company/${approvalStep.request.company.slug}/dashboard/approvals`);
 
+        // BULK APPROVAL LOGIC: If this is a group trip, apply the same action to child trips
+        const requestDetails = await (prisma.tripRequest as any).findUnique({
+            where: { id: approvalStep.requestId },
+            select: { isGroup: true, childTrips: { select: { id: true } } }
+        });
+
+        if (requestDetails?.isGroup && requestDetails.childTrips.length > 0) {
+            // Find matching approval steps for child trips
+            const childStepIds = await (prisma.requestApprovalStep as any).findMany({
+                where: {
+                    requestId: { in: requestDetails.childTrips.map((c: any) => c.id) },
+                    stepId: approvalStep.stepId,
+                    status: ApprovalStatus.PENDING
+                },
+                select: { id: true }
+            });
+
+            // Process each child step
+            // Note: We use a loop here but in a real-world high-scale app we might use a background job
+            for (const childStep of childStepIds) {
+                // To avoid infinite recursion and properly handle each child's specific workflow state, 
+                // we call processApproval recursively but we MUST ensure we don't loop back.
+                // Since child trips cannot be parents of their own parent, this is safe from infinite recursion.
+                await processApproval({
+                    requestApprovalStepId: childStep.id,
+                    action,
+                    comment: comment ? `${comment} (Bulk action from group trip)` : "(Bulk action from group trip)"
+                });
+            }
+        }
+
         return { success: true };
     } catch (e) {
         console.error("Error processing approval:", e);

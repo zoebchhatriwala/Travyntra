@@ -191,10 +191,10 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Request Pipeline**: Full visibility and internal booking for admins
 - [x] **Eradicate Placeholders**: Replace stubs in admin actions with real database logic
 
-### Phase 6: Group Trips & Advanced Features 📋 PLANNED
-- [ ] **Group Trip Creation**: Parent trip with multiple linked requests
-- [ ] **Bulk Approvals**: Approve entire group at once
-- [ ] **Shared Itinerary**: Consolidated view for team trips
+### Phase 6: Group Trips & Advanced Features �️ ACTIVE
+- [x] **Group Trip Creation**: Parent trip with multiple linked requests
+- [x] **Bulk Approvals**: Approve entire group at once
+- [x] **Shared Itinerary**: Consolidated view for team trips (implemented via GroupTripInfo)
 - [ ] **Participant Management**: Add/remove employees from group trips
 
 ### Phase 7: Agency Integration 📋 PLANNED
@@ -215,38 +215,38 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 ## Current Sprint Focus 🎯
 
 ### Recently Completed ✅
-1. **Admin Request Dashboard** (Phase 5)
-   - ✅ Comprehensive view of all company requests
-   - ✅ Advanced filters (status, employee, date range, destination)
-   - ✅ Bulk actions (approve, reject)
-   - ✅ Analytics widgets (budget, destinations, approval times, policy violations)
+1. **Group Trip Management** (Phase 6)
+   - ✅ Group Trip creation logic & UI
+   - ✅ Parent-Child request linking
+   - ✅ Bulk approval workflows for group trips
+   - ✅ Shared itinerary visualization (GroupTripInfo)
 
-2. **Notification System** (Core Infrastructure)
-   - ✅ Created notification actions and database queries
-   - ✅ Built notification bell component with real-time updates
-   - ✅ Integrated into dashboard header
+2. **Discussion & Collaboration 2.0**
+   - ✅ Enhanced Chat UI with Markdown support
+   - ✅ Detailed change logs in discussion thread (Emoji + Diff)
+   - ✅ Fullscreen mode for chat threads
+   - ✅ Improved system messages and mentions
 
-3. **Auto-Collaborators** (Enhanced Chat)
-   - ✅ Parse @mentions from messages
-   - ✅ Add mentioned users as collaborators automatically
-   - ✅ Send notifications to mentioned users
+3. **UI/UX Polish**
+   - ✅ Unified `RequestHeader` component with actions menu
+   - ✅ Admin "Edit Request" capability
+   - ✅ Role-aware navigation improvements
+   - ✅ Fixed Decimal serialization issues
 
 
 ### Immediate Priorities
-1. **Email Notification System**
+1. **Email Notification System** (Phase 4 Cleanup)
    - Daily/weekly digest emails
    - Immediate notifications for critical events
    - Email templates with branding
 
-2. **Request Analytics & Reporting** (Advanced)
-   - Export capabilities (CSV/Excel)
-   - Approval time metrics (real data)
-   - Budget trend analysis (visual charts)
+2. **Agency Portal** (Phase 7)
+   - Dashboard for travel agencies
+   - Bid management system
+   - Fulfillment console
 
-### Next Up
-- Group trip management
-- Agency portal integration
-- Financial layer (invoicing)
+3. **Financial Layer** (Phase 8)
+   - Invoicing and payment tracking
 
 ---
 ---

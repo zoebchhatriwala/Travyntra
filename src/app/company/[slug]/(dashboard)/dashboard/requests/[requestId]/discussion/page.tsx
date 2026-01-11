@@ -36,7 +36,7 @@ export default async function RequestDiscussionPage({
     });
 
     return (
-        <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-2 duration-500">
+        <div className="max-w-8xl mx-auto animate-in slide-in-from-bottom-2 duration-500">
             <ChatThread
                 requestId={request.id}
                 initialMessages={request.messages}

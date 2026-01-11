@@ -83,6 +83,7 @@ model TripRequest {
   budget          Decimal?
   preferences     Json?
   parentTripId    String?
+  isGroup         Boolean               @default(false)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
   bids            AgentBid[]

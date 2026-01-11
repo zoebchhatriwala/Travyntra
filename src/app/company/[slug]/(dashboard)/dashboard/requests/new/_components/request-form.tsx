@@ -12,7 +12,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { createTripRequest, updateTripRequest } from "../../../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Plane, Calendar, FileText } from "lucide-react";
+import { Loader2, Plane, Calendar, FileText, Users } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const requestSchema = z.object({
     title: z.string().min(5, "Title acts as the subject line, make it descriptive (min 5 chars)."),
@@ -20,10 +22,11 @@ const requestSchema = z.object({
     startDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
     endDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid end date"),
     purpose: z.string().min(10, "Please provide more context about the purpose of this trip."),
-    // We use string for budget in the form to handle empty states better with HTML inputs, then parse it
     budget: z.string().optional(),
     flightPreferences: z.string().optional(),
     hotelPreferences: z.string().optional(),
+    isGroup: z.boolean().default(false),
+    parentTripId: z.string().optional(),
 });
 
 type RequestFormValues = z.infer<typeof requestSchema>;
@@ -33,16 +36,23 @@ interface RequestFormProps {
     currency: string;
     initialData?: any;
     requestId?: string;
+    groupTrips?: {
+        id: string;
+        title: string;
+        destination: string;
+        startDate: Date;
+        endDate: Date;
+    }[];
 }
 
-export function RequestForm({ slug, currency, initialData, requestId }: RequestFormProps) {
+export function RequestForm({ slug, currency, initialData, requestId, groupTrips = [] }: RequestFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const preferences = initialData?.preferences as any;
 
     const form = useForm<RequestFormValues>({
-        resolver: zodResolver(requestSchema),
+        resolver: zodResolver(requestSchema) as any,
         defaultValues: {
             title: initialData?.title || "",
             destination: initialData?.destination || "",
@@ -52,6 +62,8 @@ export function RequestForm({ slug, currency, initialData, requestId }: RequestF
             hotelPreferences: preferences?.hotel || "",
             startDate: initialData?.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : "",
             endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : "",
+            isGroup: initialData?.isGroup || false,
+            parentTripId: initialData?.parentTripId || "none",
         },
     });
 
@@ -90,6 +102,8 @@ export function RequestForm({ slug, currency, initialData, requestId }: RequestF
                     purpose: data.purpose,
                     budget: data.budget ? Number(data.budget) : undefined,
                     preferences,
+                    isGroup: data.isGroup,
+                    parentTripId: data.parentTripId === "none" ? undefined : data.parentTripId,
                 });
 
                 if (result.error) {
@@ -97,7 +111,7 @@ export function RequestForm({ slug, currency, initialData, requestId }: RequestF
                     return;
                 }
 
-                toast.success("Trip request drafted successfully!");
+                toast.success(data.isGroup ? "Group trip created successfully!" : "Trip request drafted successfully!");
                 router.push(`/company/${slug}/dashboard`);
             }
         } catch (error) {
@@ -106,7 +120,6 @@ export function RequestForm({ slug, currency, initialData, requestId }: RequestF
             setIsSubmitting(false);
         }
     }
-
 
     return (
         <Form {...form}>
@@ -237,6 +250,68 @@ export function RequestForm({ slug, currency, initialData, requestId }: RequestF
                                         </FormItem>
                                     )}
                                 />
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-xl font-display text-gray-800">
+                                    <Users className="w-5 h-5 text-indigo-500" />
+                                    Group Settings
+                                </CardTitle>
+                                <CardDescription>
+                                    Is this trip part of a larger team movement?
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <FormField
+                                    control={form.control}
+                                    name="isGroup"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-white/30">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-base font-bold">Create as Group Trip</FormLabel>
+                                                <div className="text-sm text-gray-500">
+                                                    Allow others to link their requests to this trip.
+                                                </div>
+                                            </div>
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {!form.watch("isGroup") && groupTrips.length > 0 && (
+                                    <FormField
+                                        control={form.control}
+                                        name="parentTripId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Link to Existing Group Trip</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="bg-white">
+                                                            <SelectValue placeholder="Select a group trip (optional)" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">None (Individual Trip)</SelectItem>
+                                                        {groupTrips.map((trip) => (
+                                                            <SelectItem key={trip.id} value={trip.id}>
+                                                                {trip.title} ({trip.destination})
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
                             </CardContent>
                         </Card>
                     </div>
