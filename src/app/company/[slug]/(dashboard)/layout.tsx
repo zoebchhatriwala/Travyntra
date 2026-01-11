@@ -17,8 +17,9 @@ export default async function CompanyLayout({
         redirect("/login");
     }
 
-    // Security: Ensure user belongs to this company
-    if (session.user.companySlug !== slug && session.user.role !== "SUPER_ADMIN") {
+    // Security: Ensure user belongs to this company and has correct role
+    const isAllowedRole = ["COMPANY_ADMIN", "EMPLOYEE", "SUPER_ADMIN"].includes(session.user.role);
+    if (!isAllowedRole || (session.user.companySlug !== slug && session.user.role !== "SUPER_ADMIN")) {
         redirect("/");
     }
 

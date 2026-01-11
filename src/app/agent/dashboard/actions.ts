@@ -83,7 +83,7 @@ export async function getAgencyStats() {
 
 export async function getRecentOpportunities() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId) return [];
+    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") return [];
 
     const agencyId = session.user.companyId;
 

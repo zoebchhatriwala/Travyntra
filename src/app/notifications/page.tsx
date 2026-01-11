@@ -19,13 +19,18 @@ import { useSession } from "next-auth/react";
 function GoBackLink() {
     const { data: session } = useSession();
 
-    const backPath = session?.user?.role === "SUPER_ADMIN"
+    const role = session?.user?.role;
+    const companySlug = session?.user?.companySlug;
+
+    const backPath = role === "SUPER_ADMIN"
         ? "/admin/dashboard"
-        : session?.user?.companySlug
-            ? session.user.role === "EMPLOYEE"
-                ? `/company/${session.user.companySlug}`
-                : `/company/${session.user.companySlug}/admin`
-            : "/";
+        : role === "TRAVEL_AGENT"
+            ? "/agent/dashboard"
+            : companySlug
+                ? role === "EMPLOYEE"
+                    ? `/company/${companySlug}/dashboard`
+                    : `/company/${companySlug}/admin`
+                : "/";
 
     return (
         <Link href={backPath} className="group flex items-center gap-3 text-gray-400 hover:text-gray-900 transition-all font-black uppercase text-[10px] tracking-widest">

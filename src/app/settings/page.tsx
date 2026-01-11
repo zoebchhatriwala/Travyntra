@@ -92,13 +92,18 @@ export default function SettingsPage() {
         }
     };
 
-    const backPath = session?.user?.role === "SUPER_ADMIN"
+    const role = session?.user?.role;
+    const companySlug = session?.user?.companySlug;
+
+    const backPath = role === "SUPER_ADMIN"
         ? "/admin/dashboard"
-        : session?.user?.companySlug
-            ? session.user.role === "EMPLOYEE"
-                ? `/company/${session.user.companySlug}/dashboard`
-                : `/company/${session.user.companySlug}/admin`
-            : "/";
+        : role === "TRAVEL_AGENT"
+            ? "/agent/dashboard"
+            : companySlug
+                ? role === "EMPLOYEE"
+                    ? `/company/${companySlug}/dashboard`
+                    : `/company/${companySlug}/admin`
+                : "/";
 
     return (
         <div className="min-h-screen bg-[#FAFAFB] p-6 md:p-12">

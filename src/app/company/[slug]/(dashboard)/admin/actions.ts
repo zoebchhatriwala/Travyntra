@@ -8,6 +8,11 @@ import { createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 
 export async function getCompanyDashboardStats(slug: string, userId?: string) {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.companySlug !== slug)) {
+        throw new Error("Unauthorized");
+    }
+
     const company = await prisma.company.findUnique({
         where: { slug },
         select: {
@@ -108,6 +113,11 @@ export async function getCompanyRequests(slug: string, options: {
     startDate?: Date;
     endDate?: Date;
 }) {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.companySlug !== slug)) {
+        throw new Error("Unauthorized");
+    }
+
     const { page = 1, limit = 10, query, status, startDate, endDate } = options;
     const skip = (page - 1) * limit;
 
@@ -180,9 +190,23 @@ export async function getCompanyRequests(slug: string, options: {
 
 export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'REJECT', comment?: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) throw new Error("Unauthorized");
+    if (!session?.user?.id || session.user.role === "EMPLOYEE") throw new Error("Unauthorized");
 
     try {
+        // Multi-tenant check: ensure all IDs belong to the user's company
+        if (session.user.role !== "SUPER_ADMIN") {
+            const requestCount = await prisma.tripRequest.count({
+                where: {
+                    id: { in: ids },
+                    companyId: session.user.companyId as string
+                }
+            });
+
+            if (requestCount !== ids.length) {
+                throw new Error("Unauthorized: Some requests do not belong to your company");
+            }
+        }
+
         const status = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
         const approvalStatus = action === 'APPROVE' ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED;
 
@@ -245,6 +269,11 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
 
 
 export async function getCompanyAnalytics(slug: string) {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.companySlug !== slug)) {
+        throw new Error("Unauthorized");
+    }
+
     const company = await prisma.company.findUnique({
         where: { slug },
         select: { id: true, currency: true }
@@ -338,7 +367,11 @@ export async function getCompanyAnalytics(slug: string) {
 
 export async function exportCompanyRequests(slug: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || session.user.role === 'EMPLOYEE') {
+    if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.companySlug !== slug)) {
+        throw new Error("Unauthorized");
+    }
+
+    if (session.user.role === 'EMPLOYEE') {
         throw new Error("Unauthorized");
     }
 

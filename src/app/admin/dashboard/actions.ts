@@ -4,7 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { UserRole, CompanyType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+
 export async function getPendingEntities() {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+        throw new Error("Unauthorized");
+    }
+
     try {
         // Broaden the search for agents to include those who might have defaulted to EMPLOYEE but have no company
         const agents = await prisma.user.findMany({
@@ -36,6 +44,11 @@ export async function getPendingEntities() {
 }
 
 export async function approveUser(userId: string) {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+        throw new Error("Unauthorized");
+    }
+
     try {
         const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -59,6 +72,11 @@ export async function approveUser(userId: string) {
 }
 
 export async function rejectUser(userId: string) {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+        throw new Error("Unauthorized");
+    }
+
     try {
         await prisma.user.delete({
             where: { id: userId },
@@ -72,6 +90,11 @@ export async function rejectUser(userId: string) {
 }
 
 export async function getGlobalStats() {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+        return null;
+    }
+
     try {
         const [totalAgents, totalCompanies, totalRequests, totalEmployees] = await Promise.all([
             prisma.company.count({ where: { type: CompanyType.AGENT, status: 'ACTIVE' } }),
