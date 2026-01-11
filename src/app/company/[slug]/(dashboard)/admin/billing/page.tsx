@@ -7,7 +7,7 @@ export default async function BillingPage({
     params: { slug: string }
 }) {
     const { slug } = await params;
-    const invoices = await getCompanyInvoices(slug);
+    const { invoices, currency } = await getCompanyInvoices(slug);
 
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -20,7 +20,7 @@ export default async function BillingPage({
                 </p>
             </div>
 
-            <BillingList invoices={invoices} />
+            <BillingList invoices={invoices} currency={currency} />
         </div>
     );
 }

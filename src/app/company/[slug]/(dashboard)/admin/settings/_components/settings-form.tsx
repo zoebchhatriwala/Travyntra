@@ -9,7 +9,10 @@ import {
     Loader2,
     Image as ImageIcon,
     Lock,
-    Check
+    Check,
+    Coins,
+    Clock,
+    MapPin
 } from "lucide-react";
 import {
     Card,
@@ -22,6 +25,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { updateCompanySettings } from "../actions";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface SettingsFormProps {
     company: {
@@ -31,6 +41,9 @@ interface SettingsFormProps {
         logoUrl: string | null;
         domain: string | null;
         plan: string;
+        currency: string;
+        timezone: string;
+        country: string | null;
     };
 }
 
@@ -40,12 +53,22 @@ export function SettingsForm({ company }: SettingsFormProps) {
     const [name, setName] = useState(company.name);
     const [logoUrl, setLogoUrl] = useState(company.logoUrl || "");
     const [domain, setDomain] = useState(company.domain || "");
+    const [currency, setCurrency] = useState(company.currency || "USD");
+    const [timezone, setTimezone] = useState(company.timezone || "UTC");
+    const [country, setCountry] = useState(company.country || "");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setSuccess(false);
-        const res = await updateCompanySettings(company.id, { name, logoUrl, domain });
+        const res = await updateCompanySettings(company.id, {
+            name,
+            logoUrl,
+            domain,
+            currency,
+            timezone,
+            country
+        });
         setIsLoading(false);
         if (res.success) {
             setSuccess(true);
@@ -123,6 +146,68 @@ export function SettingsForm({ company }: SettingsFormProps) {
                             )}
                             {success ? "CHANGES SAVED" : "PERSIST CHANGES"}
                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Regional Settings</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Configure your default currency and locale preferences.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="space-y-2">
+                            <Label htmlFor="currency" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Currency</Label>
+                            <div className="relative group">
+                                <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                                <Select value={currency} onValueChange={setCurrency}>
+                                    <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
+                                        <SelectValue placeholder="Select Currency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="USD">USD ($)</SelectItem>
+                                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                                        <SelectItem value="JPY">JPY (¥)</SelectItem>
+                                        <SelectItem value="INR">INR (₹)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="timezone" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Timezone</Label>
+                            <div className="relative group">
+                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                                <Select value={timezone} onValueChange={setTimezone}>
+                                    <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
+                                        <SelectValue placeholder="Select Timezone" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
+                                        <SelectItem value="EST">EST (GMT-5)</SelectItem>
+                                        <SelectItem value="PST">PST (GMT-8)</SelectItem>
+                                        <SelectItem value="IST">IST (GMT+5:30)</SelectItem>
+                                        <SelectItem value="CET">CET (GMT+1)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="country" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</Label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                                <Input
+                                    id="country"
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                    className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                    placeholder="e.g. United States"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

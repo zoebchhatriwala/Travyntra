@@ -86,6 +86,10 @@ model Company {
   subscriptionExpiresAt DateTime?
   
   logoUrl     String?
+
+  currency    String   @default("USD")
+  timezone    String   @default("UTC")
+  country     String?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -286,6 +290,7 @@ model WorkflowStep {
 
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
 }
 
 model RequestApprovalStep {

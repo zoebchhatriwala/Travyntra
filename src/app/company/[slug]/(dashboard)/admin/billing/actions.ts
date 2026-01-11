@@ -6,10 +6,13 @@ export async function getCompanyInvoices(slug: string) {
     try {
         const company = await prisma.company.findUnique({
             where: { slug },
-            select: { id: true }
+            select: {
+                id: true,
+                currency: true
+            }
         });
 
-        if (!company) return [];
+        if (!company) return { invoices: [], currency: "USD" };
 
         const invoices = await prisma.invoice.findMany({
             where: {
@@ -26,16 +29,19 @@ export async function getCompanyInvoices(slug: string) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return invoices.map((inv) => ({
-            id: inv.id,
-            amount: Number(inv.amount),
-            date: inv.createdAt,
-            status: inv.status,
-            description: `Trip: ${inv.request.title}`,
-            recipient: inv.agency.name
-        }));
+        return {
+            invoices: invoices.map((inv) => ({
+                id: inv.id,
+                amount: Number(inv.amount),
+                date: inv.createdAt,
+                status: inv.status,
+                description: `Trip: ${inv.request.title}`,
+                recipient: inv.agency.name
+            })),
+            currency: company.currency
+        };
     } catch (error) {
         console.error("Failed to fetch invoices:", error);
-        return [];
+        return { invoices: [], currency: "USD" };
     }
 }

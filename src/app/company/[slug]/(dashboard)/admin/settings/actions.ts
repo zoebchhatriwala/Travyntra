@@ -16,6 +16,9 @@ export async function getCompanySettings(slug: string) {
                 status: true,
                 plan: true,
                 type: true,
+                currency: true,
+                timezone: true,
+                country: true,
                 createdAt: true
             }
         });
@@ -26,16 +29,41 @@ export async function getCompanySettings(slug: string) {
     }
 }
 
-export async function updateCompanySettings(id: string, data: { name: string, logoUrl?: string, domain?: string }) {
+export async function updateCompanySettings(
+    id: string,
+    data: {
+        name: string,
+        logoUrl?: string,
+        domain?: string,
+        currency?: string,
+        timezone?: string,
+        country?: string
+    }
+) {
     try {
         const updated = await prisma.company.update({
             where: { id },
             data: {
                 name: data.name,
                 logoUrl: data.logoUrl,
-                domain: data.domain
+                domain: data.domain,
+                currency: data.currency,
+                timezone: data.timezone,
+                country: data.country
             }
         });
+
+        // Log the activity
+        const { logActivity } = await import("@/lib/activity");
+        await logActivity({
+            companyId: id,
+            action: "SETTINGS_CHANGE",
+            description: "Updated company settings",
+            metadata: {
+                changes: Object.keys(data).filter(k => k !== 'name') // rough approximation
+            }
+        });
+
         revalidatePath(`/company/${updated.slug}/admin/settings`);
         return { success: true, company: updated };
     } catch (error) {

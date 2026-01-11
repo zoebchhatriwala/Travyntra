@@ -32,6 +32,7 @@ interface Invoice {
 
 interface BillingListProps {
     invoices: Invoice[];
+    currency: string;
 }
 
 const MOCK_CHART_DATA = [
@@ -58,7 +59,7 @@ const getStatusStyles = (status: InvoiceStatus) => {
     }
 };
 
-export function BillingList({ invoices }: BillingListProps) {
+export function BillingList({ invoices, currency }: BillingListProps) {
     const totalSpent = invoices
         .filter(inv => inv.status === InvoiceStatus.PAID)
         .reduce((sum, inv) => sum + inv.amount, 0);
@@ -80,7 +81,7 @@ export function BillingList({ invoices }: BillingListProps) {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Historical Spend</p>
-                            <p className="text-xl font-black text-gray-900">${totalSpent.toLocaleString()}</p>
+                            <p className="text-xl font-black text-gray-900">{currency} {totalSpent.toLocaleString()}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -91,7 +92,7 @@ export function BillingList({ invoices }: BillingListProps) {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending Liability</p>
-                            <p className="text-xl font-black text-rose-600">${pendingAmount.toLocaleString()}</p>
+                            <p className="text-xl font-black text-rose-600">{currency} {pendingAmount.toLocaleString()}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -102,7 +103,8 @@ export function BillingList({ invoices }: BillingListProps) {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Avg. Trip Cost</p>
-                            <p className="text-xl font-black text-gray-900">${averageCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            <p className="text-xl font-black text-gray-900">{currency} {averageCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+
                         </div>
                     </CardContent>
                 </Card>
@@ -193,7 +195,7 @@ export function BillingList({ invoices }: BillingListProps) {
                                             <p className="text-xs font-bold text-gray-500">{format(new Date(invoice.date), 'MMM dd, yyyy')}</p>
                                         </td>
                                         <td className="py-6 px-4">
-                                            <p className="text-sm font-black text-gray-900">${invoice.amount.toLocaleString()}</p>
+                                            <p className="text-sm font-black text-gray-900">{currency} {invoice.amount.toLocaleString()}</p>
                                         </td>
                                         <td className="py-6 px-4">
                                             <Badge className={`font-black text-[9px] uppercase tracking-widest h-6 rounded-[8px] flex items-center justify-center w-fit ${getStatusStyles(invoice.status)}`}>

@@ -39,6 +39,7 @@ export async function getWorkflowConfig(companySlug: string) {
         where: { companyId: company.id },
         include: {
             steps: {
+                where: { deletedAt: null },
                 orderBy: { order: "asc" },
                 include: {
                     approvers: {
@@ -90,11 +91,10 @@ export async function saveWorkflowConfig(
             });
         }
 
-        // Delete existing steps
-        // Note: In a real production app, we might want to version these or handle active requests.
-        // For now, we'll simply update.
-        await tx.workflowStep.deleteMany({
-            where: { workflowId: workflow.id }
+        // Soft delete existing steps
+        await tx.workflowStep.updateMany({
+            where: { workflowId: workflow.id },
+            data: { deletedAt: new Date() }
         });
 
         // Create new steps
