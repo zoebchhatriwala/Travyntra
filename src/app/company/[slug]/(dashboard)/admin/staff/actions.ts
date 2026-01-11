@@ -33,9 +33,10 @@ export async function getCompanyStaff(slug: string) {
 
 export async function approveStaff(staffId: string, slug: string) {
     try {
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: { id: staffId },
-            data: { isActive: true }
+            data: { isActive: true },
+            select: { companyId: true }
         });
 
         await createNotification({
@@ -44,6 +45,16 @@ export async function approveStaff(staffId: string, slug: string) {
             message: "Your account has been approved by the company administrator. You can now access all features.",
             type: "SUCCESS",
             link: `/company/${slug}/dashboard`
+        });
+
+        const { logActivity } = await import("@/lib/activity");
+
+        await logActivity({
+            companyId: user.companyId || "", // Should exist if we found the user
+            userId: staffId,
+            action: "USER_REGISTERED",
+            description: "New staff member approved",
+            metadata: { approved: true }
         });
 
         revalidatePath(`/company/${slug}/admin/staff`);
@@ -56,11 +67,13 @@ export async function approveStaff(staffId: string, slug: string) {
 
 export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug: string) {
     try {
+        let companyId = "";
         if (isBlocked) {
             const user = await prisma.user.findUnique({
                 where: { id: staffId },
                 select: { role: true, companyId: true }
             });
+            companyId = user?.companyId || "";
 
             if (user?.role === UserRole.COMPANY_ADMIN) {
                 const adminCount = await prisma.user.count({
@@ -79,6 +92,12 @@ export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug
                     };
                 }
             }
+        } else {
+            const user = await prisma.user.findUnique({
+                where: { id: staffId },
+                select: { companyId: true }
+            });
+            companyId = user?.companyId || "";
         }
 
         await prisma.user.update({
@@ -93,6 +112,15 @@ export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug
                 ? "Your account has been blocked. Please contact your company administrator for more information."
                 : "Your account has been unblocked. You can now access your account again.",
             type: isBlocked ? "ERROR" : "INFO"
+        });
+
+        const { logActivity } = await import("@/lib/activity");
+        await logActivity({
+            companyId: companyId,
+            userId: staffId,
+            action: isBlocked ? "USER_BLOCKED" : "USER_UNBLOCKED",
+            description: isBlocked ? "User account blocked" : "User account unblocked",
+            metadata: { isBlocked }
         });
 
         revalidatePath(`/company/${slug}/admin/staff`);
@@ -135,6 +163,16 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
             where: { id: staffId },
             data: { role }
         });
+
+        const { logActivity } = await import("@/lib/activity");
+        await logActivity({
+            companyId: user.companyId || "",
+            userId: staffId,
+            action: "SETTINGS_CHANGE",
+            description: `User role updated to ${role}`,
+            metadata: { oldRole: user.role, newRole: role }
+        });
+
         revalidatePath(`/company/${slug}/admin/staff`);
         return { success: true };
     } catch (error) {
@@ -145,10 +183,21 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
 
 export async function updateStaffTags(staffId: string, tags: string[], slug: string) {
     try {
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: { id: staffId },
-            data: { tags }
+            data: { tags },
+            select: { companyId: true }
         });
+
+        const { logActivity } = await import("@/lib/activity");
+        await logActivity({
+            companyId: user.companyId || "",
+            userId: staffId,
+            action: "SETTINGS_CHANGE",
+            description: "User tags updated",
+            metadata: { tags }
+        });
+
         revalidatePath(`/company/${slug}/admin/staff`);
         return { success: true };
     } catch (error) {

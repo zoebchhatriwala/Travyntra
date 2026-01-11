@@ -114,6 +114,18 @@ export async function saveWorkflowConfig(
         }
     });
 
+    // Log the activity
+    const { logActivity } = await import("@/lib/activity");
+    await logActivity({
+        companyId: company.id,
+        action: "WORKFLOW_UPDATE",
+        description: "Updated approval workflow logic",
+        metadata: {
+            stepCount: steps.length,
+            steps: steps.map(s => s.name)
+        }
+    });
+
     revalidatePath(`/company/${companySlug}/admin/workflow`);
     return { success: true };
 }
