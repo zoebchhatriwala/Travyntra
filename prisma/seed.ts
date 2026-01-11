@@ -90,6 +90,7 @@ async function main() {
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
             logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Acme",
+            currency: "JPY"
         }
     });
 
@@ -102,6 +103,7 @@ async function main() {
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.STARTER,
             logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Tech",
+            currency: "JPY"
         }
     });
 

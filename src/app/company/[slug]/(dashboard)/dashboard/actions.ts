@@ -41,10 +41,17 @@ export async function getEmployeeDashboardStats() {
         }
     });
 
+    // Fetch user's company currency
+    const company = session.user.companyId ? await prisma.company.findUnique({
+        where: { id: session.user.companyId },
+        select: { currency: true }
+    }) : null;
+
     return {
         userName: session.user.name,
         activeRequests,
         completedTrips,
+        currency: company?.currency || "USD",
         recentRequests: recentRequests.map(req => ({
             id: req.id,
             title: req.title,

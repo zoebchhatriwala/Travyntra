@@ -14,6 +14,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
             id: true,
             name: true,
             plan: true,
+            currency: true,
             _count: {
                 select: {
                     users: true,
@@ -80,6 +81,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
     return {
         companyName: company.name,
         companyPlan: company.plan,
+        currency: company.currency || "USD",
         totalStaff: company._count.users,
         pendingStaff,
         activeRequests,
@@ -111,10 +113,10 @@ export async function getCompanyRequests(slug: string, options: {
 
     const company = await prisma.company.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true, currency: true }
     });
 
-    if (!company) return { requests: [], total: 0, totalPages: 0 };
+    if (!company) return { requests: [], total: 0, totalPages: 0, currency: "USD" };
 
     const where: any = {
         companyId: company.id,
@@ -171,7 +173,8 @@ export async function getCompanyRequests(slug: string, options: {
             endDate: req.endDate
         })),
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
+        currency: company.currency || "USD"
     };
 }
 
@@ -244,7 +247,7 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
 export async function getCompanyAnalytics(slug: string) {
     const company = await prisma.company.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true, currency: true }
     });
 
     if (!company) return null;
@@ -328,7 +331,8 @@ export async function getCompanyAnalytics(slug: string) {
         topDestinations: topDestinations.map(d => ({
             name: d.destination,
             count: d._count.id
-        }))
+        })),
+        currency: company.currency || "USD"
     };
 }
 

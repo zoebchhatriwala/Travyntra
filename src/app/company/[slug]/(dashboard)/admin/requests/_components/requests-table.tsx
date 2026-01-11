@@ -45,12 +45,14 @@ interface RequestsTableProps {
     initialRequests: Request[];
     total: number;
     totalPages: number;
+    currency: string;
 }
 
-export function RequestsTable({ slug, initialRequests, total: initialTotal, totalPages: initialTotalPages }: RequestsTableProps) {
+export function RequestsTable({ slug, initialRequests, total: initialTotal, totalPages: initialTotalPages, currency: initialCurrency }: RequestsTableProps) {
     const [requests, setRequests] = useState<Request[]>(initialRequests);
     const [total, setTotal] = useState(initialTotal);
     const [totalPages, setTotalPages] = useState(initialTotalPages);
+    const [currency, setCurrency] = useState(initialCurrency);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
@@ -68,6 +70,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             setRequests(result.requests as any);
             setTotal(result.total);
             setTotalPages(result.totalPages);
+            setCurrency(result.currency);
         } catch (error) {
             toast.error("Failed to fetch requests");
         } finally {
@@ -280,7 +283,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             </Badge>
                                         </td>
                                         <td className="p-6 text-right">
-                                            <p className="font-black text-gray-900">${req.budget.toLocaleString()}</p>
+                                            <p className="font-black text-gray-900">{currency} {req.budget.toLocaleString()}</p>
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Est. Spend</p>
                                         </td>
                                         <td className="p-6 text-right">

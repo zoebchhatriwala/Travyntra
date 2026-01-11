@@ -21,6 +21,7 @@ const bidSchema = z.object({
 
 type BidFormProps = {
     requestId: string;
+    currency?: string;
     existingBid?: {
         id: string;
         amount: number | null;
@@ -28,7 +29,7 @@ type BidFormProps = {
     } | null;
 };
 
-export function BidForm({ requestId, existingBid }: BidFormProps) {
+export function BidForm({ requestId, currency = "USD", existingBid }: BidFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,7 +72,7 @@ export function BidForm({ requestId, existingBid }: BidFormProps) {
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="amount">Bid Amount (USD)</Label>
+                        <Label htmlFor="amount">Bid Amount ({currency})</Label>
                         <Input
                             id="amount"
                             type="number"

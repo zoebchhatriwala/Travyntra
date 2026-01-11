@@ -35,7 +35,7 @@ export default async function AgencyDashboard() {
                 />
                 <StatsCard
                     title="Total Revenue"
-                    value={`$${stats.totalRevenue}`}
+                    value={`${stats.currency} ${stats.totalRevenue}`}
                     icon={FileCheck}
                     description="Year to date"
                 />

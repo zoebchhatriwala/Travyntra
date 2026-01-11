@@ -114,7 +114,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
         prisma.tripRequest.findMany({
             where: whereCondition,
             include: {
-                company: { select: { name: true, logoUrl: true } },
+                company: { select: { name: true, logoUrl: true, currency: true } },
                 user: { select: { name: true } },
                 bids: {
                     where: { agentId: agencyId },
@@ -172,8 +172,8 @@ export default async function BidsPage({ searchParams }: PageProps) {
                                                             ${myBid.status === 'REJECTED' ? 'bg-red-100 text-red-800' : ''}
                                                             font-bold
                                                         `}>
-                                                            {myBid.status === 'PENDING' && `Bid: $${Number(myBid.amount).toLocaleString()}`}
-                                                            {myBid.status === 'ACCEPTED' && `Won: $${Number(myBid.amount).toLocaleString()}`}
+                                                            {myBid.status === 'PENDING' && `Bid: ${req.company.currency || "USD"} ${Number(myBid.amount).toLocaleString()}`}
+                                                            {myBid.status === 'ACCEPTED' && `Won: ${req.company.currency || "USD"} ${Number(myBid.amount).toLocaleString()}`}
                                                             {myBid.status === 'REJECTED' && 'Bid Rejected'}
                                                         </Badge>
                                                     ) : (
@@ -213,7 +213,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
                                                         <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mb-1">Budget</span>
                                                         <span className="text-xl font-black text-gray-900 flex items-center justify-end gap-1">
                                                             {Number(req.budget).toLocaleString()}
-                                                            <span className="text-sm font-bold text-gray-400">USD</span>
+                                                            <span className="text-sm font-bold text-gray-400">{req.company.currency || "USD"}</span>
                                                         </span>
                                                     </div>
                                                 )}

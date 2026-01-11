@@ -78,7 +78,7 @@ export default async function AnalyticsPage() {
                     />
                     <KpiCard
                         title="Gross Volume"
-                        value={`$${(data.stats.totalBudget / 1000).toFixed(1)}k`}
+                        value={`${(data.stats.totalBudget / 1000).toFixed(1)}k`}
                         trend="+8.1%"
                         isUp={true}
                         icon={<CreditCard className="text-emerald-600" />}
@@ -181,7 +181,7 @@ export default async function AnalyticsPage() {
                                         <div className={`w-3 h-3 rounded-full bg-indigo-${(idx + 3) * 100}`} />
                                         <div className="flex flex-col">
                                             <span className="text-xs font-bold text-gray-500 uppercase">{item.category}</span>
-                                            <span className="text-sm font-black text-gray-900">${item.amount.toLocaleString()}</span>
+                                            <span className="text-sm font-black text-gray-900">{item.amount.toLocaleString()}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -194,7 +194,7 @@ export default async function AnalyticsPage() {
                                     <div className="text-center">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase">Total</p>
                                         <p className="text-sm font-black text-indigo-600">
-                                            ${data.categorySpending.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
+                                            {data.categorySpending.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>

@@ -13,7 +13,8 @@ export async function getAgencyStats() {
             openOpportunities: 0,
             activeBids: 0,
             pendingFulfillment: 0,
-            totalRevenue: 0
+            totalRevenue: 0,
+            currency: "USD"
         };
     }
 
@@ -65,11 +66,18 @@ export async function getAgencyStats() {
         })
     ]);
 
+    // Fetch agency currency
+    const agency = await prisma.company.findUnique({
+        where: { id: agencyId },
+        select: { currency: true }
+    });
+
     return {
         openOpportunities,
         activeBids,
         pendingFulfillment,
-        totalRevenue: 0 // Placeholder until invoices are implemented
+        totalRevenue: 0, // Placeholder until invoices are implemented
+        currency: agency?.currency || "USD"
     };
 }
 

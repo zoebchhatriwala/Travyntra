@@ -24,7 +24,7 @@ export default async function RequestDetailsPage({
     const request = await prisma.tripRequest.findUnique({
         where: { id: requestId },
         include: {
-            company: { select: { name: true, logoUrl: true, slug: true } },
+            company: { select: { name: true, logoUrl: true, slug: true, currency: true } },
             user: { select: { id: true, name: true, email: true, avatarUrl: true, role: true } },
             bids: {
                 where: { agentId: session.user.companyId }
@@ -168,6 +168,7 @@ export default async function RequestDetailsPage({
             <div className="space-y-6">
                 <BidForm
                     requestId={request.id}
+                    currency={request.company.currency || "USD"}
                     existingBid={myBid ? {
                         id: myBid.id,
                         amount: Number(myBid.amount),

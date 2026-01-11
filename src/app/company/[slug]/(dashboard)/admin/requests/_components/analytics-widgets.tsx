@@ -18,6 +18,7 @@ interface AnalyticsWidgetsProps {
         violations: number;
         budgetByMonth: any[];
         topDestinations: { name: string, count: number }[];
+        currency?: string;
     } | null;
 }
 
@@ -33,7 +34,11 @@ export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
             />
             <AnalyticsCard
                 title="Total Budget (MTD)"
-                value={`$${analytics?.mtdBudget || "0"}`}
+                value={new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: analytics?.currency || "USD",
+                    maximumFractionDigits: 0
+                }).format(Number(analytics?.mtdBudget || 0))}
                 subtitle="Current month"
                 icon={TrendingUp}
                 color="emerald"
