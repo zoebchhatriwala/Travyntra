@@ -205,11 +205,27 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Invoice Generation**: Create invoices for completed requests
 - [ ] **Financial Tracking**: Revenue and receivables dashboard
 
-### Phase 8: Financial Layer 📋 PLANNED
-- [ ] **Invoice Management**: Company view of all invoices
-- [ ] **Payment Tracking**: Mark invoices as paid/pending
-- [ ] **Budget Analytics**: Spending trends and forecasts
-- [ ] **Expense Reports**: Per-request and per-employee breakdowns
+### Phase 8: UX & Advanced Request Logic 📋 PLANNED
+- [ ] **Global Country Selector**: Implement real country selector in Company/Agency settings.
+- [ ] **Transport-Aware Locations**: 
+    - Flights: Airport selection (via `openaip.net`).
+    - Trains: Railway station selection (Domestic).
+    - Car/Others: Google Address integration.
+- [ ] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
+
+### Phase 9: Smart Logic & Automation 📋 PLANNED
+- [ ] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < ₹50k.
+- [ ] **International/Domestic Detection**: Auto-tag requests based on company country vs destination.
+- [ ] **Auto-Assignment**: Automatically assign requests to the Agency if only one is integrated with the company.
+- [ ] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
+
+### Phase 10: Financial Layer 📋 PLANNED
+- [ ] **Invoice Management**: Company view of all invoices.
+- [ ] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
+- [ ] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
+- [ ] **Payment Tracking**: Mark invoices as paid/pending.
+- [ ] **Budget Analytics**: Spending trends and forecasts.
+- [ ] **Expense Reports**: Per-request and per-employee breakdowns.
 
 ---
 
@@ -245,8 +261,17 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Recent Messages with markdown support
 
 ### Immediate Priorities
-1. **Financial Layer** (Phase 8)
+1. **UX & Request Refinements** (Phases 8)
+   - Real country selector in settings
+   - Transport-specific location selectors (Airports/Stations/Addresses)
+   - Manual collaborator management UI
+2. **Smart Logic & Automation** (Phase 9)
+   - Policy-based auto-approvals (< ₹50k, Domestic)
+   - Auto-assignment for single-agency integrations
+   - Budget revision approval workflow
+3. **Financial Layer** (Phase 10)
    - Invoice generation for completed requests
+   - Multi-currency conversion & FX caching
    - Payment tracking
 
 ---
@@ -262,6 +287,11 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Workflow Integrity**: Approval logic must reside in the `WorkflowEngine` to maintain a single source of truth for request transitions.
 
 - **Dynamic List Standards**: Any list capable of indefinite growth (e.g., Requests, Users, Logs) MUST implement server-side pagination and search/filtering capabilities.
+
+- **Currency & FX Protocol**: 
+    - Use `https://api.fxratesapi.com/latest` for all currency conversions.
+    - **Caching**: Exchange rates MUST be cached for 1 hour to optimize performance and ensure billing consistency.
+    - **Base Reference**: Use USD as the pivot base for all cross-currency calculations where direct pairs are unavailable.
 
 **AI Assistant Protocol**:
 - **Continuous Documentation**: The AI assistant MUST revisit `SPECS.md` after completing any task to update task statuses (`[x]`), mark phases as completed, and refresh the "Current Sprint Focus" section. This ensures the roadmap is the single source of truth.
