@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
     providers: [
+
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -74,6 +75,38 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         }),
+        // Development-only provider for quick switching
+        ...(process.env.NODE_ENV === 'development' ? [
+            CredentialsProvider({
+                id: "dev-login",
+                name: "Dev Login",
+                credentials: {
+                    email: { label: "Email", type: "email" },
+                },
+                async authorize(credentials) {
+                    if (process.env.NODE_ENV !== 'development') return null;
+                    if (!credentials?.email) return null;
+
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email },
+                        include: { company: true }
+                    });
+
+                    if (!user) return null;
+
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        role: user.role,
+                        companyId: user.companyId,
+                        companyType: user.company?.type,
+                        companySlug: user.company?.slug,
+                        image: user.avatarUrl
+                    };
+                },
+            })
+        ] : []),
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {

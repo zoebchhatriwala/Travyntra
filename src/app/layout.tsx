@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "A unified platform to manage journeys, streamline operations, and deliver seamless travel experiences.",
 };
 
+
+import { DevLoginSwitcher } from "@/components/layout/dev-login-switcher";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,6 +32,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${outfit.variable}`}>
         <AuthProvider>
           {children}
+          <DevLoginSwitcher />
         </AuthProvider>
         <Toaster position="top-center" richColors />
       </body>
