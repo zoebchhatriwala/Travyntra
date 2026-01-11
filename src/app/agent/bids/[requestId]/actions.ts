@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
+import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
 
 // --- Agent Actions ---
 
@@ -24,7 +25,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 agentId,
                 amount,
                 message,
-                status: "PENDING"
+                status: AgentBidStatus.PENDING
             }
         });
 
@@ -33,7 +34,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `🎟️ **New Bid Submitted**: Proposed amount $${amount}. "${message}"`
+                content: `**New Bid Submitted**: Proposed amount $${amount}.\n\n**Proposal Details**:\n${message}`
             }
         });
 
@@ -70,7 +71,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `📝 **Bid Updated**: New amount $${amount}.`
+                content: `**Bid Updated**: New amount $${amount}.\n\n**Updated Proposal**:\n${message}`
             }
         });
 
@@ -98,7 +99,7 @@ export async function approveBid(bidId: string, requestId: string) {
         // 1. Update Bid Status
         await prisma.agentBid.update({
             where: { id: bidId },
-            data: { status: "ACCEPTED" }
+            data: { status: AgentBidStatus.ACCEPTED }
         });
 
         // 2. Reject other bids? Optional, but often good practice. 
@@ -109,7 +110,7 @@ export async function approveBid(bidId: string, requestId: string) {
                 requestId,
                 id: { not: bidId }
             },
-            data: { status: "REJECTED" }
+            data: { status: AgentBidStatus.REJECTED }
         });
 
         // 3. Update Request: Assign Agent, Set Cost, Update Status
@@ -127,7 +128,7 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 companyId: session.user.companyId!,
                 actorId: session.user.id,
-                action: 'BID_APPROVED',
+                action: ActivityLogAction.BID_APPROVED,
                 description: `Approved bid of $${bid.amount} from agent.`,
                 metadata: { requestId, bidId }
             }
@@ -138,7 +139,7 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `✅ **Bid Accepted**: $${bid.amount}. Agent has been assigned.`
+                content: `**Bid Accepted**: $${bid.amount}. Agent has been assigned.`
             }
         });
 
@@ -162,7 +163,7 @@ export async function removeBid(bidId: string, requestId: string) {
         const bid = await prisma.agentBid.findUnique({ where: { id: bidId } });
         if (!bid) return { error: "Bid not found" };
 
-        if (bid.status === "ACCEPTED") {
+        if (bid.status === AgentBidStatus.ACCEPTED) {
             // If removing an accepted bid, we need to reset the request state
             await prisma.tripRequest.update({
                 where: { id: requestId },

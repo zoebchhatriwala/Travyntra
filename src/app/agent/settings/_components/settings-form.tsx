@@ -1,0 +1,261 @@
+"use client";
+
+import { useState } from "react";
+import {
+    Building2,
+    Globe,
+    ShieldCheck,
+    Save,
+    Loader2,
+    Image as ImageIcon,
+    Lock,
+    Check,
+    Coins,
+    Clock,
+    MapPin
+} from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { updateAgencySettings } from "../actions";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+
+interface SettingsFormProps {
+    company: {
+        id: string;
+        name: string;
+        slug: string;
+        logoUrl: string | null;
+        domain: string | null;
+        plan: string;
+        currency: string;
+        timezone: string;
+        country: string | null;
+    };
+}
+
+export function SettingsForm({ company }: SettingsFormProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [name, setName] = useState(company.name);
+    const [logoUrl, setLogoUrl] = useState(company.logoUrl || "");
+    const [domain, setDomain] = useState(company.domain || "");
+    const [currency, setCurrency] = useState(company.currency || "USD");
+    const [timezone, setTimezone] = useState(company.timezone || "UTC");
+    const [country, setCountry] = useState(company.country || "");
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setSuccess(false);
+        try {
+            const res = await updateAgencySettings(company.id, {
+                name,
+                logoUrl,
+                domain,
+                currency,
+                timezone,
+                country
+            });
+
+            if (res.success) {
+                setSuccess(true);
+                toast.success("Settings updated successfully");
+                setTimeout(() => setSuccess(false), 3000);
+            } else {
+                toast.error(res.error || "Failed to update settings");
+            }
+        } catch (error) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Agency Profile</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Control how your agency is identified across the ecosystem.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <Label htmlFor="orgName" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Agency Legal Name</Label>
+                            <div className="relative group">
+                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                                <Input
+                                    id="orgName"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                    placeholder="e.g. Travel Agency Inc"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="slug" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Agency ID (Public Slug)</Label>
+                            <div className="relative">
+                                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+                                <Input
+                                    id="slug"
+                                    value={company.slug}
+                                    disabled
+                                    className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-100/50 text-gray-400 font-bold cursor-not-allowed"
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-bold px-1">Namespace is globally unique and immutable.</p>
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="logoUrl" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Brand Logo URL</Label>
+                            <div className="relative group">
+                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                                <Input
+                                    id="logoUrl"
+                                    value={logoUrl}
+                                    onChange={(e) => setLogoUrl(e.target.value)}
+                                    className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                    placeholder="https://example.com/logo.png"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end">
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`h-14 px-8 rounded-2xl ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all`}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin mr-2" />
+                            ) : success ? (
+                                <Check className="mr-2 h-4 w-4" />
+                            ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                            )}
+                            {success ? "CHANGES SAVED" : "PERSIST CHANGES"}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Regional Settings</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Configure your default currency and locale preferences.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="space-y-2">
+                            <Label htmlFor="currency" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Currency</Label>
+                            <div className="relative group">
+                                <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                                <Select value={currency} onValueChange={setCurrency}>
+                                    <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
+                                        <SelectValue placeholder="Select Currency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="USD">USD ($)</SelectItem>
+                                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                                        <SelectItem value="JPY">JPY (¥)</SelectItem>
+                                        <SelectItem value="INR">INR (₹)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="timezone" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Timezone</Label>
+                            <div className="relative group">
+                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                                <Select value={timezone} onValueChange={setTimezone}>
+                                    <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
+                                        <SelectValue placeholder="Select Timezone" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
+                                        <SelectItem value="EST">EST (GMT-5)</SelectItem>
+                                        <SelectItem value="PST">PST (GMT-8)</SelectItem>
+                                        <SelectItem value="IST">IST (GMT+5:30)</SelectItem>
+                                        <SelectItem value="CET">CET (GMT+1)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="country" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</Label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                                <Input
+                                    id="country"
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                    className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                    placeholder="e.g. United States"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Security & Identity</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Manage domain verification and employee access rules.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4 space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="domain" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Trusted Domain</Label>
+                        <div className="relative group">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-violet-600 transition-colors" />
+                            <Input
+                                id="domain"
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                                className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all focus:ring-violet-500/20"
+                                placeholder="e.g. acme-agency.com"
+                            />
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold px-1">Signups from this domain are automatically routed to your workspace.</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white opacity-60">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Deployment Tier</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Your account is currently provisioned on the <strong>{company.plan}</strong> tier.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4">
+                    <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center">
+                        <p className="text-sm font-bold text-gray-400">Subscription management is handled by the Travyntra Super-Admin console.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </form>
+    );
+}
