@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
+import { sendUserEmail } from "@/lib/email";
+import { getGeneralNotificationTemplate } from "@/lib/email-templates";
+
 export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 
 export async function createNotification({
@@ -8,14 +11,17 @@ export async function createNotification({
     message,
     type = "INFO",
     link,
+    sendEmail = false,
 }: {
     userId: string;
     title: string;
     message: string;
     type?: NotificationType;
     link?: string;
+    sendEmail?: boolean;
 }) {
-    return await prisma.notification.create({
+    // 1. Create in-app notification
+    const notification = await prisma.notification.create({
         data: {
             userId,
             title,
@@ -24,6 +30,17 @@ export async function createNotification({
             link,
         },
     });
+
+    // 2. Send email if requested
+    if (sendEmail) {
+        // Run in background (don't await) to speed up response
+        const emailHtml = getGeneralNotificationTemplate(title, message, link, "View in Portal");
+        sendUserEmail(userId, title, emailHtml).catch(err => {
+            console.error("Failed to send notification email:", err);
+        });
+    }
+
+    return notification;
 }
 
 export async function getNotifications(userId: string, limit: number = 20) {

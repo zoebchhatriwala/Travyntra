@@ -219,7 +219,8 @@ export async function processApproval({
             title: action === 'APPROVE' ? "Request Approved" : "Request Rejected",
             message: `${session.user.name} ${action === 'APPROVE' ? 'approved' : 'rejected'} your request "${approvalStep.request.title}"`,
             type: action === 'APPROVE' ? "SUCCESS" : "ERROR",
-            link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`
+            link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`,
+            sendEmail: true
         });
 
         // If step is completed, check if we need to move to next step or complete the request
@@ -241,7 +242,8 @@ export async function processApproval({
                     title: "Request Fully Approved!",
                     message: `Your request "${approvalStep.request.title}" has been fully approved and is ready for fulfillment`,
                     type: "SUCCESS",
-                    link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`
+                    link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`,
+                    sendEmail: true
                 });
             } else {
                 // Notify approvers of the next step
@@ -258,7 +260,8 @@ export async function processApproval({
                                 title: "New Approval Request",
                                 message: `"${approvalStep.request.title}" requires your approval`,
                                 type: "INFO",
-                                link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`
+                                link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`,
+                                sendEmail: true
                             })
                         )
                     );

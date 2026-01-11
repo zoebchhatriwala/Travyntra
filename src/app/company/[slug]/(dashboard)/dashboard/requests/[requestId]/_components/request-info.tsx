@@ -67,7 +67,7 @@ export function RequestInfo({ request, currency }: { request: any, currency: str
                 </CardContent>
             </Card>
 
-            {(preferences?.flight || preferences?.hotel) && (
+            {(preferences?.flight || preferences?.hotel || preferences?.car || preferences?.train || preferences?.other) && (
                 <Card className="border-none shadow-sm bg-white/60 backdrop-blur-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg font-display text-gray-800">
@@ -89,6 +89,30 @@ export function RequestInfo({ request, currency }: { request: any, currency: str
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Hotel Requirements</h4>
                                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     {preferences.hotel}
+                                </p>
+                            </div>
+                        )}
+                        {preferences.train && (
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2">Train / Rail Requirements</h4>
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {preferences.train}
+                                </p>
+                            </div>
+                        )}
+                        {preferences.car && (
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2">Car / Taxi Requirements</h4>
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {preferences.car}
+                                </p>
+                            </div>
+                        )}
+                        {preferences.other && (
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2">Other Requests</h4>
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {preferences.other}
                                 </p>
                             </div>
                         )}

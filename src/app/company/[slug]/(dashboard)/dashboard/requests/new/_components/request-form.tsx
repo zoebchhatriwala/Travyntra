@@ -25,6 +25,9 @@ const requestSchema = z.object({
     budget: z.string().optional(),
     flightPreferences: z.string().optional(),
     hotelPreferences: z.string().optional(),
+    carPreferences: z.string().optional(),
+    trainPreferences: z.string().optional(),
+    otherPreferences: z.string().optional(),
     isGroup: z.boolean().default(false),
     parentTripId: z.string().optional(),
 });
@@ -60,6 +63,9 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             budget: initialData?.budget ? initialData.budget.toString() : "",
             flightPreferences: preferences?.flight || "",
             hotelPreferences: preferences?.hotel || "",
+            carPreferences: preferences?.car || "",
+            trainPreferences: preferences?.train || "",
+            otherPreferences: preferences?.other || "",
             startDate: initialData?.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : "",
             endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : "",
             isGroup: initialData?.isGroup || false,
@@ -73,6 +79,9 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             const preferences = {
                 flight: data.flightPreferences,
                 hotel: data.hotelPreferences,
+                car: data.carPreferences,
+                train: data.trainPreferences,
+                other: data.otherPreferences,
             };
 
             if (initialData && requestId) {
@@ -216,40 +225,93 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="flightPreferences"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Flight Preferences</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="e.g. Aisle seat, Late morning departure, SkyTeam alliance..."
-                                                    className="resize-none bg-white"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="hotelPreferences"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Hotel Preferences</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="e.g. Near City Center, Gym required, High floor..."
-                                                    className="resize-none bg-white"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="flightPreferences"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Flight Preferences</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Airline, Seat choice, Time..."
+                                                        className="resize-none bg-white h-24"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="hotelPreferences"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Hotel Preferences</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Location, Room type, Amenities..."
+                                                        className="resize-none bg-white h-24"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="trainPreferences"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Train / Rail</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Class, Seat type, Route..."
+                                                        className="resize-none bg-white h-24"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="carPreferences"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Car Rental / Taxi</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Car type, Transmission, Pickup..."
+                                                        className="resize-none bg-white h-24"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="otherPreferences"
+                                        render={({ field }) => (
+                                            <FormItem className="md:col-span-2">
+                                                <FormLabel>Other Requests</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Visa assistance, Meal requirements, Accessibility needs..."
+                                                        className="resize-none bg-white h-24"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </CardContent>
                         </Card>
 

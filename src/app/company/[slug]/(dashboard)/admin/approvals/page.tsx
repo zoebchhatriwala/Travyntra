@@ -76,7 +76,7 @@ export default async function AdminApprovalsPage({
             </div>
 
             {/* Approvals List */}
-            <div className="max-w-5xl">
+            <div className="max-w-5xl mx-auto">
                 <ApprovalsClient initialApprovals={pendingApprovals} />
             </div>
         </div>

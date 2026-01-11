@@ -29,6 +29,8 @@ model Company {
   assignedRequests      TripRequest[]     @relation("AgentRequests")
   requests              TripRequest[]     @relation("CompanyRequests")
   users                 User[]
+  integrationsAsClient  AgencyIntegration[] @relation("CompanyIntegrations")
+  integrationsAsAgency  AgencyIntegration[] @relation("AgencyIntegrations")
 }
 
 model User {
@@ -81,6 +83,7 @@ model TripRequest {
   endDate         DateTime
   purpose         String?
   budget          Decimal?
+  cost            Decimal?
   preferences     Json?
   parentTripId    String?
   isGroup         Boolean               @default(false)
@@ -307,4 +310,23 @@ enum InvoiceStatus {
   PAID
   VOID
   OVERDUE
+}
+
+model AgencyIntegration {
+  id        String            @id @default(uuid())
+  companyId String
+  agencyId  String
+  status    IntegrationStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  company Company @relation("CompanyIntegrations", fields: [companyId], references: [id])
+  agency  Company @relation("AgencyIntegrations", fields: [agencyId], references: [id])
+
+  @@unique([companyId, agencyId])
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
 }

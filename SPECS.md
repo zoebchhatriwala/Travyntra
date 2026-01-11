@@ -176,7 +176,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Auto-Add Collaborators**: Automatically add mentioned users
 - [x] **Notification System**: Real-time alerts for events
 - [x] **Notification Bell**: Header component with unread count
-- [ ] **Email Notifications**: Digest emails for pending actions
+- [x] **Email Notifications**: Digest emails for pending actions
 
 ### Phase 0: Developer Experience 🛠️ ACTIVE
 - [x] **Local Login Switcher**: Floating UI to switch accounts without passwords
@@ -197,9 +197,10 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Shared Itinerary**: Consolidated view for team trips (implemented via GroupTripInfo)
 - [ ] **Participant Management**: Add/remove employees from group trips
 
-### Phase 7: Agency Integration 📋 PLANNED
-- [ ] **Agency Portal**: Dashboard for travel agencies
-- [ ] **Bid Management**: Submit bids on company requests
+### Phase 7: Agency Integration 🛠️ ACTIVE
+- [x] **Agency Portal**: Dashboard for travel agencies
+- [x] **Bid Management**: Submit bids on company requests
+- [x] **Integration Registry**: Company admin interface to connect agencies
 - [ ] **Fulfillment Console**: Upload tickets/visas
 - [ ] **Invoice Generation**: Create invoices for completed requests
 - [ ] **Financial Tracking**: Revenue and receivables dashboard
@@ -215,37 +216,24 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 ## Current Sprint Focus 🎯
 
 ### Recently Completed ✅
-1. **Group Trip Management** (Phase 6)
-   - ✅ Group Trip creation logic & UI
-   - ✅ Parent-Child request linking
-   - ✅ Bulk approval workflows for group trips
-   - ✅ Shared itinerary visualization (GroupTripInfo)
+1. **Agency Integration Core** (Phase 7)
+   - ✅ Agency Dashboard with opportunities view
+   - ✅ Integration Logic (Company <-> Agency connection)
+   - ✅ Bidding System with Discussion integration
+   - ✅ Request distribution logic (Only integrated agencies see requests)
+   - ✅ Database seeding for Agency scenarios
 
-2. **Discussion & Collaboration 2.0**
-   - ✅ Enhanced Chat UI with Markdown support
-   - ✅ Detailed change logs in discussion thread (Emoji + Diff)
-   - ✅ Fullscreen mode for chat threads
-   - ✅ Improved system messages and mentions
-
-3. **UI/UX Polish**
-   - ✅ Unified `RequestHeader` component with actions menu
-   - ✅ Admin "Edit Request" capability
-   - ✅ Role-aware navigation improvements
-   - ✅ Fixed Decimal serialization issues
-
+2. **Admin Integrations Management**
+   - ✅ "Marketplace" style integration discovery
+   - ✅ Connect/Disconnect logic
+   - ✅ Agency Search UI
 
 ### Immediate Priorities
-1. **Email Notification System** (Phase 4 Cleanup)
-   - Daily/weekly digest emails
-   - Immediate notifications for critical events
-   - Email templates with branding
+1. **Fulfillment Console** (Phase 7)
+   - Ticket & Visa upload workflow
+   - Request completion logic
 
-2. **Agency Portal** (Phase 7)
-   - Dashboard for travel agencies
-   - Bid management system
-   - Fulfillment console
-
-3. **Financial Layer** (Phase 8)
+2. **Financial Layer** (Phase 8)
    - Invoicing and payment tracking
 
 ---
