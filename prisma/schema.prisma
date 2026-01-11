@@ -98,6 +98,7 @@ model Company {
   
   invoices    Invoice[] @relation("CompanyInvoices") 
   issuedInvoices Invoice[] @relation("AgencyInvoices")
+  activities  ActivityLog[]
 }
 
 model User {
@@ -123,6 +124,7 @@ model User {
   
   approvals       UserApproval[]
   workflowSteps   WorkflowStep[]
+  activities      ActivityLog[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -336,4 +338,21 @@ model Invoice {
   
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  action      String   // e.g. "TRIP_APPROVED", "USER_REGISTERED"
+  description String
+  metadata    Json?    // Flexible properties
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([companyId])
 }
