@@ -54,6 +54,17 @@ enum SubscriptionPlan {
   ENTERPRISE
 }
 
+enum ApprovalType {
+  ALL
+  ANY
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // Models
 
 model Company {
@@ -76,6 +87,7 @@ model Company {
   requests    TripRequest[] @relation("CompanyRequests")
   assignedRequests TripRequest[] @relation("AgentRequests")
   bids        AgentBid[]
+  workflow    ApprovalWorkflow?
 }
 
 model User {
@@ -98,6 +110,9 @@ model User {
   documents       Document[]
   notifications   Notification[]
   
+  approvals       UserApproval[]
+  workflowSteps   WorkflowStep[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -146,6 +161,8 @@ model TripRequest {
   workflow    WorkflowAction[]
   expenses    Expense[]
   bids        AgentBid[]
+  
+  approvalSteps RequestApprovalStep[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -226,4 +243,65 @@ model Expense {
   
   incurredAt  DateTime
   createdAt   DateTime @default(now())
+}
+
+model ApprovalWorkflow {
+  id          String         @id @default(uuid())
+  name        String
+  companyId   String         @unique
+  company     Company        @relation(fields: [companyId], references: [id])
+  steps       WorkflowStep[]
+  isActive    Boolean        @default(true)
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model WorkflowStep {
+  id          String         @id @default(uuid())
+  workflowId  String
+  workflow    ApprovalWorkflow @relation(fields: [workflowId], references: [id])
+  name        String
+  order       Int            // Sequence of the step
+  type        ApprovalType   @default(ANY) // ALL or ANY
+  
+  approvers   User[]        
+  
+  requestApprovals RequestApprovalStep[]
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model RequestApprovalStep {
+  id          String         @id @default(uuid())
+  requestId   String
+  request     TripRequest    @relation(fields: [requestId], references: [id])
+  stepId      String
+  step        WorkflowStep   @relation(fields: [stepId], references: [id])
+  
+  status      ApprovalStatus  @default(PENDING)
+  
+  approvals   UserApproval[]
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  @@unique([requestId, stepId])
+}
+
+model UserApproval {
+  id                      String              @id @default(uuid())
+  requestApprovalStepId   String
+  requestApprovalStep     RequestApprovalStep @relation(fields: [requestApprovalStepId], references: [id])
+  userId                  String
+  user                    User                @relation(fields: [userId], references: [id])
+  
+  status                  ApprovalStatus      @default(PENDING)
+  comment                 String?
+  
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  
+  @@unique([requestApprovalStepId, userId])
 }

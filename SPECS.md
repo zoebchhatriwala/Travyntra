@@ -120,7 +120,13 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Financial Dashboard**: Receivable/Payable tracking.
 
 ---
+---
 **Build Protocol**: 
 - *Aesthetics are paramount.* 
 - *Multi-tenancy must be leak-proof (Data Isolation).* 
 - *Auditability is a core feature, not an afterthought.*
+- *Type Safety*: Use Prisma Enums for all status, type, and category fields. Avoid string literals.
+
+**Technical Standards**:
+- **Enum-First Design**: All state transitions and category definitions must be backed by a Prisma enum (e.g., `ApprovalStatus`, `RequestStatus`). This ensures consistency between the database, server actions, and the client UI.
+- **Workflow Integrity**: Approval logic must reside in the `WorkflowEngine` to maintain a single source of truth for request transitions.
