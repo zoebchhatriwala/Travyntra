@@ -99,7 +99,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black mb-5 text-slate-900">Corporate Admins</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
-                The ultimate control plane. Define your company's chain of
+                The ultimate control plane. Define your company&apos;s chain of
                 command and approve requests with a single click.
               </p>
             </div>
@@ -111,7 +111,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black mb-5 text-slate-900">Global Staff</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
-                Travel requests made simple. Track your journey's lifecycle
+                Travel requests made simple. Track your journey&apos;s lifecycle
                 and message your fulfillers directly within the thread.
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function Home() {
               <h3 className="text-3xl font-black text-fg-primary">Digital Asset Vault</h3>
               <p className="text-fg-secondary text-lg font-medium leading-relaxed">
                 Securely store and share travel documents. Tickets and Visas
-                delivered directly to the employee's dashboard.
+                delivered directly to the employee&apos;s dashboard.
               </p>
             </div>
             <div className="space-y-6">
@@ -167,10 +167,10 @@ export default function Home() {
               </Badge>
               <h2 className="text-4xl md:text-6xl font-black mb-6 text-slate-900 leading-tight">
                 Tailored for your <br />
-                organization's scale.
+                organization&apos;s scale.
               </h2>
               <p className="text-lg text-slate-600 font-medium leading-relaxed">
-                Travyntra is an elite infrastructure provider. We don't believe in one-size-fits-all
+                Travyntra is an elite infrastructure provider. We don&apos;t believe in one-size-fits-all
                 subscriptions. Our pricing is calculated based on your travel volume,
                 number of agents, and custom workflow complexity.
               </p>

@@ -1,15 +1,18 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
+import { UserRole, CompanyType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getPendingEntities() {
     try {
+        // Broaden the search for agents to include those who might have defaulted to EMPLOYEE but have no company
         const agents = await prisma.user.findMany({
             where: {
-                role: UserRole.TRAVEL_AGENT,
-                isActive: false,
+                OR: [
+                    { role: UserRole.TRAVEL_AGENT, isActive: false },
+                    { role: UserRole.EMPLOYEE, isActive: false, companyId: null }
+                ]
             },
             orderBy: { createdAt: "desc" },
         });
@@ -34,10 +37,19 @@ export async function getPendingEntities() {
 
 export async function approveUser(userId: string) {
     try {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+
+        // If a user was an 'orphaned' employee, promote them to Agent upon approval
+        const updateData: { isActive: boolean; role?: UserRole } = { isActive: true };
+        if (user?.role === UserRole.EMPLOYEE && !user.companyId) {
+            updateData.role = UserRole.TRAVEL_AGENT;
+        }
+
         await prisma.user.update({
             where: { id: userId },
-            data: { isActive: true },
+            data: updateData,
         });
+
         revalidatePath("/admin/dashboard");
         return { success: true };
     } catch (error) {
@@ -48,8 +60,6 @@ export async function approveUser(userId: string) {
 
 export async function rejectUser(userId: string) {
     try {
-        // For now, we'll just delete the user. 
-        // In a real app, we might want to keep a record or send an email.
         await prisma.user.delete({
             where: { id: userId },
         });
@@ -60,3 +70,27 @@ export async function rejectUser(userId: string) {
         return { success: false, error: "Failed to reject user" };
     }
 }
+
+export async function getGlobalStats() {
+    try {
+        const [totalAgents, totalCompanies, totalRequests, totalEmployees] = await Promise.all([
+            prisma.company.count({ where: { type: CompanyType.AGENT, status: 'ACTIVE' } }),
+            prisma.company.count({ where: { type: CompanyType.ENTERPRISE, status: 'ACTIVE' } }),
+            prisma.tripRequest.count(),
+            prisma.user.count({ where: { role: UserRole.EMPLOYEE, isActive: true } }),
+        ]);
+
+        return {
+            totalAgents,
+            totalCompanies,
+            totalRequests,
+            totalEmployees,
+            platformHealth: 99,
+            status: "All Systems Operational"
+        };
+    } catch (error) {
+        console.error("Failed to fetch global stats:", error);
+        return null;
+    }
+}
+

@@ -21,7 +21,12 @@ Travyntra is a multi-tenant, enterprise-grade travel management ecosystem. It br
 - **Feel**: "Enterprise Joy." The interface should feel premium and reliable but move away from cold corporate design towards a warm, collaborative environment.
 - **UI Elements**: Large border radii (soft corners), subtle glassmorphism, and generous white space.
 
-## 4. User Roles & Workspace Hierarchy
+## 4. Entity Categories & Multi-Tenancy
+- **Enterprise Company**: The source of travel requests (Tenants). They represent organizations where employees work.
+- **Agent Company**: Fulfillment entities that bid on and fulfill travel requests. They have subscriptions.
+- **Request Manager**: A role (either Super Admin or Company Admin, depending on setup) that manages bids from different Agent Companies for a single request.
+
+## 5. User Roles & Workspace Hierarchy
 
 ### A. The Super Admin (Platform Owner)
 - **Workspace**: Platform Administration (`/admin/dashboard`)
@@ -31,10 +36,12 @@ Travyntra is a multi-tenant, enterprise-grade travel management ecosystem. It br
     - **Global Oversight**: High-level view of platform activity and health.
 
 ### B. The Travel Agent (Fulfillment Entity)
-*Entities like TravelMart who provide fulfillment services.*
+*Entities like TravelMart who provide fulfillment services. They operate as Agent Companies.*
 - **Workspace**: Agent Console (`/agent/dashboard`)
 - **Capabilities**:
-    - **Fulfillment Console**: Accept approved requests, upload Tickets/Visas.
+    - **Bidding**: Bid on requests from Enterprise Companies.
+    - **Fulfillment Console**: Accept approved requests if bid is accepted, upload Tickets/Visas.
+    - **Subscription**: Managed by Super Admin (Free, Starter, Enterprise plans).
     - **Finance Module**: Generate Invoices, track pending receivables across assigned tenants.
     - **Support**: Participate in communication threads for active requests.
 
@@ -57,7 +64,13 @@ Travyntra is a multi-tenant, enterprise-grade travel management ecosystem. It br
     - **Asset Vault**: Download tickets/visas once fulfilled.
     - **Collaboration**: Direct communication with managers and agents via the request thread.
 
-## 4. Feature Specifications
+### E. The Request Manager
+*A role that mediates between Enterprise requests and Agent fulfillments.*
+- **Capabilities**:
+    - **Bid Management**: View multiple bids for a request.
+    - **Fulfillment Assignment**: Accept one bid (which assigns the Agent Company) and automatically rejects others.
+
+## 6. Feature Specifications
 
 ### 🛡 The Hierarchical Workflow Engine
 - Requests do not go to the Agent immediately.

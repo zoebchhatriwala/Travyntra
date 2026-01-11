@@ -54,7 +54,7 @@ export default function PrivacyPage() {
                         <h2 className="text-2xl font-black text-slate-900 mb-4">GDPR & Enterprise Compliance</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Travyntra is committed to global data protection standards. We provide tools for
-                            Corporate Admins to exercise their "Right to be Forgotten" and data export commands
+                            Corporate Admins to exercise their &quot;Right to be Forgotten&quot; and data export commands
                             directly from their management dashboard.
                         </p>
                     </section>

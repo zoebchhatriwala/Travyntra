@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, Activity, Globe, Shield, Database, AlertCircle, RefreshCcw } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Activity, Globe, Database, AlertCircle, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function StatusPage() {

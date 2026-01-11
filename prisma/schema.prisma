@@ -37,17 +37,45 @@ enum DocType {
   OTHER
 }
 
+enum CompanyType {
+  ENTERPRISE
+  AGENT
+}
+
+enum CompanyStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  ENTERPRISE
+}
+
 // Models
 
 model Company {
   id          String   @id @default(uuid())
   name        String
+  slug        String   @unique
   domain      String?  @unique // For auto-associating employees potentially
+  
+  type        CompanyType @default(ENTERPRISE)
+  status      CompanyStatus @default(PENDING)
+  plan        SubscriptionPlan @default(FREE)
+  subscriptionExpiresAt DateTime?
+  
+  logoUrl     String?
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   users       User[]
-  requests    TripRequest[]
+  requests    TripRequest[] @relation("CompanyRequests")
+  assignedRequests TripRequest[] @relation("AgentRequests")
+  bids        AgentBid[]
 }
 
 model User {
@@ -56,19 +84,36 @@ model User {
   name        String?
   password    String   // Hashed
   role        UserRole @default(EMPLOYEE)
+  avatarUrl   String?
   
   companyId   String?
   company     Company? @relation(fields: [companyId], references: [id])
   
   isActive    Boolean  @default(false) // Requires approval for new signups
+  isBlocked   Boolean  @default(false) // For manual admin blocking
   
   requests        TripRequest[]
   actions         WorkflowAction[]
   messages        Message[]
   documents       Document[]
+  notifications   Notification[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  title       String
+  message     String
+  type        String?  // "INFO", "SUCCESS", "WARNING", "ERROR"
+  link        String?  // URL to navigate to when clicked
+  
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model TripRequest {
@@ -78,7 +123,10 @@ model TripRequest {
   user        User          @relation(fields: [userId], references: [id])
   
   companyId   String
-  company     Company       @relation(fields: [companyId], references: [id])
+  company     Company       @relation("CompanyRequests", fields: [companyId], references: [id])
+  
+  assignedAgentId String?
+  assignedAgent   Company?    @relation("AgentRequests", fields: [assignedAgentId], references: [id])
   
   status      RequestStatus @default(DRAFT)
   
@@ -97,7 +145,24 @@ model TripRequest {
   documents   Document[]
   workflow    WorkflowAction[]
   expenses    Expense[]
+  bids        AgentBid[]
 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AgentBid {
+  id          String   @id @default(uuid())
+  requestId   String
+  request     TripRequest @relation(fields: [requestId], references: [id])
+  
+  agentId     String
+  agent       Company  @relation(fields: [agentId], references: [id])
+  
+  amount      Decimal?
+  message     String?
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
     CheckCircle2,
@@ -21,7 +20,6 @@ import { Label } from "@/components/ui/label";
 type RegType = "COMPANY" | "AGENT" | null;
 
 export default function RegisterPage() {
-    const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [success, setSuccess] = React.useState(false);
@@ -59,8 +57,8 @@ export default function RegisterPage() {
             }
 
             setSuccess(true);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }

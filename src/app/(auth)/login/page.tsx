@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, KeyRound, Mail } from "lucide-react";
@@ -30,14 +30,27 @@ export default function LoginPage() {
             redirect: false,
         });
 
-        setIsLoading(false);
-
         if (result?.error) {
-            setError("The email or password you entered is incorrect.");
+            setError(result.error === "CredentialsSignin" ? "The email or password you entered is incorrect." : result.error);
+            setIsLoading(false);
             return;
         }
 
-        router.push("/dashboard");
+        const session = await getSession();
+        setIsLoading(false);
+
+        if (session?.user?.role === "SUPER_ADMIN") {
+            router.push("/admin/dashboard");
+        } else if (session?.user?.role === "TRAVEL_AGENT") {
+            router.push("/agent/dashboard");
+        } else if (session?.user?.role === "COMPANY_ADMIN" && session.user.companySlug) {
+            router.push(`/company/${session.user.companySlug}/admin`);
+        } else if (session?.user?.role === "EMPLOYEE" && session.user.companySlug) {
+            router.push(`/company/${session.user.companySlug}/dashboard`);
+        } else {
+            router.push("/");
+        }
+
         router.refresh();
     }
 
