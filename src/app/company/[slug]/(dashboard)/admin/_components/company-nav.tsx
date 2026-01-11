@@ -9,6 +9,7 @@ import {
     Settings,
     CreditCard,
     GitBranch,
+    Activity,
     LucideIcon
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ export function CompanyNav({ slug }: CompanyNavProps) {
         { href: `/company/${slug}/admin/staff`, label: "Staff Management", icon: Users },
         { href: `/company/${slug}/admin/workflow`, label: "Approval Workflow", icon: GitBranch },
         { href: `/company/${slug}/admin/billing`, label: "Billing & Invoices", icon: CreditCard },
+        { href: `/company/${slug}/admin/activity`, label: "Activity Log", icon: Activity },
         { href: `/company/${slug}/admin/settings`, label: "Portal Settings", icon: Settings },
     ];
 

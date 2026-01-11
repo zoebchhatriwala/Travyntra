@@ -21,7 +21,8 @@ export async function getCompanyUsers(companySlug: string) {
             id: true,
             name: true,
             email: true,
-            avatarUrl: true
+            avatarUrl: true,
+            tags: true
         }
     });
 }
@@ -63,6 +64,7 @@ export async function saveWorkflowConfig(
         order: number;
         type: ApprovalType;
         approverIds: string[];
+        approverTags: string[];
     }[]
 ) {
     const company = await prisma.company.findUnique({
@@ -103,6 +105,7 @@ export async function saveWorkflowConfig(
                     name: step.name,
                     order: step.order,
                     type: step.type,
+                    approverTags: step.approverTags,
                     approvers: {
                         connect: step.approverIds.map(id => ({ id }))
                     }

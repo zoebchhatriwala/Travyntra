@@ -14,7 +14,8 @@ import {
     Check,
     Search,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Tag
 } from "lucide-react";
 import {
     Card,
@@ -37,6 +38,7 @@ interface WorkflowStep {
     order: number;
     type: ApprovalType;
     approverIds: string[];
+    approverTags: string[];
 }
 
 interface WorkflowBuilderProps {
@@ -46,6 +48,7 @@ interface WorkflowBuilderProps {
         name: string | null;
         email: string;
         avatarUrl: string | null;
+        tags: string[];
     }[];
     initialWorkflow: any;
     simulationRequests?: any[];
@@ -59,11 +62,14 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
             name: s.name,
             order: s.order,
             type: s.type,
-            approverIds: s.approvers.map((a: any) => a.id)
+            approverIds: s.approvers.map((a: any) => a.id),
+            approverTags: s.approverTags || []
         })) || [
-            { name: "Manager Approval", order: 1, type: ApprovalType.ANY, approverIds: [] }
+            { name: "Manager Approval", order: 1, type: ApprovalType.ANY, approverIds: [], approverTags: [] }
         ]
     );
+
+    const allTags = Array.from(new Set(availableUsers.flatMap(u => u.tags || []))).sort();
 
     const [isSaving, setIsSaving] = useState(false);
     const [isSimulating, setIsSimulating] = useState(false);
@@ -73,7 +79,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
     const USERS_PER_PAGE = 6;
 
     const addStep = () => {
-        setSteps([...steps, { name: "New Step", order: steps.length + 1, type: ApprovalType.ANY, approverIds: [] }]);
+        setSteps([...steps, { name: "New Step", order: steps.length + 1, type: ApprovalType.ANY, approverIds: [], approverTags: [] }]);
     };
 
     const removeStep = (index: number) => {
@@ -95,6 +101,16 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
             : [...step.approverIds, userId];
 
         updateStep(stepIndex, { approverIds: newApproverIds });
+    };
+
+    const toggleTag = (stepIndex: number, tag: string) => {
+        const step = steps[stepIndex];
+        const isSelected = step.approverTags.includes(tag);
+        const newTags = isSelected
+            ? step.approverTags.filter(t => t !== tag)
+            : [...step.approverTags, tag];
+
+        updateStep(stepIndex, { approverTags: newTags });
     };
 
     const handleSave = async () => {
@@ -171,7 +187,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                 <div className="text-center space-y-2">
                                     <div className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 flex items-center justify-center text-white">
                                         <Badge className="absolute -top-1 -right-1 bg-white text-indigo-600 border-none w-5 h-5 flex items-center justify-center p-0 rounded-full text-[10px] shadow-sm">
-                                            {step.approverIds.length}
+                                            {step.approverIds.length + step.approverTags.length}
                                         </Badge>
                                         <ShieldCheck size={24} />
                                     </div>
@@ -326,7 +342,29 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                            <Users size={12} /> Assigned Approvers
+                                            <Tag size={12} /> Filter by Tags
+                                        </label>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 pb-4 border-b border-gray-100">
+                                        {allTags.length > 0 ? allTags.map(tag => (
+                                            <button
+                                                key={tag}
+                                                onClick={() => toggleTag(stepIdx, tag)}
+                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${step.approverTags.includes(tag)
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300'
+                                                    }`}
+                                            >
+                                                #{tag}
+                                            </button>
+                                        )) : (
+                                            <p className="text-[10px] text-gray-400 italic">No tags found. Add tags to users in the Staff directory.</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Users size={12} /> Assigned Specific Users
                                         </label>
                                         <div className="relative">
                                             <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -344,10 +382,14 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
                                     {(() => {
                                         const query = (searchQueries[stepIdx] || "").toLowerCase();
-                                        const filteredUsers = availableUsers.filter(u =>
-                                            u.name?.toLowerCase().includes(query) ||
-                                            u.email.toLowerCase().includes(query)
-                                        );
+                                        const filteredUsers = availableUsers.filter(u => {
+                                            const matchesQuery = u.name?.toLowerCase().includes(query) ||
+                                                u.email.toLowerCase().includes(query);
+                                            // Also include users if their tag is selected for this step (visual feedback)
+                                            // But for the list selection, we just filter by search.
+                                            // Actually, let's filter the list to prioritize those matching query.
+                                            return matchesQuery;
+                                        });
                                         const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
                                         const currentPage = pageOffsets[stepIdx] || 0;
                                         const paginatedUsers = filteredUsers.slice(
@@ -364,7 +406,9 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                             onClick={() => toggleApprover(stepIdx, user.id)}
                                                             className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all ${step.approverIds.includes(user.id)
                                                                 ? 'bg-indigo-50 border-indigo-200 text-indigo-600 ring-2 ring-indigo-500/10'
-                                                                : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
+                                                                : step.approverTags.some(t => user.tags?.includes(t))
+                                                                    ? 'bg-indigo-50/50 border-indigo-100 text-indigo-600 opacity-70'
+                                                                    : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
                                                                 }`}
                                                         >
                                                             <div className="w-6 h-6 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center">
@@ -376,6 +420,9 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                             </div>
                                                             <span className="text-xs font-bold">{user.name || user.email}</span>
                                                             {step.approverIds.includes(user.id) && <Check size={12} className="text-indigo-600" />}
+                                                            {!step.approverIds.includes(user.id) && step.approverTags.some(t => user.tags?.includes(t)) && (
+                                                                <Tag size={10} className="text-indigo-400" />
+                                                            )}
                                                         </button>
                                                     )) : (
                                                         <div className="w-full py-4 text-center">

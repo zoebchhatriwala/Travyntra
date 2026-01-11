@@ -142,3 +142,17 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
         return { success: false, error: "Failed to update staff role" };
     }
 }
+
+export async function updateStaffTags(staffId: string, tags: string[], slug: string) {
+    try {
+        await prisma.user.update({
+            where: { id: staffId },
+            data: { tags }
+        });
+        revalidatePath(`/company/${slug}/admin/staff`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update staff tags:", error);
+        return { success: false, error: "Failed to update staff tags" };
+    }
+}

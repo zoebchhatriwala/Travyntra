@@ -11,6 +11,7 @@ export async function getCompanySettings(slug: string) {
                 id: true,
                 name: true,
                 slug: true,
+                domain: true,
                 logoUrl: true,
                 status: true,
                 plan: true,
@@ -25,13 +26,14 @@ export async function getCompanySettings(slug: string) {
     }
 }
 
-export async function updateCompanySettings(id: string, data: { name: string, logoUrl?: string }) {
+export async function updateCompanySettings(id: string, data: { name: string, logoUrl?: string, domain?: string }) {
     try {
         const updated = await prisma.company.update({
             where: { id },
             data: {
                 name: data.name,
-                logoUrl: data.logoUrl
+                logoUrl: data.logoUrl,
+                domain: data.domain
             }
         });
         revalidatePath(`/company/${updated.slug}/admin/settings`);

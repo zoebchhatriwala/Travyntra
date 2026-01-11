@@ -14,6 +14,28 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+function GoBackLink() {
+    const { data: session } = useSession();
+
+    const backPath = session?.user?.role === "SUPER_ADMIN"
+        ? "/admin/dashboard"
+        : session?.user?.companySlug
+            ? session.user.role === "EMPLOYEE"
+                ? `/company/${session.user.companySlug}`
+                : `/company/${session.user.companySlug}/admin`
+            : "/";
+
+    return (
+        <Link href={backPath} className="group flex items-center gap-3 text-gray-400 hover:text-gray-900 transition-all font-black uppercase text-[10px] tracking-widest">
+            <div className="w-10 h-10 rounded-2xl border border-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-lg transition-all">
+                <ArrowLeft size={18} />
+            </div>
+            Back to Dashboard
+        </Link>
+    );
+}
 
 function NotificationsContent() {
     const router = useRouter();
@@ -265,12 +287,7 @@ export default function NotificationsPage() {
             <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
                 <div className="container mx-auto h-full px-6 flex items-center justify-between">
                     <div className="flex items-center gap-6">
-                        <Link href="/" className="group flex items-center gap-3 text-gray-400 hover:text-gray-900 transition-all font-black uppercase text-[10px] tracking-widest">
-                            <div className="w-10 h-10 rounded-2xl border border-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-lg transition-all">
-                                <ArrowLeft size={18} />
-                            </div>
-                            Back to Dashboard
-                        </Link>
+                        <GoBackLink />
                         <div className="h-8 w-px bg-gray-100 mx-2" />
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">

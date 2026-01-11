@@ -95,7 +95,9 @@ export default function SettingsPage() {
     const backPath = session?.user?.role === "SUPER_ADMIN"
         ? "/admin/dashboard"
         : session?.user?.companySlug
-            ? `/company/${session.user.companySlug}/admin`
+            ? session.user.role === "EMPLOYEE"
+                ? `/company/${session.user.companySlug}`
+                : `/company/${session.user.companySlug}/admin`
             : "/";
 
     return (

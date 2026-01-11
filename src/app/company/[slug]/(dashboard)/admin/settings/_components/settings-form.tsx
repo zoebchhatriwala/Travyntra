@@ -7,7 +7,9 @@ import {
     ShieldCheck,
     Save,
     Loader2,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Lock,
+    Check
 } from "lucide-react";
 import {
     Card,
@@ -27,6 +29,7 @@ interface SettingsFormProps {
         name: string;
         slug: string;
         logoUrl: string | null;
+        domain: string | null;
         plan: string;
     };
 }
@@ -36,12 +39,13 @@ export function SettingsForm({ company }: SettingsFormProps) {
     const [success, setSuccess] = useState(false);
     const [name, setName] = useState(company.name);
     const [logoUrl, setLogoUrl] = useState(company.logoUrl || "");
+    const [domain, setDomain] = useState(company.domain || "");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setSuccess(false);
-        const res = await updateCompanySettings(company.id, { name, logoUrl });
+        const res = await updateCompanySettings(company.id, { name, logoUrl, domain });
         setIsLoading(false);
         if (res.success) {
             setSuccess(true);
@@ -108,15 +112,40 @@ export function SettingsForm({ company }: SettingsFormProps) {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-all"
+                            className={`h-14 px-8 rounded-2xl ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all`}
                         >
                             {isLoading ? (
                                 <Loader2 className="animate-spin mr-2" />
+                            ) : success ? (
+                                <Check className="mr-2 h-4 w-4" />
                             ) : (
                                 <Save className="mr-2 h-4 w-4" />
                             )}
-                            PERSIST CHANGES
+                            {success ? "CHANGES SAVED" : "PERSIST CHANGES"}
                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black text-gray-900 tracking-tight">Security & Identity</CardTitle>
+                    <CardDescription className="text-gray-500 font-medium">Manage domain verification and employee access rules.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-4 space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="domain" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Trusted Domain</Label>
+                        <div className="relative group">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-violet-600 transition-colors" />
+                            <Input
+                                id="domain"
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                                className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all focus:ring-violet-500/20"
+                                placeholder="e.g. acme-corp.com"
+                            />
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold px-1">Signups from this domain are automatically routed to your workspace.</p>
                     </div>
                 </CardContent>
             </Card>

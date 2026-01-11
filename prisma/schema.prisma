@@ -110,6 +110,7 @@ model User {
   
   companyId   String?
   company     Company? @relation(fields: [companyId], references: [id])
+  tags        String[] @default([])
   
   isActive    Boolean  @default(false) // Requires approval for new signups
   isBlocked   Boolean  @default(false) // For manual admin blocking
@@ -276,7 +277,8 @@ model WorkflowStep {
   order       Int            // Sequence of the step
   type        ApprovalType   @default(ANY) // ALL or ANY
   
-  approvers   User[]        
+  approvers   User[]
+  approverTags String[] @default([])
   
   requestApprovals RequestApprovalStep[]
 

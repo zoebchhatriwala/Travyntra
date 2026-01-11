@@ -120,7 +120,7 @@ export function BillingList({ invoices }: BillingListProps) {
             </div>
 
             {/* Expenditure Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-1">
                 <Card className="lg:col-span-2 border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
                     <CardHeader className="p-8 pb-0">
                         <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
@@ -130,35 +130,6 @@ export function BillingList({ invoices }: BillingListProps) {
                     </CardHeader>
                     <CardContent className="p-8 pt-4">
                         <SpendingChart data={MOCK_CHART_DATA} />
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
-                    <CardHeader className="p-8 pb-4">
-                        <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
-                            <Clock size={20} className="text-indigo-600" /> Payment Schedule
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-8 pt-4 space-y-6">
-                        <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Next Settlement</p>
-                            <p className="text-xl font-black text-indigo-900">February 01, 2026</p>
-                        </div>
-                        <div className="space-y-4">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Auto-Pay settings</p>
-                            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-white rounded-lg shadow-sm flex items-center justify-center">
-                                        <CreditCard size={16} className="text-gray-400" />
-                                    </div>
-                                    <p className="text-xs font-bold text-gray-600">Ending in 4242</p>
-                                </div>
-                                <Badge className="bg-emerald-100 text-emerald-600 border-none text-[8px] font-black uppercase">Active</Badge>
-                            </div>
-                        </div>
-                        <Button className="w-full rounded-xl bg-gray-900 hover:bg-black text-white font-bold h-11 text-xs uppercase tracking-widest">
-                            Manage Methods
-                        </Button>
                     </CardContent>
                 </Card>
             </div>

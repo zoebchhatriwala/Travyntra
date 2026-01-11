@@ -102,16 +102,7 @@ export default function CompanyRegisterPage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 pt-12">
-                        <div className="p-6 bg-white/5 backdrop-blur-sm rounded-[32px] border border-white/10">
-                            <p className="text-3xl font-black text-white mb-1">01</p>
-                            <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">Sign Up</p>
-                        </div>
-                        <div className="p-6 bg-white/5 backdrop-blur-sm rounded-[32px] border border-white/10">
-                            <p className="text-3xl font-black text-white mb-1">02</p>
-                            <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest">Approved</p>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Animated Background Elements */}
