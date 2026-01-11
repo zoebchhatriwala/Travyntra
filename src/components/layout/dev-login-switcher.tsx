@@ -28,18 +28,54 @@ export function DevLoginSwitcher() {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            getDevUsers().then(setUsers);
+        const env = process.env.NODE_ENV;
+        console.log("[DEV_UI] Initializing Switcher. Env:", env);
+
+        if (env === 'development') {
+            getDevUsers()
+                .then(data => {
+                    console.log("[DEV_UI] Users response:", data);
+                    if (!data || data.length === 0) {
+                        console.warn("[DEV_UI] No users found in database.");
+                    }
+                    setUsers(data || []);
+                })
+                .catch(err => {
+                    console.error("[DEV_UI] Action Error:", err);
+                    alert(`Failed to fetch dev users: ${err.message}`);
+                });
+        } else {
+            console.log("[DEV_UI] Switcher disabled: Not in development mode.");
         }
     }, []);
 
     if (process.env.NODE_ENV !== 'development') return null;
 
-    const handleSwitch = async (email: string) => {
-        await signIn("dev-login", {
-            email,
-            callbackUrl: window.location.pathname
-        });
+    const handleSwitch = async (user: any) => {
+        const { email, role, companySlug } = user;
+
+        // Calculate the best dashboard to land on based on role
+        let targetUrl = "/";
+        if (role === 'SUPER_ADMIN') {
+            targetUrl = "/admin/dashboard";
+        } else if (role === 'TRAVEL_AGENT') {
+            targetUrl = "/agent/dashboard";
+        } else if (companySlug) {
+            targetUrl = role === 'ADMIN' ? `/company/${companySlug}/admin` : `/company/${companySlug}/dashboard`;
+        }
+
+        console.log(`[DEV_UI] Switching to ${email}. targetUrl: ${targetUrl}`);
+
+        try {
+            // Using signin with default redirect behavior (true)
+            await signIn("dev-login", {
+                email,
+                callbackUrl: targetUrl,
+            });
+        } catch (err) {
+            console.error("Switch failed:", err);
+            alert("An unexpected error occurred during account switching.");
+        }
     };
 
     return (
@@ -88,7 +124,7 @@ export function DevLoginSwitcher() {
                             users.map((user) => (
                                 <DropdownMenuItem
                                     key={user.id}
-                                    onClick={() => handleSwitch(user.email)}
+                                    onClick={() => handleSwitch(user)}
                                     className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 group focus:bg-indigo-50 ${session?.user?.id === user.id ? 'bg-indigo-50/50 ring-1 ring-indigo-100' : ''}`}
                                 >
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm transition-all group-hover:scale-110 ${session?.user?.id === user.id ? 'bg-indigo-600 text-white' : 'bg-white ring-1 ring-gray-100'}`}>

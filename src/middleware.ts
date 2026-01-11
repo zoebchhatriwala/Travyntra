@@ -35,7 +35,13 @@ export default withAuth(
                 return NextResponse.redirect(new URL(`/company/${slugFromUrl}/dashboard`, req.url));
             }
             if (isDashboardPath && token?.role === "COMPANY_ADMIN") {
-                return NextResponse.redirect(new URL(`/company/${slugFromUrl}/admin`, req.url));
+                // Allow admins to access request details, creation, and discussions
+                const dashboardSubPath = parts[4];
+                const allowedSubPaths = ["requests", "discussion", "activity"];
+
+                if (!allowedSubPaths.includes(dashboardSubPath)) {
+                    return NextResponse.redirect(new URL(`/company/${slugFromUrl}/admin`, req.url));
+                }
             }
         }
 

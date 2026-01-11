@@ -20,13 +20,12 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { getCompanyRequests, bulkProcessRequests } from "../../actions";
+import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests } from "../../actions";
 
 interface Request {
     id: string;
@@ -105,13 +104,42 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
         const promise = bulkProcessRequests(selectedIds, action);
         toast.promise(promise, {
             loading: `Processing ${selectedIds.length} requests...`,
-            success: (data: { count: number }) => `Successfully processed ${data.count} requests`,
-            error: "Failed to process requests"
+            success: (data: { count: number }) => {
+                setSelectedIds([]);
+                setPage(1); // Reset to first page to see updates
+                return `Successfully processed ${data.count} requests`;
+            },
+            error: (err: any) => err.message || "Failed to process requests"
         });
+    };
 
-        await promise;
-        setSelectedIds([]);
-        fetchRequests();
+    const handleRowAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
+        const promise = bulkProcessRequests([id], action);
+        toast.promise(promise, {
+            loading: `Processing request...`,
+            success: () => {
+                fetchRequests();
+                return `Request ${action.toLowerCase()}d successfully`;
+            },
+            error: (err: any) => err.message || "Failed to process request"
+        });
+    };
+
+    const handleExport = async () => {
+        const toastId = toast.loading("Generating export...");
+        try {
+            const result = await exportCompanyRequests(slug);
+            const blob = new Blob([result.csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = result.filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            toast.success("Download started", { id: toastId });
+        } catch (error) {
+            toast.error("Export failed", { id: toastId });
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -120,7 +148,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             case 'REJECTED': return 'bg-rose-100 text-rose-700';
             case 'CANCELLED': return 'bg-gray-100 text-gray-700';
             case 'PENDING_COMPANY_APPROVAL': return 'bg-amber-100 text-amber-700';
-            case 'APPROVED_BY_COMPANY': return 'bg-indigo-100 text-indigo-700';
+            case 'APPROVED': return 'bg-indigo-100 text-indigo-700';
             default: return 'bg-blue-100 text-blue-700';
         }
     };
@@ -146,7 +174,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                     >
                         <option value="ALL">All Status</option>
                         <option value="PENDING_COMPANY_APPROVAL">Pending Approval</option>
-                        <option value="APPROVED_BY_COMPANY">Approved</option>
+                        <option value="APPROVED">Approved</option>
                         <option value="COMPLETED">Completed</option>
                         <option value="REJECTED">Rejected</option>
                     </select>
@@ -170,7 +198,11 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                             </Button>
                         </div>
                     )}
-                    <Button variant="outline" className="h-12 w-12 rounded-2xl border-gray-100 p-0 text-gray-500">
+                    <Button
+                        onClick={handleExport}
+                        variant="outline"
+                        className="h-12 w-12 rounded-2xl border-gray-100 p-0 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    >
                         <Download size={18} />
                     </Button>
                 </div>
@@ -266,15 +298,17 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="rounded-2xl p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
                                                         <DropdownMenuLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 py-2">Quick Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer">
-                                                            View Full Request
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleRowAction(req.id, 'APPROVE')}
+                                                            className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer"
+                                                        >
+                                                            Quick Approve
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer border-t border-gray-50 mt-1">
-                                                            Edit Metadata
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator className="bg-gray-50" />
-                                                        <DropdownMenuItem className="rounded-xl focus:bg-rose-50 focus:text-rose-600 px-3 py-2 font-bold text-sm cursor-pointer text-rose-500">
-                                                            Reject & Archive
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleRowAction(req.id, 'REJECT')}
+                                                            className="rounded-xl focus:bg-rose-50 focus:text-rose-600 px-3 py-2 font-bold text-sm cursor-pointer border-t border-gray-50 mt-1"
+                                                        >
+                                                            Reject Request
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

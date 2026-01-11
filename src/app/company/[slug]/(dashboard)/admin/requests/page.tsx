@@ -4,9 +4,7 @@ import { redirect } from "next/navigation";
 import { getCompanyRequests, getCompanyAnalytics } from "../actions";
 import { RequestsTable } from "./_components/requests-table";
 import { AnalyticsWidgets } from "./_components/analytics-widgets";
-import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
-import Link from "next/link";
+import { AdminRequestActions } from "./_components/admin-request-actions";
 
 export const metadata = {
     title: "Global Request Dashboard | Admin Console",
@@ -47,18 +45,7 @@ export default async function AdminRequestsPage({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" className="h-16 px-8 rounded-[24px] border-none shadow-sm ring-1 ring-gray-100 font-black uppercase tracking-widest text-xs gap-3 hover:ring-indigo-200 transition-all bg-white text-gray-600">
-                        <Download size={20} />
-                        Export Audit
-                    </Button>
-                    <Button asChild className="h-16 px-8 rounded-[24px] bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-xs gap-3 shadow-xl shadow-indigo-100 hover:scale-[1.02] transition-all">
-                        <Link href={`#`}>
-                            <Plus size={20} />
-                            Internal Booking
-                        </Link>
-                    </Button>
-                </div>
+                <AdminRequestActions slug={slug} />
             </div>
 
             {/* Analytics Section */}

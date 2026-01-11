@@ -41,8 +41,59 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
-    providers: [
 
+    providers: [
+        // Development-only provider for quick switching
+        CredentialsProvider({
+            id: "dev-login",
+            name: "Dev Login",
+            credentials: {
+                email: { label: "Email", type: "email" },
+            },
+            async authorize(credentials) {
+                console.log("[DEV_AUTH] Authorize called with:", credentials?.email);
+
+                // Gated by environment for security
+                const isDev = process.env.NODE_ENV === 'development';
+                if (!isDev) {
+                    console.error("[DEV_AUTH] Impersonation rejected: Not in development mode");
+                    return null;
+                }
+
+                if (!credentials?.email) {
+                    console.error("[DEV_AUTH] Missing email in credentials");
+                    return null;
+                }
+
+                try {
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email as string },
+                        include: { company: true }
+                    });
+
+                    if (!user) {
+                        console.error("[DEV_AUTH] User not found during impersonation:", credentials.email);
+                        return null;
+                    }
+
+                    console.log("[DEV_AUTH] Impersonation successful for:", user.email);
+
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        role: user.role,
+                        companyId: user.companyId,
+                        companyType: user.company?.type,
+                        companySlug: user.company?.slug,
+                        image: user.avatarUrl
+                    };
+                } catch (error) {
+                    console.error("[DEV_AUTH] Database error during impersonation:", error);
+                    return null;
+                }
+            },
+        }),
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -75,38 +126,6 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         }),
-        // Development-only provider for quick switching
-        ...(process.env.NODE_ENV === 'development' ? [
-            CredentialsProvider({
-                id: "dev-login",
-                name: "Dev Login",
-                credentials: {
-                    email: { label: "Email", type: "email" },
-                },
-                async authorize(credentials) {
-                    if (process.env.NODE_ENV !== 'development') return null;
-                    if (!credentials?.email) return null;
-
-                    const user = await prisma.user.findUnique({
-                        where: { email: credentials.email },
-                        include: { company: true }
-                    });
-
-                    if (!user) return null;
-
-                    return {
-                        id: user.id,
-                        email: user.email,
-                        name: user.name,
-                        role: user.role,
-                        companyId: user.companyId,
-                        companyType: user.company?.type,
-                        companySlug: user.company?.slug,
-                        image: user.avatarUrl
-                    };
-                },
-            })
-        ] : []),
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {

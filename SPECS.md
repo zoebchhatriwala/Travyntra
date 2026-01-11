@@ -178,13 +178,18 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Notification Bell**: Header component with unread count
 - [ ] **Email Notifications**: Digest emails for pending actions
 
-### Phase 5: Admin & Analytics ✅ COMPLETED
-- [x] **Admin Request Dashboard**: Comprehensive view of all company requests
-- [x] **Advanced Filters**: Status, employee, date range, destination
-- [x] **Bulk Actions**: Approve/reject multiple requests
+### Phase 0: Developer Experience 🛠️ ACTIVE
+- [x] **Local Login Switcher**: Floating UI to switch accounts without passwords
+- [x] **Technical Protocols**: Strict documentation & build verification rules
+- [x] **No Placeholders**: Strict enforcement of full implementation
+
+### Phase 5: Admin & Analytics 🚀 COMPLETED
+- [x] **Company Admin Dashboard**: High-level overview for company admins
+- [x] **Request Management**: Admin view of all requests for their company
 - [x] **Analytics Widgets**: Approval times, budget trends, top destinations
-- [ ] **Export Functionality**: CSV/Excel export for reporting
-- [ ] **Approval Queue**: Dedicated view for pending approvals
+- [x] **Export Functionality**: CSV/Excel export for reporting
+- [x] **Request Pipeline**: Full visibility and internal booking for admins
+- [x] **Eradicate Placeholders**: Replace stubs in admin actions with real database logic
 
 ### Phase 6: Group Trips & Advanced Features 📋 PLANNED
 - [ ] **Group Trip Creation**: Parent trip with multiple linked requests
@@ -214,7 +219,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Comprehensive view of all company requests
    - ✅ Advanced filters (status, employee, date range, destination)
    - ✅ Bulk actions (approve, reject)
-   - ✅ Analytics widgets (budget, destinations)
+   - ✅ Analytics widgets (budget, destinations, approval times, policy violations)
 
 2. **Notification System** (Core Infrastructure)
    - ✅ Created notification actions and database queries
@@ -260,4 +265,5 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 **AI Assistant Protocol**:
 - **Continuous Documentation**: The AI assistant MUST revisit `SPECS.md` after completing any task to update task statuses (`[x]`), mark phases as completed, and refresh the "Current Sprint Focus" section. This ensures the roadmap is the single source of truth.
 - **Build Verification**: After completing a significant feature or set of changes, the AI assistant MUST run `npm run build` to ensure the integrity of the application and catch any type mismatches or build-time errors before handover.
+- **No Placeholders**: The AI assistant MUST NOT use stubs, placeholders, or "dummy" data for core features. All implemented logic must be fully functional, integrated with the Prisma database, and reflect actual system state.
 

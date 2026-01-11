@@ -10,8 +10,12 @@ import {
     LucideIcon
 } from "lucide-react";
 
+
 interface AnalyticsWidgetsProps {
     analytics: {
+        avgApprovalTime: string;
+        mtdBudget: string;
+        violations: number;
         budgetByMonth: any[];
         topDestinations: { name: string, count: number }[];
     } | null;
@@ -22,18 +26,16 @@ export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <AnalyticsCard
                 title="Avg. Approval Time"
-                value="1.4 Days"
-                subtitle="vs 2.1 last month"
+                value={`${analytics?.avgApprovalTime || "0.0"} Days`}
+                subtitle="Approval cycle"
                 icon={Clock}
-                trend="up"
                 color="indigo"
             />
             <AnalyticsCard
                 title="Total Budget (MTD)"
-                value="$24,500"
-                subtitle="12% growth"
+                value={`$${analytics?.mtdBudget || "0"}`}
+                subtitle="Current month"
                 icon={TrendingUp}
-                trend="up"
                 color="emerald"
             />
             <AnalyticsCard
@@ -45,8 +47,8 @@ export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
             />
             <AnalyticsCard
                 title="Policy Violations"
-                value="0"
-                subtitle="All clear"
+                value={String(analytics?.violations || 0)}
+                subtitle={analytics?.violations === 0 ? "All clear" : `${analytics?.violations || 0} flagged`}
                 icon={AlertCircle}
                 color="rose"
             />

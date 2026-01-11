@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,7 +6,246 @@ datasource db {
   provider = "postgresql"
 }
 
-// Enums
+model Company {
+  id                    String            @id @default(uuid())
+  name                  String
+  slug                  String            @unique
+  domain                String?           @unique
+  type                  CompanyType       @default(ENTERPRISE)
+  status                CompanyStatus     @default(PENDING)
+  plan                  SubscriptionPlan  @default(FREE)
+  subscriptionExpiresAt DateTime?
+  logoUrl               String?
+  currency              String            @default("USD")
+  timezone              String            @default("UTC")
+  country               String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  activities            ActivityLog[]
+  bids                  AgentBid[]
+  workflow              ApprovalWorkflow?
+  issuedInvoices        Invoice[]         @relation("AgencyInvoices")
+  invoices              Invoice[]         @relation("CompanyInvoices")
+  assignedRequests      TripRequest[]     @relation("AgentRequests")
+  requests              TripRequest[]     @relation("CompanyRequests")
+  users                 User[]
+}
+
+model User {
+  id                    String           @id @default(uuid())
+  email                 String           @unique
+  name                  String?
+  password              String
+  role                  UserRole         @default(EMPLOYEE)
+  avatarUrl             String?
+  companyId             String?
+  tags                  String[]         @default([])
+  isActive              Boolean          @default(false)
+  isBlocked             Boolean          @default(false)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  accessLog             ActivityLog[]    @relation("ActivityActor")
+  auditLog              ActivityLog[]    @relation("ActivityTarget")
+  documents             Document[]
+  messages              Message[]
+  notifications         Notification[]
+  requests              TripRequest[]
+  company               Company?         @relation(fields: [companyId], references: [id])
+  approvals             UserApproval[]
+  actions               WorkflowAction[]
+  collaboratingRequests TripRequest[]    @relation("RequestCollaborators")
+  workflowSteps         WorkflowStep[]   @relation("UserToWorkflowStep")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model TripRequest {
+  id              String                @id @default(uuid())
+  userId          String
+  companyId       String
+  assignedAgentId String?
+  status          RequestStatus         @default(DRAFT)
+  title           String
+  destination     String
+  startDate       DateTime
+  endDate         DateTime
+  purpose         String?
+  budget          Decimal?
+  preferences     Json?
+  parentTripId    String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  bids            AgentBid[]
+  documents       Document[]
+  expenses        Expense[]
+  invoice         Invoice?
+  messages        Message[]
+  approvalSteps   RequestApprovalStep[]
+  assignedAgent   Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id])
+  company         Company               @relation("CompanyRequests", fields: [companyId], references: [id])
+  parentTrip      TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id])
+  childTrips      TripRequest[]         @relation("GroupTrip")
+  user            User                  @relation(fields: [userId], references: [id])
+  workflow        WorkflowAction[]
+  collaborators   User[]                @relation("RequestCollaborators")
+}
+
+model AgentBid {
+  id        String      @id @default(uuid())
+  requestId String
+  agentId   String
+  amount    Decimal?
+  message   String?
+  status    String      @default("PENDING")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  agent     Company     @relation(fields: [agentId], references: [id])
+  request   TripRequest @relation(fields: [requestId], references: [id])
+}
+
+model WorkflowAction {
+  id        String      @id @default(uuid())
+  requestId String
+  actorId   String
+  action    String
+  comment   String?
+  timestamp DateTime    @default(now())
+  actor     User        @relation(fields: [actorId], references: [id])
+  request   TripRequest @relation(fields: [requestId], references: [id])
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  requestId String
+  senderId  String
+  content   String
+  readAt    DateTime?
+  createdAt DateTime    @default(now())
+  request   TripRequest @relation(fields: [requestId], references: [id])
+  sender    User        @relation(fields: [senderId], references: [id])
+}
+
+model Document {
+  id         String       @id @default(uuid())
+  requestId  String?
+  uploaderId String
+  name       String
+  s3Key      String
+  url        String
+  type       DocType      @default(OTHER)
+  createdAt  DateTime     @default(now())
+  request    TripRequest? @relation(fields: [requestId], references: [id])
+  uploader   User         @relation(fields: [uploaderId], references: [id])
+}
+
+model Expense {
+  id          String      @id @default(uuid())
+  requestId   String
+  amount      Decimal
+  currency    String      @default("USD")
+  category    String
+  description String?
+  receiptUrl  String?
+  incurredAt  DateTime
+  createdAt   DateTime    @default(now())
+  request     TripRequest @relation(fields: [requestId], references: [id])
+}
+
+model ApprovalWorkflow {
+  id        String         @id @default(uuid())
+  name      String
+  companyId String         @unique
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  company   Company        @relation(fields: [companyId], references: [id])
+  steps     WorkflowStep[]
+}
+
+model WorkflowStep {
+  id               String                @id @default(uuid())
+  workflowId       String
+  name             String
+  order            Int
+  type             ApprovalType          @default(ANY)
+  approverTags     String[]              @default([])
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  deletedAt        DateTime?
+  requestApprovals RequestApprovalStep[]
+  workflow         ApprovalWorkflow      @relation(fields: [workflowId], references: [id])
+  approvers        User[]                @relation("UserToWorkflowStep")
+}
+
+model RequestApprovalStep {
+  id        String         @id @default(uuid())
+  requestId String
+  stepId    String
+  status    ApprovalStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  request   TripRequest    @relation(fields: [requestId], references: [id])
+  step      WorkflowStep   @relation(fields: [stepId], references: [id])
+  approvals UserApproval[]
+
+  @@unique([requestId, stepId])
+}
+
+model UserApproval {
+  id                    String              @id @default(uuid())
+  requestApprovalStepId String
+  userId                String
+  status                ApprovalStatus      @default(PENDING)
+  comment               String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  requestApprovalStep   RequestApprovalStep @relation(fields: [requestApprovalStepId], references: [id])
+  user                  User                @relation(fields: [userId], references: [id])
+
+  @@unique([requestApprovalStepId, userId])
+}
+
+model Invoice {
+  id        String        @id @default(uuid())
+  amount    Decimal
+  status    InvoiceStatus @default(PENDING)
+  dueDate   DateTime?
+  requestId String        @unique
+  companyId String
+  agencyId  String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  agency    Company       @relation("AgencyInvoices", fields: [agencyId], references: [id])
+  company   Company       @relation("CompanyInvoices", fields: [companyId], references: [id])
+  request   TripRequest   @relation(fields: [requestId], references: [id])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  companyId   String
+  actorId     String?
+  targetId    String?
+  action      String
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id])
+  target      User?    @relation("ActivityTarget", fields: [targetId], references: [id])
+
+  @@index([companyId])
+}
+
 enum UserRole {
   SUPER_ADMIN
   TRAVEL_AGENT
@@ -70,307 +306,4 @@ enum InvoiceStatus {
   PAID
   VOID
   OVERDUE
-}
-
-// Models
-
-model Company {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  domain      String?  @unique // For auto-associating employees potentially
-  
-  type        CompanyType @default(ENTERPRISE)
-  status      CompanyStatus @default(PENDING)
-  plan        SubscriptionPlan @default(FREE)
-  subscriptionExpiresAt DateTime?
-  
-  logoUrl     String?
-
-  currency    String   @default("USD")
-  timezone    String   @default("UTC")
-  country     String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  users       User[]
-  requests    TripRequest[] @relation("CompanyRequests")
-  assignedRequests TripRequest[] @relation("AgentRequests")
-  bids        AgentBid[]
-  workflow    ApprovalWorkflow?
-  
-  invoices    Invoice[] @relation("CompanyInvoices") 
-  issuedInvoices Invoice[] @relation("AgencyInvoices")
-  activities  ActivityLog[]
-}
-
-model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  name        String?
-  password    String   // Hashed
-  role        UserRole @default(EMPLOYEE)
-  avatarUrl   String?
-  
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id])
-  tags        String[] @default([])
-  
-  isActive    Boolean  @default(false) // Requires approval for new signups
-  isBlocked   Boolean  @default(false) // For manual admin blocking
-  
-  requests        TripRequest[]
-  collaboratingRequests TripRequest[] @relation("RequestCollaborators")
-  actions         WorkflowAction[]
-  messages        Message[]
-  documents       Document[]
-  notifications   Notification[]
-  
-  approvals       UserApproval[]
-  workflowSteps   WorkflowStep[]
-  accessLog       ActivityLog[] @relation("ActivityActor")
-  auditLog        ActivityLog[] @relation("ActivityTarget")
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Notification {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  
-  title       String
-  message     String
-  type        String?  // "INFO", "SUCCESS", "WARNING", "ERROR"
-  link        String?  // URL to navigate to when clicked
-  
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-}
-
-model TripRequest {
-  id          String        @id @default(uuid())
-  
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
-  
-  companyId   String
-  company     Company       @relation("CompanyRequests", fields: [companyId], references: [id])
-  
-  assignedAgentId String?
-  assignedAgent   Company?    @relation("AgentRequests", fields: [assignedAgentId], references: [id])
-  
-  status      RequestStatus @default(DRAFT)
-  
-  // Trip Details
-  title       String        // e.g. "Conference in London"
-  destination String
-  startDate   DateTime
-  endDate     DateTime
-  purpose     String?
-  budget      Decimal?
-  
-  // JSONB for flexible fields (flights, hotels specific preferences)
-  preferences Json?
-  
-  // Collaborators - users who have access to this request
-  collaborators User[]      @relation("RequestCollaborators")
-  
-  // Group Trip Support - for company trips where multiple employees file linked requests
-  parentTripId  String?
-  parentTrip    TripRequest?  @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
-  childTrips    TripRequest[] @relation("GroupTrip")
-  
-  messages    Message[]
-  documents   Document[]
-  workflow    WorkflowAction[]
-  expenses    Expense[]
-  bids        AgentBid[]
-  
-  approvalSteps RequestApprovalStep[]
-  invoice       Invoice?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AgentBid {
-  id          String   @id @default(uuid())
-  requestId   String
-  request     TripRequest @relation(fields: [requestId], references: [id])
-  
-  agentId     String
-  agent       Company  @relation(fields: [agentId], references: [id])
-  
-  amount      Decimal?
-  message     String?
-  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model WorkflowAction {
-  id          String   @id @default(uuid())
-  requestId   String
-  request     TripRequest @relation(fields: [requestId], references: [id])
-  
-  actorId     String
-  actor       User     @relation(fields: [actorId], references: [id])
-  
-  action      String   // "SUBMITTED", "APPROVED_BY_MANAGER", "REJECTED", "BOOKED"
-  comment     String?
-  
-  timestamp   DateTime @default(now())
-}
-
-model Message {
-  id          String   @id @default(uuid())
-  requestId   String
-  request     TripRequest @relation(fields: [requestId], references: [id])
-  
-  senderId    String
-  sender      User     @relation(fields: [senderId], references: [id])
-  
-  content     String
-  readAt      DateTime?
-  
-  createdAt   DateTime @default(now())
-}
-
-model Document {
-  id          String   @id @default(uuid())
-  
-  requestId   String?
-  request     TripRequest? @relation(fields: [requestId], references: [id])
-  
-  uploaderId  String
-  uploader    User     @relation(fields: [uploaderId], references: [id])
-  
-  name        String
-  s3Key       String
-  url         String
-  type        DocType  @default(OTHER)
-  
-  createdAt   DateTime @default(now())
-}
-
-model Expense {
-  id          String   @id @default(uuid())
-  requestId   String
-  request     TripRequest @relation(fields: [requestId], references: [id])
-  
-  amount      Decimal
-  currency    String   @default("USD")
-  category    String   // Flight, Hotel, Meal
-  description String?
-  
-  receiptUrl  String?
-  
-  incurredAt  DateTime
-  createdAt   DateTime @default(now())
-}
-
-model ApprovalWorkflow {
-  id          String         @id @default(uuid())
-  name        String
-  companyId   String         @unique
-  company     Company        @relation(fields: [companyId], references: [id])
-  steps       WorkflowStep[]
-  isActive    Boolean        @default(true)
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-}
-
-model WorkflowStep {
-  id          String         @id @default(uuid())
-  workflowId  String
-  workflow    ApprovalWorkflow @relation(fields: [workflowId], references: [id])
-  name        String
-  order       Int            // Sequence of the step
-  type        ApprovalType   @default(ANY) // ALL or ANY
-  
-  approvers   User[]
-  approverTags String[] @default([])
-  
-  requestApprovals RequestApprovalStep[]
-
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
-}
-
-model RequestApprovalStep {
-  id          String         @id @default(uuid())
-  requestId   String
-  request     TripRequest    @relation(fields: [requestId], references: [id])
-  stepId      String
-  step        WorkflowStep   @relation(fields: [stepId], references: [id])
-  
-  status      ApprovalStatus  @default(PENDING)
-  
-  approvals   UserApproval[]
-
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  
-  @@unique([requestId, stepId])
-}
-
-model UserApproval {
-  id                      String              @id @default(uuid())
-  requestApprovalStepId   String
-  requestApprovalStep     RequestApprovalStep @relation(fields: [requestApprovalStepId], references: [id])
-  userId                  String
-  user                    User                @relation(fields: [userId], references: [id])
-  
-  status                  ApprovalStatus      @default(PENDING)
-  comment                 String?
-  
-  createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @updatedAt
-  
-  @@unique([requestApprovalStepId, userId])
-}
-
-model Invoice {
-  id          String        @id @default(uuid())
-  amount      Decimal
-  status      InvoiceStatus @default(PENDING)
-  dueDate     DateTime?
-  
-  requestId   String        @unique
-  request     TripRequest   @relation(fields: [requestId], references: [id])
-  
-  companyId   String        // The company being billed (Payer)
-  company     Company       @relation("CompanyInvoices", fields: [companyId], references: [id])
-  
-  agencyId    String        // The agency issuing the invoice (Issuer)
-  agency      Company       @relation("AgencyInvoices", fields: [agencyId], references: [id])
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-}
-
-model ActivityLog {
-  id          String   @id @default(uuid())
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
-  
-  actorId     String?
-  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id])
-
-  targetId    String?
-  target      User?    @relation("ActivityTarget", fields: [targetId], references: [id])
-
-  action      String   // e.g. "TRIP_APPROVED", "USER_REGISTERED"
-  description String
-  metadata    Json?    // Flexible properties
-  
-  createdAt   DateTime @default(now())
-  
-  @@index([companyId])
 }
