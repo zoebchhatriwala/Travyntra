@@ -18,7 +18,7 @@ export default function PrivacyPage() {
                         </div>
                     </div>
                     <h1 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter">Privacy Sovereignty</h1>
-                    <p className="text-slate-500 font-medium text-xl">Protecting the digital journeys of global enterprises.</p>
+                    <p className="text-slate-500 font-medium text-xl">Protecting the digital journeys of global companies.</p>
                 </div>
 
                 <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-slate-100 space-y-12">
@@ -26,14 +26,14 @@ export default function PrivacyPage() {
                         <div>
                             <h3 className="text-xl font-black text-slate-900 mb-2">Workspace Isolation</h3>
                             <p className="text-slate-600 leading-relaxed">
-                                Every tenant operates in an isolated environment. Your company data, employee identities,
-                                and travel history are never shared with other tenants on the platform.
+                                Every company operates in an isolated environment. Your company data, employee identities,
+                                and travel history are never shared with other companies on the platform.
                             </p>
                         </div>
                         <div>
                             <h3 className="text-xl font-black text-slate-900 mb-2">Selective Disclosure</h3>
                             <p className="text-slate-600 leading-relaxed">
-                                Travel Agents only see the data required to fulfill a specific request. Your private
+                                Agencies only see the data required to fulfill a specific request. Your private
                                 internal approval notes remain invisible to fulfillment partners.
                             </p>
                         </div>
@@ -51,10 +51,10 @@ export default function PrivacyPage() {
                     </section>
 
                     <section className="bg-joy-blue/30 rounded-3xl p-8 border border-blue-100/50">
-                        <h2 className="text-2xl font-black text-slate-900 mb-4">GDPR & Enterprise Compliance</h2>
+                        <h2 className="text-2xl font-black text-slate-900 mb-4">GDPR & Corporate Compliance</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Travyntra is committed to global data protection standards. We provide tools for
-                            Corporate Admins to exercise their &quot;Right to be Forgotten&quot; and data export commands
+                            Company Admins to exercise their &quot;Right to be Forgotten&quot; and data export commands
                             directly from their management dashboard.
                         </p>
                     </section>

@@ -26,11 +26,62 @@ export async function createNotification({
     });
 }
 
-export async function getNotifications(userId: string) {
-    return await prisma.notification.findMany({
-        where: { userId },
+export async function getNotifications(userId: string, limit: number = 20) {
+    const unreads = await prisma.notification.findMany({
+        where: { userId, read: false },
         orderBy: { createdAt: "desc" },
     });
+
+    const readsToFetch = Math.max(0, limit - unreads.length);
+
+    let reads: any[] = [];
+    if (readsToFetch > 0) {
+        reads = await prisma.notification.findMany({
+            where: { userId, read: true },
+            orderBy: { createdAt: "desc" },
+            take: readsToFetch,
+        });
+    }
+
+    return [...unreads, ...reads];
+}
+
+export async function getNotificationsPaged({
+    userId,
+    page = 1,
+    limit = 10,
+    search = "",
+}: {
+    userId: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+}) {
+    const skip = (page - 1) * limit;
+
+    const where = {
+        userId,
+        OR: search ? [
+            { title: { contains: search, mode: 'insensitive' as const } },
+            { message: { contains: search, mode: 'insensitive' as const } },
+        ] : undefined,
+    };
+
+    const [notifications, total] = await Promise.all([
+        prisma.notification.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip,
+        }),
+        prisma.notification.count({ where }),
+    ]);
+
+    return {
+        notifications,
+        total,
+        pages: Math.ceil(total / limit),
+    };
 }
 
 export async function markNotificationAsRead(id: string) {

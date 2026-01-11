@@ -9,8 +9,8 @@ export function NavLinks() {
 
     const links = [
         { href: "/admin/dashboard", label: "Dashboard" },
-        { href: "/admin/companies", label: "Enterprises" },
-        { href: "/admin/agents", label: "Agents" },
+        { href: "/admin/companies", label: "Companies" },
+        { href: "/admin/agents", label: "Agencies" },
         { href: "/admin/analytics", label: "Analytics" },
     ];
 

@@ -45,7 +45,7 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto">
           <Badge className="mb-8 px-5 py-2 text-sm font-black bg-white text-indigo-600 border-joy-blue shadow-md rounded-full">
-            ✨ Infrastructure for Enteprise Joy
+            ✨ Infrastructure for Corporate Joy
           </Badge>
           <h1 className="text-6xl md:text-8xl font-black leading-[1.05] tracking-tight mb-8 text-slate-900">
             Operating System <br />
@@ -53,7 +53,7 @@ export default function Home() {
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
             A joyful, triple-layered ecosystem connecting Agencies,
-            Corporations, and Employees. Managed at scale, fulfilled with precision.
+            Companies, and Staff. Managed at scale, fulfilled with precision.
           </p>
           <div className="flex flex-col sm:flex-row gap-5 justify-center">
             <Button size="lg" className="h-16 px-10 text-lg rounded-2xl font-black shadow-xl bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 transition-all" asChild>
@@ -80,24 +80,24 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {/* Fulfillment Agents */}
+            {/* Agencies */}
             <div className="group p-8 md:p-12 rounded-[40px] bg-[#E0F2FE] border border-white hover:border-blue-200 transition-all hover:shadow-2xl hover:shadow-blue-200/50">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Globe2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Fulfillment Agents</h3>
+              <h3 className="text-3xl font-black mb-5 text-slate-900">Agencies</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 Your SaaS command center. Manage high-volume ticketing,
-                visas, and global corporate accounts from one joyful interface.
+                visas, and global company portfolios from one joyful interface.
               </p>
             </div>
 
-            {/* Corporate Admins */}
+            {/* Company Admins */}
             <div className="group p-8 md:p-12 rounded-[40px] bg-[#F3E8FF] border border-white hover:border-purple-200 transition-all hover:shadow-2xl hover:shadow-purple-200/50">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Building2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Corporate Admins</h3>
+              <h3 className="text-3xl font-black mb-5 text-slate-900">Company Admins</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 The ultimate control plane. Define your company&apos;s chain of
                 command and approve requests with a single click.
@@ -109,10 +109,10 @@ export default function Home() {
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Users2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Global Staff</h3>
+              <h3 className="text-3xl font-black mb-5 text-slate-900">Staff</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 Travel requests made simple. Track your journey&apos;s lifecycle
-                and message your fulfillers directly within the thread.
+                and message your agency directly within the thread.
               </p>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black text-fg-primary">Automated Workflows</h3>
               <p className="text-fg-secondary text-lg font-medium leading-relaxed">
-                {`Staff -> Manager -> Agent. Build custom hierarchies that 
+                {`Staff -> Manager -> Agency. Build custom hierarchies that 
                 fit your company's unique DNA perfectly.`}
               </p>
             </div>
@@ -172,7 +172,7 @@ export default function Home() {
               <p className="text-lg text-slate-600 font-medium leading-relaxed">
                 Travyntra is an elite infrastructure provider. We don&apos;t believe in one-size-fits-all
                 subscriptions. Our pricing is calculated based on your travel volume,
-                number of agents, and custom workflow complexity.
+                number of agencies, and custom workflow complexity.
               </p>
             </div>
             <div className="bg-white p-8 md:p-10 rounded-[40px] shadow-2xl shadow-amber-900/5 border border-amber-50 w-full md:w-[450px]">
@@ -214,7 +214,7 @@ export default function Home() {
             <div className="relative z-10 max-w-2xl mx-auto">
               <h2 className="text-4xl md:text-6xl font-black mb-6 text-white leading-tight">Ready for a new direction?</h2>
               <p className="text-xl opacity-90 mb-10 font-medium">
-                Join hundreds of enterprises that trust Travyntra to manage their most important journeys.
+                Join hundreds of companies that trust Travyntra to manage their most important journeys.
               </p>
               <Button size="lg" variant="secondary" className="h-16 px-12 text-lg rounded-2xl font-black bg-white text-primary hover:bg-joy-white hover:scale-105 transition-all shadow-xl" asChild>
                 <Link href="/register">Get Started Now</Link>

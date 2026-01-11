@@ -4,7 +4,7 @@ import { Briefcase } from "lucide-react";
 import { CompanyType } from "@prisma/client";
 
 export const metadata = {
-    title: "Manage Agents | Travyntra Admin",
+    title: "Manage Agencies | Travyntra Admin",
 };
 
 export default async function AgentsPage() {
@@ -23,7 +23,7 @@ export default async function AgentsPage() {
                                 </div>
                                 <span className="text-sm font-semibold text-amber-600 tracking-wide uppercase">Fulfillment Partners</span>
                             </div>
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Agent Companies</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Agencies</h1>
                             <p className="text-gray-500 mt-1 max-w-2xl">
                                 Manage travel agencies, verify their credentials, and monitor their fulfillment performance.
                             </p>

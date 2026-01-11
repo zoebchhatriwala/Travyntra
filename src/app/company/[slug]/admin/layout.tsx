@@ -49,7 +49,7 @@ export default async function CompanyAdminLayout({
                                 Travyntra
                             </span>
                             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mt-1">
-                                Tenant Admin
+                                Company Admin
                             </span>
                         </div>
                     </Link>

@@ -75,7 +75,7 @@ export default function RegisterPage() {
                 <div className="space-y-4">
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Onboarding Started.</h2>
                     <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-sm mx-auto">
-                        Your {regType === "COMPANY" ? "corporate portal" : "agent account"} is awaiting verification. You will receive an email once your workspace is live.
+                        Your {regType === "COMPANY" ? "corporate portal" : "agency account"} is awaiting verification. You will receive an email once your workspace is live.
                     </p>
                 </div>
                 <div className="pt-4">
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                         <div className="w-14 h-14 bg-joy-purple/50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:scale-110 transition-transform">
                             <Building2 className="h-7 w-7" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 mb-2">I am a Corporate Admin</h3>
+                        <h3 className="text-2xl font-black text-slate-900 mb-2">I am a Company Admin</h3>
                         <p className="text-slate-500 font-medium leading-relaxed">
                             Register your company, set up approval hierarchies, and manage staff travel requests.
                         </p>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                         <div className="w-14 h-14 bg-joy-blue/50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
                             <Globe2 className="h-7 w-7" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 mb-2">I am a Travel Agent</h3>
+                        <h3 className="text-2xl font-black text-slate-900 mb-2">I am an Agency</h3>
                         <p className="text-slate-500 font-medium leading-relaxed">
                             Fulfill global travel requests, manage tickets, and service corporate portfolios at scale.
                         </p>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                     <ArrowLeft size={16} /> CHANGE ACCOUNT TYPE
                 </button>
                 <h1 className="text-4xl font-black tracking-tight text-slate-900">
-                    {regType === "COMPANY" ? "Corporate Setup." : "Agent Enrollment."}
+                    {regType === "COMPANY" ? "Company Setup." : "Agency Enrollment."}
                 </h1>
                 <p className="text-lg text-slate-500 font-medium">Create your credentials to get started.</p>
             </div>
@@ -192,7 +192,7 @@ export default function RegisterPage() {
 
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">
-                            {regType === "COMPANY" ? "Business Email" : "Agent Email"}
+                            {regType === "COMPANY" ? "Business Email" : "Agency Email"}
                         </Label>
                         <div className="relative group">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />

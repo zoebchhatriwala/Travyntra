@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <StatCard
-                            title="Active Agents"
+                            title="Active Agencies"
                             value={stats.totalAgents}
                             icon={<Users className="text-blue-500" />}
                             gradient="bg-blue-50"
@@ -56,7 +56,7 @@ export default async function AdminDashboardPage() {
                             value={stats.totalCompanies}
                             icon={<Building2 className="text-purple-500" />}
                             gradient="bg-purple-50"
-                            label="Enterprise Tenants"
+                            label="Registered Companies"
                         />
                         <StatCard
                             title="Total Requests"
@@ -83,15 +83,15 @@ export default async function AdminDashboardPage() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="w-1.5 h-8 bg-blue-500 rounded-full" />
-                                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Agent Verification Queue</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Agency Verification Queue</h2>
                                 </div>
                                 <div className="px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-100">
                                     {agents.length} Pending
                                 </div>
                             </div>
                             <PendingList
-                                title="Travel Agents"
-                                description="Review and approve fulfillment agencies wanting to join the platform."
+                                title="Agencies"
+                                description="Review and approve agencies wanting to join the platform."
                                 users={agents}
                                 type="AGENT"
                                 accentColor="blue"
@@ -111,7 +111,7 @@ export default async function AdminDashboardPage() {
                             </div>
                             <PendingList
                                 title="Company Admins"
-                                description="Verify organizations and activate their exclusive enterprise portals."
+                                description="Verify organizations and activate their exclusive corporate portals."
                                 users={companies}
                                 type="COMPANY"
                                 accentColor="purple"

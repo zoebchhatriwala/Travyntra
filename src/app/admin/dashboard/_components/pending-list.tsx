@@ -88,7 +88,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                     <CardHeader className="pb-4">
                         <div className="flex justify-between items-start">
                             <Badge variant="secondary" className={`${colors.bg} ${colors.text} border-none font-semibold px-3 py-1`}>
-                                {type === "AGENT" ? "Travel Agent" : "Company Admin"}
+                                {type === "AGENT" ? "Agency" : "Company Admin"}
                             </Badge>
                             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
                                 <Calendar size={12} />

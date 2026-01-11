@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 
 type Notification = {
     id: string;
@@ -34,7 +35,7 @@ export function NotificationBell() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const fetchNotifications = async () => {
-        const data = await getNotifications();
+        const data = await getNotifications(20);
         // Convert dates to Date objects if they are strings
         const formattedData = data.map((n: any) => ({
             ...n,
@@ -186,9 +187,11 @@ export function NotificationBell() {
 
                     {notifications.length > 0 && (
                         <div className="p-3 bg-gray-50/50 border-t border-gray-50">
-                            <Button className="w-full h-10 bg-white text-gray-900 border border-gray-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 shadow-sm">
-                                View Activity Log
-                            </Button>
+                            <Link href="/notifications" className="w-full">
+                                <Button className="w-full h-10 bg-white text-gray-900 border border-gray-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 shadow-sm">
+                                    View Activity Log
+                                </Button>
+                            </Link>
                         </div>
                     )}
                 </DropdownMenuContent>

@@ -22,7 +22,7 @@ export default function TermsPage() {
                         <p className="text-slate-600 leading-relaxed">
                             By accessing the Travyntra, you agree to be bound by these Terms of Service.
                             Our platform is designed for enterprise-grade travel coordination between agencies,
-                            corporations, and their authorized personnel.
+                            companies, and their authorized personnel.
                         </p>
                     </section>
 
@@ -30,7 +30,7 @@ export default function TermsPage() {
                         <h2 className="text-2xl font-black text-slate-900 mb-4">2. Tiered Access & Multi-Tenancy</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Travyntra provides isolated workspace environments. Company Admins are responsible for
-                            managing their own staff and internal approval workflows. Agents are responsible for
+                            managing their own staff and internal approval workflows. Agencies are responsible for
                             the fulfillment of journey artifacts (tickets, visas, etc.).
                         </p>
                     </section>
@@ -38,7 +38,7 @@ export default function TermsPage() {
                     <section>
                         <h2 className="text-2xl font-black text-slate-900 mb-4">3. Data Security & Sovereignty</h2>
                         <p className="text-slate-600 leading-relaxed">
-                            We maintain strictly isolated databases for each company tenant. Audit logs are preserved
+                            We maintain strictly isolated databases for each company. Audit logs are preserved
                             to ensure accountability across the travel lifecycle. Sensitive documents are stored
                             using AES-256 encryption.
                         </p>
@@ -47,8 +47,8 @@ export default function TermsPage() {
                     <section>
                         <h2 className="text-2xl font-black text-slate-900 mb-4">4. Fulfillment Liability</h2>
                         <p className="text-slate-600 leading-relaxed">
-                            Fulfillment service levels (SLA) are determined by the agreement between the Travel Agent
-                            and the Corporate Client. Travyntra acts as the record-keeping and communication
+                            Fulfillment service levels (SLA) are determined by the agreement between the Agency
+                            and the Company. Travyntra acts as the record-keeping and communication
                             infrastructure enabling these transactions.
                         </p>
                     </section>

@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Platform Analytics</h1>
                     <p className="text-gray-500 mt-1 max-w-2xl">
-                        A real-time overview of global travel volume, enterprise growth, and platform health.
+                        A real-time overview of global travel volume, company growth, and platform health.
                     </p>
                 </div>
             </div>
@@ -61,7 +61,7 @@ export default async function AnalyticsPage() {
                         bgColor="bg-indigo-50"
                     />
                     <KpiCard
-                        title="Enterprise Tenants"
+                        title="Companies"
                         value={data.stats.companies}
                         trend="+2"
                         isUp={true}
@@ -69,7 +69,7 @@ export default async function AnalyticsPage() {
                         bgColor="bg-amber-50"
                     />
                     <KpiCard
-                        title="Network Agents"
+                        title="Network Agencies"
                         value={data.stats.agents}
                         trend="+5.2%"
                         isUp={true}
@@ -236,7 +236,7 @@ export default async function AnalyticsPage() {
                                             <Globe2 size={24} className="text-blue-400" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Travel Agents</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Agencies</p>
                                             <p className="text-2xl font-black">{data.stats.agents}</p>
                                         </div>
                                     </div>
@@ -249,7 +249,7 @@ export default async function AnalyticsPage() {
                                             <Users size={24} className="text-purple-400" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Enterprise Staff</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Company Staff</p>
                                             <p className="text-2xl font-black">{data.stats.employees}</p>
                                         </div>
                                     </div>

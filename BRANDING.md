@@ -9,7 +9,7 @@ A unified platform to manage journeys, streamline operations, and deliver seamle
 
 Expanded Branding Text (About / Overview)
 
-At Travyntra, we believe travel should be effortless, even at scale. Our platform is built to support growing enterprises, travel agencies, and corporate clients with powerful tools that centralize workflows, improve visibility, and enhance control. With a focus on reliability, scalability, and simplicity, Travyntra transforms complex travel processes into smooth, connected experiences.
+At Travyntra, we believe travel should be effortless, even at scale. Our platform is built to support growing companies, agencies, and corporate clients with powerful tools that centralize workflows, improve visibility, and enhance control. With a focus on reliability, scalability, and simplicity, Travyntra transforms complex travel processes into smooth, connected experiences.
 
 Micro Taglines (UI / Sections / Footer)
 
@@ -17,6 +17,6 @@ Built for scale. Designed for simplicity.
 
 One platform. Endless journeys.
 
-Smart travel infrastructure for modern enterprises.
+Smart travel infrastructure for modern companies.
 
 Powering travel operations worldwide.

@@ -19,7 +19,7 @@ export default async function StaffManagementPage({
                         Directory / <span className="text-indigo-600 uppercase">Staff</span>
                     </h1>
                     <p className="text-gray-500 font-medium">
-                        Verify new registrations, manage permissions, and oversee your corporate directory.
+                        Verify new registrations, manage permissions, and oversee your company directory.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">

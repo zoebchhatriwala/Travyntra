@@ -9,7 +9,7 @@ export default async function SettingsPage({
     const { slug } = await params;
     const company = await getCompanySettings(slug);
 
-    if (!company) return <div>Tenant Not Found</div>;
+    if (!company) return <div>Company Not Found</div>;
 
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">

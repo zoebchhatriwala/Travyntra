@@ -148,7 +148,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                     type="text"
-                    placeholder="Search tenants..."
+                    placeholder="Search companies..."
                     className="w-full h-12 pl-11 pr-4 rounded-2xl border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
                     value={searchQuery}
                     onChange={(e) => {
@@ -252,7 +252,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                 </div>
             )}
 
-            {/* Manage Tenant Dialog */}
+            {/* Manage Company Dialog */}
             <Dialog open={isManageOpen} onOpenChange={setIsManageOpen}>
                 <DialogContent className="sm:max-w-[540px] rounded-[32px] p-0 border-none shadow-2xl overflow-hidden">
                     {selectedCompany && (

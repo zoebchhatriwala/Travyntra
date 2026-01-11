@@ -90,7 +90,7 @@ export async function POST(req: Request) {
                 { status: 201 }
             );
         } else {
-            // Registering as an Agent
+            // Registering as an Agency
             const user = await prisma.user.create({
                 data: {
                     email,
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
             await createNotification({
                 userId: user.id,
                 title: "Welcome to Travyntra",
-                message: "Your registration as a Travel Agent is successful. Your account is currently pending manual vetting and activation.",
+                message: "Your registration as an Agency is successful. Your account is currently pending manual vetting and activation.",
                 type: "INFO"
             });
 
@@ -118,8 +118,8 @@ export async function POST(req: Request) {
             for (const admin of superAdmins) {
                 await createNotification({
                     userId: admin.id,
-                    title: "New Agent Registration",
-                    message: `A new travel agent ${name} (${email}) has registered.`,
+                    title: "New Agency Registration",
+                    message: `A new agency ${name} (${email}) has registered.`,
                     type: "WARNING",
                     link: "/admin/agents"
                 });
