@@ -2,7 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function getCompanyDashboardStats(slug: string) {
+import { ApprovalStatus } from "@prisma/client";
+
+export async function getCompanyDashboardStats(slug: string, userId?: string) {
     const company = await prisma.company.findUnique({
         where: { slug },
         select: {
@@ -36,6 +38,21 @@ export async function getCompanyDashboardStats(slug: string) {
         }
     });
 
+    // Count pending trip approvals for the CURRENT user
+    let pendingApprovalsCount = 0;
+    if (userId) {
+        pendingApprovalsCount = await prisma.requestApprovalStep.count({
+            where: {
+                status: ApprovalStatus.PENDING,
+                step: {
+                    approvers: {
+                        some: { id: userId }
+                    }
+                }
+            }
+        });
+    }
+
     // Simple revenue/spend calculation - just as a dummy for now
     const totalSpend = await prisma.tripRequest.aggregate({
         where: {
@@ -64,6 +81,7 @@ export async function getCompanyDashboardStats(slug: string) {
         totalStaff: company._count.users,
         pendingStaff,
         activeRequests,
+        pendingApprovalsCount,
         totalSpend: Number(totalSpend._sum.budget || 0),
         recentRequests: recentRequests.map(req => ({
             id: req.id,
@@ -76,3 +94,4 @@ export async function getCompanyDashboardStats(slug: string) {
         }))
     };
 }
+

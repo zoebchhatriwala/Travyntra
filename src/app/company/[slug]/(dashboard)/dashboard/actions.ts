@@ -266,6 +266,9 @@ export async function getTripRequest(requestId: string) {
                 user: {
                     select: { name: true, avatarUrl: true, email: true }
                 },
+                collaborators: {
+                    select: { id: true }
+                },
                 messages: {
                     orderBy: { createdAt: 'asc' },
                     include: { sender: { select: { name: true, avatarUrl: true, role: true } } }
@@ -284,15 +287,19 @@ export async function getTripRequest(requestId: string) {
         if (!request) return null;
 
         // Security check: Ensure the user belongs to the company of the request
-        // For an employee, they should probably only see their own requests unless they are admins/approvers.
-        // But for now, company-level check + own check or role check.
-        // If employee, must be own request.
-        if (session.user.role === 'EMPLOYEE' && request.userId !== session.user.id) {
+        if (request.companyId !== session.user.companyId) {
             return null;
         }
 
-        if (request.companyId !== session.user.companyId) {
-            return null;
+        // Role-based access control
+        // If employee, must be owner or collaborator
+        if (session.user.role === 'EMPLOYEE') {
+            const isOwner = request.userId === session.user.id;
+            const isCollaborator = request.collaborators.some(c => c.id === session.user.id);
+
+            if (!isOwner && !isCollaborator) {
+                return null;
+            }
         }
 
         return request;
@@ -301,6 +308,7 @@ export async function getTripRequest(requestId: string) {
         return null;
     }
 }
+
 
 export async function postTripMessage(requestId: string, content: string) {
     const session = await getServerSession(authOptions);
@@ -454,5 +462,155 @@ export async function uploadMessageAttachment(formData: FormData) {
     } catch (e) {
         console.error("File upload error:", e);
         return { error: "Failed to upload files" };
+    }
+}
+
+export async function updateTripRequest(requestId: string, data: {
+    title?: string;
+    destination?: string;
+    startDate?: Date;
+    endDate?: Date;
+    purpose?: string;
+    budget?: number;
+    preferences?: any;
+}) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Unauthenticated" };
+
+    try {
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            select: { userId: true, status: true, companyId: true, title: true }
+        });
+
+        if (!request) return { error: "Request not found" };
+
+        // Only owner can update their request
+        if (request.userId !== session.user.id) {
+            return { error: "You are not authorized to update this request" };
+        }
+
+        // Only allowed to update if it's a DRAFT or PENDING_COMPANY_APPROVAL
+        const unupdatableStatuses = ['COMPLETED', 'REJECTED', 'CANCELLED'];
+        if (unupdatableStatuses.includes(request.status)) {
+            return { error: `Cannot update a request that is already ${request.status.toLowerCase()}` };
+        }
+
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                title: data.title,
+                destination: data.destination,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                purpose: data.purpose,
+                budget: data.budget ? new Prisma.Decimal(data.budget) : undefined,
+                preferences: data.preferences ?? {},
+                updatedAt: new Date()
+            }
+        });
+
+        // Log activity
+        await prisma.activityLog.create({
+            data: {
+                companyId: request.companyId,
+                actorId: session.user.id,
+                action: 'REQUEST_UPDATED',
+                description: `Trip request "${data.title || request.title}" was updated by the user`,
+                metadata: { requestId }
+            }
+        });
+
+        revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to update trip request:", e);
+        return { error: "Failed to update trip request" };
+    }
+}
+
+export async function cancelTripRequest(requestId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Unauthenticated" };
+
+    try {
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            select: { userId: true, status: true, companyId: true, title: true }
+        });
+
+        if (!request) return { error: "Request not found" };
+
+        // Only owner can cancel their request
+        if (request.userId !== session.user.id) {
+            return { error: "You are not authorized to cancel this request" };
+        }
+
+        // Only allowed to cancel if not already completed/cancelled/rejected/booked
+        const uncancelableStatuses = ['COMPLETED', 'REJECTED', 'CANCELLED', 'BOOKED'];
+        if (uncancelableStatuses.includes(request.status)) {
+            return { error: `Cannot cancel a request that is already ${request.status.toLowerCase().replace('_', ' ')}` };
+        }
+
+
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: { status: 'CANCELLED' }
+        });
+
+        // Log activity
+        await prisma.activityLog.create({
+            data: {
+                companyId: request.companyId,
+                actorId: session.user.id,
+                action: 'REQUEST_UPDATED',
+                description: `Trip request "${request.title}" was cancelled by the user`,
+                metadata: { requestId, status: 'CANCELLED' }
+            }
+        });
+
+        revalidatePath(`/company/${session.user.companySlug}/dashboard/requests`);
+        revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to cancel trip request:", e);
+        return { error: "Failed to cancel trip request" };
+    }
+}
+
+export async function deleteTripRequest(requestId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Unauthenticated" };
+
+    try {
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            select: { userId: true, status: true, companyId: true, title: true }
+        });
+
+        if (!request) return { error: "Request not found" };
+
+        // Only owner can delete their request
+        if (request.userId !== session.user.id) {
+            return { error: "You are not authorized to delete this request" };
+        }
+
+        // Only allowed to delete if it's a DRAFT or CANCELLED (cleanup)
+        if (request.status !== 'DRAFT' && request.status !== 'CANCELLED') {
+            return { error: "Only draft or cancelled requests can be deleted" };
+        }
+
+        await prisma.tripRequest.delete({
+            where: { id: requestId }
+        });
+
+        revalidatePath(`/company/${session.user.companySlug}/dashboard/requests`);
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to delete trip request:", e);
+        return { error: "Failed to delete trip request" };
     }
 }

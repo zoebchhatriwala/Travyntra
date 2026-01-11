@@ -14,16 +14,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
 import { format } from "date-fns";
+import { authOptions } from "@/lib/auth-options";
+import { getServerSession } from "next-auth";
+
+
 
 export default async function CompanyAdminPage({
     params
 }: {
-    params: { slug: string }
+    params: Promise<{ slug: string }>
 }) {
     const { slug } = await params;
-    const stats = await getCompanyDashboardStats(slug);
+    const session = await getServerSession(authOptions);
+    const stats = await getCompanyDashboardStats(slug, session?.user?.id);
 
     if (!stats) return <div>Company not found</div>;
 
@@ -49,12 +53,22 @@ export default async function CompanyAdminPage({
                     color="bg-blue-50"
                 />
                 <StatCard
-                    title="Pending Approvals"
+                    title="Staff Verification"
                     value={stats.pendingStaff}
                     change={stats.pendingStaff > 0 ? "Action Required" : "All Verified"}
                     icon={<Clock className="text-amber-600" />}
                     color="bg-amber-50"
                     isAlert={stats.pendingStaff > 0}
+                    href={`/company/${slug}/admin/staff`}
+                />
+                <StatCard
+                    title="My Approvals"
+                    value={stats.pendingApprovalsCount}
+                    change={stats.pendingApprovalsCount > 0 ? "Pending Action" : "Up to Date"}
+                    icon={<CheckCircle2 className="text-indigo-600" />}
+                    color="bg-indigo-50"
+                    isAlert={stats.pendingApprovalsCount > 0}
+                    href={`/company/${slug}/admin/approvals`}
                 />
                 <StatCard
                     title="Live Requests"
@@ -179,27 +193,32 @@ export default async function CompanyAdminPage({
     );
 }
 
-function StatCard({ title, value, change, icon, color, isAlert }: { title: string, value: string | number, change: string, icon: React.ReactNode, color: string, isAlert?: boolean }) {
+function StatCard({ title, value, change, icon, color, isAlert, href }: { title: string, value: string | number, change: string, icon: React.ReactNode, color: string, isAlert?: boolean, href?: string }) {
+    const content = (
+        <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-2xl ${color} group-hover:scale-110 transition-transform`}>
+                    {icon}
+                </div>
+                {isAlert && <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
+            </div>
+            <div>
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{title}</h4>
+                <p className="text-3xl font-black text-gray-900">{value}</p>
+                <p className="text-[10px] font-bold text-gray-500 mt-2 flex items-center gap-1 opacity-60 italic">
+                    {change}
+                </p>
+            </div>
+        </CardContent>
+    );
+
     return (
-        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden group hover:ring-indigo-100 transition-all duration-300">
-            <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-2xl ${color} group-hover:scale-110 transition-transform`}>
-                        {icon}
-                    </div>
-                    {isAlert && <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
-                </div>
-                <div>
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{title}</h4>
-                    <p className="text-3xl font-black text-gray-900">{value}</p>
-                    <p className="text-[10px] font-bold text-gray-500 mt-2 flex items-center gap-1 opacity-60 italic">
-                        {change}
-                    </p>
-                </div>
-            </CardContent>
+        <Card className={`border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden group hover:ring-indigo-100 transition-all duration-300 ${href ? 'cursor-pointer' : ''}`}>
+            {href ? <Link href={href}>{content}</Link> : content}
         </Card>
     );
 }
+
 
 function ActionCard({ title, desc, icon, href }: { title: string, desc: string, icon: React.ReactNode, href: string }) {
     return (

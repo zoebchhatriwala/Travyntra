@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { createTripRequest } from "../../../actions";
+import { createTripRequest, updateTripRequest } from "../../../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Plane, Calendar, FileText } from "lucide-react";
@@ -31,23 +31,27 @@ type RequestFormValues = z.infer<typeof requestSchema>;
 interface RequestFormProps {
     slug: string;
     currency: string;
+    initialData?: any;
+    requestId?: string;
 }
 
-export function RequestForm({ slug, currency }: RequestFormProps) {
+export function RequestForm({ slug, currency, initialData, requestId }: RequestFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const preferences = initialData?.preferences as any;
 
     const form = useForm<RequestFormValues>({
         resolver: zodResolver(requestSchema),
         defaultValues: {
-            title: "",
-            destination: "",
-            purpose: "",
-            budget: "",
-            flightPreferences: "",
-            hotelPreferences: "",
-            startDate: "",
-            endDate: "",
+            title: initialData?.title || "",
+            destination: initialData?.destination || "",
+            purpose: initialData?.purpose || "",
+            budget: initialData?.budget ? initialData.budget.toString() : "",
+            flightPreferences: preferences?.flight || "",
+            hotelPreferences: preferences?.hotel || "",
+            startDate: initialData?.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : "",
+            endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : "",
         },
     });
 
@@ -59,29 +63,50 @@ export function RequestForm({ slug, currency }: RequestFormProps) {
                 hotel: data.hotelPreferences,
             };
 
-            const result = await createTripRequest({
-                title: data.title,
-                destination: data.destination,
-                startDate: new Date(data.startDate),
-                endDate: new Date(data.endDate),
-                purpose: data.purpose,
-                budget: data.budget ? Number(data.budget) : undefined,
-                preferences,
-            });
+            if (initialData && requestId) {
+                const result = await updateTripRequest(requestId, {
+                    title: data.title,
+                    destination: data.destination,
+                    startDate: new Date(data.startDate),
+                    endDate: new Date(data.endDate),
+                    purpose: data.purpose,
+                    budget: data.budget ? Number(data.budget) : undefined,
+                    preferences,
+                });
 
-            if (result.error) {
-                toast.error(result.error);
-                return;
+                if (result.error) {
+                    toast.error(result.error);
+                    return;
+                }
+
+                toast.success("Trip request updated successfully!");
+                router.push(`/company/${slug}/dashboard/requests/${requestId}`);
+            } else {
+                const result = await createTripRequest({
+                    title: data.title,
+                    destination: data.destination,
+                    startDate: new Date(data.startDate),
+                    endDate: new Date(data.endDate),
+                    purpose: data.purpose,
+                    budget: data.budget ? Number(data.budget) : undefined,
+                    preferences,
+                });
+
+                if (result.error) {
+                    toast.error(result.error);
+                    return;
+                }
+
+                toast.success("Trip request drafted successfully!");
+                router.push(`/company/${slug}/dashboard`);
             }
-
-            toast.success("Trip request drafted successfully!");
-            router.push(`/company/${slug}/dashboard`);
         } catch (error) {
             toast.error("Something went wrong. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     }
+
 
     return (
         <Form {...form}>
@@ -258,12 +283,13 @@ export function RequestForm({ slug, currency }: RequestFormProps) {
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Creating Request...
+                                                {initialData ? "Updating Request..." : "Creating Request..."}
                                             </>
                                         ) : (
-                                            "Submit Request"
+                                            initialData ? "Update Request" : "Submit Request"
                                         )}
                                     </Button>
+
                                     <p className="text-xs text-center text-gray-400 mt-3">
                                         This will start the approval workflow.
                                     </p>

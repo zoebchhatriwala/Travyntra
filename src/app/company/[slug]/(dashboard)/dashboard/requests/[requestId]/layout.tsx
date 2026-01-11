@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTripRequest } from "../../actions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, MoreHorizontal, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronLeft, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
+import { RequestActions } from "./_components/request-actions";
+
 
 export default async function RequestLayout({
     children,
@@ -78,9 +79,12 @@ export default async function RequestLayout({
                                 {request.status}
                             </Badge>
 
-                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900 rounded-full">
-                                <MoreHorizontal size={20} />
-                            </Button>
+                            <RequestActions
+                                requestId={requestId}
+                                status={request.status}
+                                slug={slug}
+                            />
+
                         </div>
                     </div>
 

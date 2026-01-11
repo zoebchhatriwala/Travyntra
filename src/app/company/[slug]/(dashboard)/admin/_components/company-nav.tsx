@@ -10,8 +10,10 @@ import {
     CreditCard,
     GitBranch,
     Activity,
+    CheckCircle2,
     LucideIcon
 } from "lucide-react";
+
 
 interface NavLink {
     href: string;
@@ -28,12 +30,14 @@ export function CompanyNav({ slug }: CompanyNavProps) {
 
     const navLinks: NavLink[] = [
         { href: `/company/${slug}/admin`, label: "Dashboard", icon: LayoutDashboard },
+        { href: `/company/${slug}/admin/approvals`, label: "My Approvals", icon: CheckCircle2 },
         { href: `/company/${slug}/admin/staff`, label: "Staff Management", icon: Users },
         { href: `/company/${slug}/admin/workflow`, label: "Approval Workflow", icon: GitBranch },
         { href: `/company/${slug}/admin/billing`, label: "Billing & Invoices", icon: CreditCard },
         { href: `/company/${slug}/admin/activity`, label: "Activity Log", icon: Activity },
         { href: `/company/${slug}/admin/settings`, label: "Portal Settings", icon: Settings },
     ];
+
 
     return (
         <nav className="flex-1 px-4 space-y-1">
