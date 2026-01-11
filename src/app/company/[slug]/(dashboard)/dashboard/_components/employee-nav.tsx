@@ -8,6 +8,7 @@ import {
     Plane,
     FolderOpen,
     Settings,
+    CheckCircle,
     LucideIcon
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ export function EmployeeNav({ slug }: EmployeeNavProps) {
     const navLinks: NavLink[] = [
         { href: `/company/${slug}/dashboard`, label: "Dashboard", icon: LayoutDashboard },
         { href: `/company/${slug}/dashboard/requests`, label: "My Requests", icon: Plane },
+        { href: `/company/${slug}/dashboard/approvals`, label: "My Approvals", icon: CheckCircle },
         { href: `/company/${slug}/dashboard/assets`, label: "Asset Vault", icon: FolderOpen },
         { href: `/settings`, label: "Settings", icon: Settings },
     ];

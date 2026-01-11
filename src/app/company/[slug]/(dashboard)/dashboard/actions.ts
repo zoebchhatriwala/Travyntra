@@ -309,6 +309,7 @@ export async function postTripMessage(requestId: string, content: string) {
     if (!content.trim()) return { error: "Message cannot be empty" };
 
     try {
+        // Create the message
         await prisma.message.create({
             data: {
                 requestId,
@@ -317,19 +318,87 @@ export async function postTripMessage(requestId: string, content: string) {
             }
         });
 
-        // We need to revalidate the path, but we don't have the slug here easily unless we pass it or query it.
-        // Optimistically we assume the client might handle UI updates, but for server actions revalidation:
-        const request = await prisma.tripRequest.findUnique({
-            where: { id: requestId },
-            include: { company: { select: { slug: true } } }
-        });
+        // Parse @mentions from the message
+        const mentionRegex = /@(\w+)/g;
+        const mentions = content.match(mentionRegex);
 
-        if (request?.company?.slug) {
-            revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+        if (mentions && mentions.length > 0) {
+            // Extract usernames (remove @ symbol)
+            const usernames = mentions.map(m => m.substring(1));
+
+            // Find users by name and same company
+            const mentionedUsers = await prisma.user.findMany({
+                where: {
+                    name: { in: usernames },
+                    companyId: session.user.companyId,
+                    id: { not: session.user.id } // Don't mention yourself
+                },
+                select: { id: true, name: true }
+            });
+
+            if (mentionedUsers.length > 0) {
+                // Get current collaborators
+                const request = await prisma.tripRequest.findUnique({
+                    where: { id: requestId },
+                    include: {
+                        collaborators: { select: { id: true } },
+                        company: { select: { slug: true } }
+                    }
+                });
+
+                if (request) {
+                    const currentCollaboratorIds = request.collaborators.map(c => c.id);
+                    const newCollaboratorIds = mentionedUsers
+                        .filter(u => !currentCollaboratorIds.includes(u.id))
+                        .map(u => u.id);
+
+                    // Add new collaborators
+                    if (newCollaboratorIds.length > 0) {
+                        await prisma.tripRequest.update({
+                            where: { id: requestId },
+                            data: {
+                                collaborators: {
+                                    connect: newCollaboratorIds.map(id => ({ id }))
+                                }
+                            }
+                        });
+                    }
+
+                    // Create notifications for all mentioned users
+                    const { createNotification } = await import("@/lib/notifications");
+
+                    await Promise.all(
+                        mentionedUsers.map(user =>
+                            createNotification({
+                                userId: user.id,
+                                title: "You were mentioned",
+                                message: `${session.user.name} mentioned you in "${request.title}"`,
+                                type: "INFO",
+                                link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+                            })
+                        )
+                    );
+
+                    if (request.company.slug) {
+                        revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+                    }
+                }
+            }
+        } else {
+            // No mentions, just revalidate
+            const request = await prisma.tripRequest.findUnique({
+                where: { id: requestId },
+                include: { company: { select: { slug: true } } }
+            });
+
+            if (request?.company?.slug) {
+                revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+            }
         }
 
         return { success: true };
     } catch (e) {
+        console.error("Failed to send message:", e);
         return { error: "Failed to send message" };
     }
 }

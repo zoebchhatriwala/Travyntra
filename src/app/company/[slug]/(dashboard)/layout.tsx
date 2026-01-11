@@ -8,7 +8,7 @@ export default async function CompanyLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }) {
     const session = await getServerSession(authOptions);
     const { slug } = await params;

@@ -9,7 +9,7 @@ export default async function EmployeeLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
 

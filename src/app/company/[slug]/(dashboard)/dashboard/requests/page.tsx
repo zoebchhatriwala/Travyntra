@@ -20,7 +20,7 @@ export default async function RequestsPage({
     const currentPage = Number((await searchParams)?.page) || 1;
 
     // Fetch data
-    const { requests, totalPages, total } = await getEmployeeRequests({
+    const { requests, totalPages } = await getEmployeeRequests({
         page: currentPage,
         query,
         limit: 10,
@@ -89,8 +89,8 @@ export default async function RequestsPage({
                                         </div>
                                     )}
                                     <Badge className={`rounded-xl px-3 py-1 font-bold text-[10px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                                            req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                                'bg-amber-100 text-amber-700'
+                                        req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
+                                            'bg-amber-100 text-amber-700'
                                         }`}>
                                         {req.status}
                                     </Badge>

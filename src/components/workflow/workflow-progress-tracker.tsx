@@ -1,0 +1,225 @@
+"use client";
+
+import { Check, Clock, X, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+
+interface ApprovalStep {
+    id: string;
+    stepName: string;
+    stepOrder: number;
+    stepType: string;
+    status: string;
+    approvers: Array<{
+        id: string;
+        name: string | null;
+        avatarUrl: string | null;
+        role: string;
+    }>;
+    approvals: Array<{
+        userId: string;
+        userName: string | null;
+        userAvatar: string | null;
+        status: string;
+        comment: string | null;
+        updatedAt: Date;
+    }>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface WorkflowProgressTrackerProps {
+    steps: ApprovalStep[];
+}
+
+export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps) {
+    if (!steps || steps.length === 0) {
+        return (
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
+                <p className="text-center text-gray-500 text-sm">No approval workflow configured</p>
+            </div>
+        );
+    }
+
+    const getStepIcon = (status: string) => {
+        switch (status) {
+            case 'APPROVED':
+                return <Check size={20} className="text-white" />;
+            case 'REJECTED':
+                return <X size={20} className="text-white" />;
+            default:
+                return <Clock size={20} className="text-white" />;
+        }
+    };
+
+    const getStepColor = (status: string) => {
+        switch (status) {
+            case 'APPROVED':
+                return 'from-emerald-500 to-teal-600';
+            case 'REJECTED':
+                return 'from-red-500 to-rose-600';
+            default:
+                return 'from-amber-500 to-orange-600';
+        }
+    };
+
+    const getStepBorderColor = (status: string) => {
+        switch (status) {
+            case 'APPROVED':
+                return 'border-emerald-200 bg-emerald-50';
+            case 'REJECTED':
+                return 'border-red-200 bg-red-50';
+            default:
+                return 'border-amber-200 bg-amber-50';
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl p-8">
+            <div className="space-y-2 mb-8">
+                <h3 className="text-2xl font-black text-gray-900">Approval Workflow</h3>
+                <p className="text-sm text-gray-600">Track the progress of this request through the approval chain</p>
+            </div>
+
+            <div className="space-y-6">
+                {steps.map((step, index) => {
+                    const isLast = index === steps.length - 1;
+                    const isPending = step.status === 'PENDING';
+                    const isApproved = step.status === 'APPROVED';
+                    const isRejected = step.status === 'REJECTED';
+
+                    return (
+                        <div key={step.id} className="relative">
+                            {/* Connector Line */}
+                            {!isLast && (
+                                <div
+                                    className={cn(
+                                        "absolute left-7 top-16 w-0.5 h-full -mb-6",
+                                        isApproved ? "bg-emerald-300" : "bg-gray-200"
+                                    )}
+                                />
+                            )}
+
+                            {/* Step Card */}
+                            <div className={cn(
+                                "relative border-2 rounded-3xl p-6 transition-all",
+                                getStepBorderColor(step.status),
+                                isPending && "ring-2 ring-amber-300 ring-offset-2"
+                            )}>
+                                {/* Step Header */}
+                                <div className="flex items-start gap-4">
+                                    {/* Step Icon */}
+                                    <div className={cn(
+                                        "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-lg flex-shrink-0",
+                                        getStepColor(step.status)
+                                    )}>
+                                        {getStepIcon(step.status)}
+                                    </div>
+
+                                    {/* Step Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <h4 className="text-lg font-black text-gray-900">
+                                                Step {step.stepOrder}: {step.stepName}
+                                            </h4>
+                                            <span className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                isApproved && "bg-emerald-100 text-emerald-700",
+                                                isRejected && "bg-red-100 text-red-700",
+                                                isPending && "bg-amber-100 text-amber-700"
+                                            )}>
+                                                {step.status}
+                                            </span>
+                                        </div>
+
+                                        <p className="text-xs text-gray-600 mb-4">
+                                            {step.stepType === 'ALL'
+                                                ? 'All approvers must approve'
+                                                : 'Any approver can approve'}
+                                        </p>
+
+                                        {/* Approvers */}
+                                        <div className="space-y-3">
+                                            {step.approvers.map((approver) => {
+                                                const approval = step.approvals.find(a => a.userId === approver.id);
+                                                const hasApproved = approval?.status === 'APPROVED';
+                                                const hasRejected = approval?.status === 'REJECTED';
+                                                const isWaiting = !approval || approval.status === 'PENDING';
+
+                                                return (
+                                                    <div
+                                                        key={approver.id}
+                                                        className={cn(
+                                                            "flex items-start gap-3 p-3 rounded-2xl transition-all",
+                                                            hasApproved && "bg-emerald-50 border border-emerald-200",
+                                                            hasRejected && "bg-red-50 border border-red-200",
+                                                            isWaiting && "bg-white border border-gray-200"
+                                                        )}
+                                                    >
+                                                        {/* Approver Avatar */}
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden ring-2 ring-white flex-shrink-0">
+                                                            {approver.avatarUrl ? (
+                                                                <img src={approver.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                approver.name?.[0] || <User size={16} />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Approver Info */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-bold text-gray-900">
+                                                                    {approver.name || 'Unknown'}
+                                                                </p>
+                                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                                    {approver.role.toLowerCase()}
+                                                                </span>
+                                                            </div>
+
+                                                            {approval && (
+                                                                <div className="mt-1 space-y-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        {hasApproved && (
+                                                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
+                                                                                <Check size={12} />
+                                                                                Approved
+                                                                            </span>
+                                                                        )}
+                                                                        {hasRejected && (
+                                                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700">
+                                                                                <X size={12} />
+                                                                                Rejected
+                                                                            </span>
+                                                                        )}
+                                                                        <span className="text-[10px] text-gray-500">
+                                                                            {format(new Date(approval.updatedAt), "MMM d, h:mm a")}
+                                                                        </span>
+                                                                    </div>
+                                                                    {approval.comment && (
+                                                                        <p className="text-xs text-gray-600 italic bg-white/50 p-2 rounded-lg">
+                                                                            "{approval.comment}"
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {isWaiting && isPending && (
+                                                                <p className="text-xs text-amber-600 font-medium mt-1">
+                                                                    Awaiting response...
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
