@@ -24,7 +24,10 @@ export default withAuth(
             const slugFromUrl = parts[2];
 
             // Verify the user belongs to the company they are trying to access
-            if (token?.companySlug !== slugFromUrl && token?.role !== "SUPER_ADMIN") {
+            // AND ensure TRAVEL_AGENTs cannot access company dashboard routes
+            const isAllowedRole = ["COMPANY_ADMIN", "EMPLOYEE", "SUPER_ADMIN"].includes(token?.role as string);
+
+            if (!isAllowedRole || (token?.companySlug !== slugFromUrl && token?.role !== "SUPER_ADMIN")) {
                 return NextResponse.redirect(new URL("/", req.url));
             }
 
