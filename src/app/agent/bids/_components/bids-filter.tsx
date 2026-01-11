@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface Company {
     id: string;

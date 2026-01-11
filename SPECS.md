@@ -222,16 +222,16 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Bidding System with Discussion integration
    - ✅ Request distribution logic (Only integrated agencies see requests)
    - ✅ Database seeding for Agency scenarios
+   - ✅ Agent Chat Participation (Badge & Discussion access)
 
 2. **Admin Integrations Management**
-   - ✅ "Marketplace" style integration discovery
-   - ✅ Connect/Disconnect logic
    - ✅ "Marketplace" style integration discovery
    - ✅ Connect/Disconnect logic
    - ✅ Agency Search UI
    - ✅ Agency Settings Page (Profile, Regional Config)
    - ✅ Advanced Bid Filtering (Date, Company) & Search
    - ✅ Rich Proposal Messages in Request Discussion
+   - ✅ Bid Approval UI (Company Admin decision flow)
 
 ### Immediate Priorities
 1. **Fulfillment Console** (Phase 7)

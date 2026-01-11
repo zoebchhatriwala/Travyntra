@@ -19,6 +19,9 @@ interface Message {
         name: string | null;
         avatarUrl: string | null;
         role: string;
+        company?: {
+            name: string;
+        } | null;
     };
     senderId: string;
 }
@@ -201,7 +204,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
             <div className="p-5 border-b border-gray-200 bg-white/80 backdrop-blur-sm flex items-center justify-between">
                 <div>
                     <h3 className="font-bold text-gray-900 text-lg">Discussion</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Collaborate with your team in real-time</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Collaborate in real-time</p>
                 </div>
                 <Button
                     variant="ghost"
@@ -214,7 +217,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto bg-white p-6 space-y-4" ref={scrollRef}>
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center py-12">
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-4">
@@ -228,11 +231,15 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                 ) : (
                     messages.map((msg) => {
                         const isMe = msg.senderId === currentUserId;
+                        const isAgent = msg.sender.role === 'TRAVEL_AGENT';
                         const { text, attachments: msgAttachments } = parseMessageContent(msg.content);
 
                         return (
                             <div key={msg.id} className={cn("flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300", isMe ? "flex-row-reverse" : "flex-row")}>
-                                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden ring-2 ring-white">
+                                <div className={cn(
+                                    "flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden ring-2 ring-white",
+                                    isAgent ? "bg-gradient-to-br from-amber-400 to-orange-500" : "bg-gradient-to-br from-indigo-500 to-purple-600"
+                                )}>
                                     {msg.sender.avatarUrl ? (
                                         <img src={msg.sender.avatarUrl} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -242,14 +249,21 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                                 <div className={cn("flex flex-col gap-1.5 max-w-[75%]", isMe && "items-end")}>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-xs font-bold text-gray-900">{isMe ? "You" : msg.sender.name}</span>
+                                        {isAgent && !isMe && (
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 uppercase tracking-wide">
+                                                {msg.sender.company?.name || 'Agency'}
+                                            </span>
+                                        )}
                                         <span className="text-[10px] text-gray-400">{format(new Date(msg.createdAt), "h:mm a")}</span>
                                     </div>
                                     <div className={cn(
                                         "px-4 py-3 text-sm leading-relaxed shadow-md transition-all hover:shadow-lg",
                                         isMe
                                             ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-2xl rounded-tr-md"
-                                            : "bg-white text-gray-800 rounded-2xl rounded-tl-md border border-gray-100",
-                                        !isMe && (text.startsWith('🚀') || text.startsWith('📝')) && "bg-indigo-50/50 border-indigo-100 italic font-medium"
+                                            : isAgent
+                                                ? "bg-amber-50/80 text-gray-900 rounded-2xl rounded-tl-md border border-amber-200"
+                                                : "bg-white text-gray-800 rounded-2xl rounded-tl-md border border-gray-100",
+                                        !isMe && !isAgent && (text.startsWith('🚀') || text.startsWith('📝')) && "bg-indigo-50/50 border-indigo-100 italic font-medium"
                                     )}>
                                         {text && (
                                             <div className="break-words markdown-content">

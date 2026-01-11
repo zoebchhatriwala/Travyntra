@@ -8,7 +8,7 @@ import { getRequestApprovalProgress } from "@/lib/actions/approvals";
 import { WorkflowProgressTracker } from "@/components/workflow/workflow-progress-tracker";
 import { ApprovalActions } from "@/components/workflow/approval-actions";
 import { GroupTripInfo } from "./_components/group-trip-info";
-import { RequestHeader } from "./_components/request-header";
+import { BidList } from "./_components/bid-list";
 
 export default async function RequestOverviewPage({
     params,
@@ -45,7 +45,6 @@ export default async function RequestOverviewPage({
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <RequestHeader request={request} currentUser={session!.user} slug={slug} />
 
             {/* Approval Actions - Show if user has pending approval */}
             {myPendingApproval && (
@@ -60,6 +59,16 @@ export default async function RequestOverviewPage({
                 {/* Left Column: Request Details */}
                 <div className="lg:col-span-2 space-y-8">
                     <RequestInfo request={request} currency={currency} />
+
+                    {/* Agent Bids Section */}
+                    {request.bids && request.bids.length > 0 && (
+                        <BidList
+                            bids={request.bids}
+                            requestId={request.id}
+                            isAuthorized={session?.user?.role === 'COMPANY_ADMIN' || session?.user?.role === 'SUPER_ADMIN'}
+                            currency={currency}
+                        />
+                    )}
 
                     {/* Workflow Progress Tracker */}
                     {approvalProgress && approvalProgress.length > 0 && (

@@ -312,9 +312,17 @@ export async function getTripRequest(requestId: string) {
                 collaborators: {
                     select: { id: true }
                 },
+                bids: {
+                    include: {
+                        agent: {
+                            select: { name: true, logoUrl: true }
+                        }
+                    },
+                    orderBy: { amount: 'asc' }
+                },
                 messages: {
                     orderBy: { createdAt: 'asc' },
-                    include: { sender: { select: { name: true, avatarUrl: true, role: true } } }
+                    include: { sender: { select: { name: true, avatarUrl: true, role: true, company: { select: { name: true } } } } }
                 },
                 documents: {
                     orderBy: { createdAt: 'desc' },
@@ -358,6 +366,10 @@ export async function getTripRequest(requestId: string) {
         return {
             ...request,
             budget: request.budget ? Number(request.budget) : null,
+            bids: request.bids.map((bid) => ({
+                ...bid,
+                amount: Number(bid.amount)
+            })),
             childTrips: request.childTrips.map((child: any) => ({
                 ...child,
                 budget: child.budget ? Number(child.budget) : null,
@@ -376,6 +388,17 @@ export async function postTripMessage(requestId: string, content: string) {
 
     if (!content.trim()) return { error: "Message cannot be empty" };
 
+    // Fetch request details primarily to know the creator and context
+    const request = await prisma.tripRequest.findUnique({
+        where: { id: requestId },
+        include: {
+            collaborators: { select: { id: true } },
+            company: { select: { slug: true } }
+        }
+    });
+
+    if (!request) return { error: "Request not found" };
+
     try {
         // Create the message
         await prisma.message.create({
@@ -385,6 +408,9 @@ export async function postTripMessage(requestId: string, content: string) {
                 content
             }
         });
+
+        const { createNotification } = await import("@/lib/notifications");
+        const notifiedUserIds = new Set<string>();
 
         // Parse @mentions from the message
         const mentionRegex = /@(\w+)/g;
@@ -405,63 +431,52 @@ export async function postTripMessage(requestId: string, content: string) {
             });
 
             if (mentionedUsers.length > 0) {
-                // Get current collaborators
-                const request = await prisma.tripRequest.findUnique({
-                    where: { id: requestId },
-                    include: {
-                        collaborators: { select: { id: true } },
-                        company: { select: { slug: true } }
-                    }
-                });
+                const currentCollaboratorIds = request.collaborators.map(c => c.id);
+                const newCollaboratorIds = mentionedUsers
+                    .filter(u => !currentCollaboratorIds.includes(u.id))
+                    .map(u => u.id);
 
-                if (request) {
-                    const currentCollaboratorIds = request.collaborators.map(c => c.id);
-                    const newCollaboratorIds = mentionedUsers
-                        .filter(u => !currentCollaboratorIds.includes(u.id))
-                        .map(u => u.id);
-
-                    // Add new collaborators
-                    if (newCollaboratorIds.length > 0) {
-                        await prisma.tripRequest.update({
-                            where: { id: requestId },
-                            data: {
-                                collaborators: {
-                                    connect: newCollaboratorIds.map(id => ({ id }))
-                                }
+                // Add new collaborators
+                if (newCollaboratorIds.length > 0) {
+                    await prisma.tripRequest.update({
+                        where: { id: requestId },
+                        data: {
+                            collaborators: {
+                                connect: newCollaboratorIds.map(id => ({ id }))
                             }
-                        });
-                    }
-
-                    // Create notifications for all mentioned users
-                    const { createNotification } = await import("@/lib/notifications");
-
-                    await Promise.all(
-                        mentionedUsers.map(user =>
-                            createNotification({
-                                userId: user.id,
-                                title: "You were mentioned",
-                                message: `${session.user.name} mentioned you in "${request.title}"`,
-                                type: "INFO",
-                                link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
-                            })
-                        )
-                    );
-
-                    if (request.company.slug) {
-                        revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
-                    }
+                        }
+                    });
                 }
-            }
-        } else {
-            // No mentions, just revalidate
-            const request = await prisma.tripRequest.findUnique({
-                where: { id: requestId },
-                include: { company: { select: { slug: true } } }
-            });
 
-            if (request?.company?.slug) {
-                revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+                // Create notifications for all mentioned users
+                await Promise.all(
+                    mentionedUsers.map(async (user) => {
+                        notifiedUserIds.add(user.id);
+                        return createNotification({
+                            userId: user.id,
+                            title: "You were mentioned",
+                            message: `${session.user.name} mentioned you in "${request.title}"`,
+                            type: "INFO",
+                            link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+                        });
+                    })
+                );
             }
+        }
+
+        // Notify Request Creator (if not sender and not already notified via mention)
+        if (request.userId !== session.user.id && !notifiedUserIds.has(request.userId)) {
+            await createNotification({
+                userId: request.userId,
+                title: "New message on your request",
+                message: `${session.user.name} commented on "${request.title}"`,
+                type: "INFO",
+                link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+            });
+        }
+
+        if (request.company.slug) {
+            revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
         }
 
         return { success: true };

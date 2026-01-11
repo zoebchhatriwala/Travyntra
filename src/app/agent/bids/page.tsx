@@ -6,7 +6,7 @@ import { RequestStatus, IntegrationStatus } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, User, DollarSign } from "lucide-react";
+import { Calendar, MapPin, User } from "lucide-react";
 import { format } from "date-fns";
 import { redirect } from "next/navigation";
 import { SearchInput } from "@/components/ui/search-input";

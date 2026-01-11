@@ -139,7 +139,7 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Accepted**: $${bid.amount}. Agent has been assigned.`
+                content: `**Bid Accepted**: $${bid.amount}. Agency has been assigned.`
             }
         });
 

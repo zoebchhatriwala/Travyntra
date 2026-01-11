@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth-options";
 import { notFound, redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { BidForm } from "./_components/bid-form";
+import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
 import { Calendar, MapPin, Building2, User } from "lucide-react";
 import { format } from "date-fns";
 
@@ -24,9 +25,24 @@ export default async function RequestDetailsPage({
         where: { id: requestId },
         include: {
             company: { select: { name: true, logoUrl: true, slug: true } },
-            user: { select: { name: true, email: true, avatarUrl: true } },
+            user: { select: { id: true, name: true, email: true, avatarUrl: true, role: true } },
             bids: {
                 where: { agentId: session.user.companyId }
+            },
+            messages: {
+                include: {
+                    sender: {
+                        select: {
+                            name: true,
+                            avatarUrl: true,
+                            role: true,
+                            company: { select: { name: true } }
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'asc'
+                }
             }
         }
     });
@@ -36,6 +52,16 @@ export default async function RequestDetailsPage({
     }
 
     const myBid = request.bids[0] || null;
+
+    // Available users for mentions (Request Creator)
+    const availableUsers = [
+        {
+            id: request.user.id,
+            name: request.user.name,
+            role: request.user.role,
+            avatarUrl: request.user.avatarUrl
+        }
+    ];
 
     return (
         <div className="grid gap-8 lg:grid-cols-3">
@@ -129,6 +155,14 @@ export default async function RequestDetailsPage({
                         </div>
                     </div>
                 </div>
+
+                {/* Discussion Thread */}
+                <ChatThread
+                    requestId={request.id}
+                    initialMessages={request.messages}
+                    currentUserId={session.user.id}
+                    availableUsers={availableUsers}
+                />
             </div>
 
             <div className="space-y-6">
