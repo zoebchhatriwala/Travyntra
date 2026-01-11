@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
 export async function getCompanySettings(slug: string) {
     try {
@@ -41,6 +43,9 @@ export async function updateCompanySettings(
     }
 ) {
     try {
+        const session = await getServerSession(authOptions);
+        const actor = session?.user;
+
         const updated = await prisma.company.update({
             where: { id },
             data: {
@@ -57,6 +62,7 @@ export async function updateCompanySettings(
         const { logActivity } = await import("@/lib/activity");
         await logActivity({
             companyId: id,
+            actorId: actor?.id,
             action: "SETTINGS_CHANGE",
             description: "Updated company settings",
             metadata: {

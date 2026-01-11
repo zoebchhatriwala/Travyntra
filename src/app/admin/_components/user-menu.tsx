@@ -39,7 +39,7 @@ export function UserMenu() {
                         )}
                     </div>
                     <span className="text-sm font-bold text-gray-700 hidden lg:block">
-                        {session?.user?.name || "Super Admin"}
+                        {session?.user?.name || "User"}
                     </span>
                     <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
                 </button>

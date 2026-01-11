@@ -4,6 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+
+async function getCurrentUser() {
+    const session = await getServerSession(authOptions);
+    return session?.user;
+}
 
 export async function getCompanyStaff(slug: string) {
     try {
@@ -33,6 +40,7 @@ export async function getCompanyStaff(slug: string) {
 
 export async function approveStaff(staffId: string, slug: string) {
     try {
+        const actor = await getCurrentUser();
         const user = await prisma.user.update({
             where: { id: staffId },
             data: { isActive: true },
@@ -51,7 +59,8 @@ export async function approveStaff(staffId: string, slug: string) {
 
         await logActivity({
             companyId: user.companyId || "", // Should exist if we found the user
-            userId: staffId,
+            actorId: actor?.id,
+            targetId: staffId,
             action: "USER_REGISTERED",
             description: "New staff member approved",
             metadata: { approved: true }
@@ -67,6 +76,7 @@ export async function approveStaff(staffId: string, slug: string) {
 
 export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug: string) {
     try {
+        const actor = await getCurrentUser();
         let companyId = "";
         if (isBlocked) {
             const user = await prisma.user.findUnique({
@@ -117,7 +127,8 @@ export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug
         const { logActivity } = await import("@/lib/activity");
         await logActivity({
             companyId: companyId,
-            userId: staffId,
+            actorId: actor?.id,
+            targetId: staffId,
             action: isBlocked ? "USER_BLOCKED" : "USER_UNBLOCKED",
             description: isBlocked ? "User account blocked" : "User account unblocked",
             metadata: { isBlocked }
@@ -133,6 +144,7 @@ export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug
 
 export async function updateStaffRole(staffId: string, role: UserRole, slug: string) {
     try {
+        const actor = await getCurrentUser();
         const user = await prisma.user.findUnique({
             where: { id: staffId },
             select: { role: true, companyId: true }
@@ -167,7 +179,8 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
         const { logActivity } = await import("@/lib/activity");
         await logActivity({
             companyId: user.companyId || "",
-            userId: staffId,
+            actorId: actor?.id,
+            targetId: staffId,
             action: "SETTINGS_CHANGE",
             description: `User role updated to ${role}`,
             metadata: { oldRole: user.role, newRole: role }
@@ -183,6 +196,7 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
 
 export async function updateStaffTags(staffId: string, tags: string[], slug: string) {
     try {
+        const actor = await getCurrentUser();
         const user = await prisma.user.update({
             where: { id: staffId },
             data: { tags },
@@ -192,7 +206,8 @@ export async function updateStaffTags(staffId: string, tags: string[], slug: str
         const { logActivity } = await import("@/lib/activity");
         await logActivity({
             companyId: user.companyId || "",
-            userId: staffId,
+            actorId: actor?.id,
+            targetId: staffId,
             action: "SETTINGS_CHANGE",
             description: "User tags updated",
             metadata: { tags }

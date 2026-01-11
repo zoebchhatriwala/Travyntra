@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ApprovalType } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
 export async function getCompanyUsers(companySlug: string) {
     const company = await prisma.company.findUnique({
@@ -68,6 +70,9 @@ export async function saveWorkflowConfig(
         approverTags: string[];
     }[]
 ) {
+    const session = await getServerSession(authOptions);
+    const actor = session?.user;
+
     const company = await prisma.company.findUnique({
         where: { slug: companySlug },
         select: { id: true }
@@ -118,6 +123,7 @@ export async function saveWorkflowConfig(
     const { logActivity } = await import("@/lib/activity");
     await logActivity({
         companyId: company.id,
+        actorId: actor?.id,
         action: "WORKFLOW_UPDATE",
         description: "Updated approval workflow logic",
         metadata: {

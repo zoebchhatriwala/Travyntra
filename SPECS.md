@@ -130,3 +130,4 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 **Technical Standards**:
 - **Enum-First Design**: All state transitions and category definitions must be backed by a Prisma enum (e.g., `ApprovalStatus`, `RequestStatus`). This ensures consistency between the database, server actions, and the client UI.
 - **Workflow Integrity**: Approval logic must reside in the `WorkflowEngine` to maintain a single source of truth for request transitions.
+- **Dynamic List Standards**: Any list capable of indefinite growth (e.g., Requests, Users, Logs) MUST implement server-side pagination and search/filtering capabilities.

@@ -37,7 +37,8 @@ export async function getCompanyActivities(slug: string, filter?: ActivityLogFil
     if (filter?.search) {
         where.OR = [
             { description: { contains: filter.search, mode: 'insensitive' } },
-            { user: { name: { contains: filter.search, mode: 'insensitive' } } }
+            { actor: { name: { contains: filter.search, mode: 'insensitive' } } },
+            { target: { name: { contains: filter.search, mode: 'insensitive' } } }
         ];
     }
 
@@ -47,7 +48,14 @@ export async function getCompanyActivities(slug: string, filter?: ActivityLogFil
             createdAt: 'desc',
         },
         include: {
-            user: {
+            actor: {
+                select: {
+                    name: true,
+                    email: true,
+                    avatarUrl: true
+                }
+            },
+            target: {
                 select: {
                     name: true,
                     email: true,

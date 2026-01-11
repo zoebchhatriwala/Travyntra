@@ -96,7 +96,7 @@ export default function SettingsPage() {
         ? "/admin/dashboard"
         : session?.user?.companySlug
             ? session.user.role === "EMPLOYEE"
-                ? `/company/${session.user.companySlug}`
+                ? `/company/${session.user.companySlug}/dashboard`
                 : `/company/${session.user.companySlug}/admin`
             : "/";
 

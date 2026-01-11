@@ -2,13 +2,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function logActivity({
     companyId,
-    userId,
+    actorId,
+    targetId,
     action,
     description,
     metadata
 }: {
     companyId: string;
-    userId?: string;
+    actorId?: string;
+    targetId?: string;
     action: string;
     description: string;
     metadata?: any;
@@ -17,7 +19,8 @@ export async function logActivity({
         await prisma.activityLog.create({
             data: {
                 companyId,
-                userId,
+                actorId,
+                targetId,
                 action,
                 description,
                 metadata,

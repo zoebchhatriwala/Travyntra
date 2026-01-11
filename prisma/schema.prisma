@@ -128,7 +128,8 @@ model User {
   
   approvals       UserApproval[]
   workflowSteps   WorkflowStep[]
-  activities      ActivityLog[]
+  accessLog       ActivityLog[] @relation("ActivityActor")
+  auditLog        ActivityLog[] @relation("ActivityTarget")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -350,9 +351,12 @@ model ActivityLog {
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id])
   
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  
+  actorId     String?
+  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id])
+
+  targetId    String?
+  target      User?    @relation("ActivityTarget", fields: [targetId], references: [id])
+
   action      String   // e.g. "TRIP_APPROVED", "USER_REGISTERED"
   description String
   metadata    Json?    // Flexible properties

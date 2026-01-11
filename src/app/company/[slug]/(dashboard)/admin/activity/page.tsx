@@ -141,13 +141,21 @@ export default function ActivityLogPage() {
                                                 {format(new Date(activity.createdAt), "MMM dd, HH:mm")}
                                             </span>
                                         </div>
-                                        <p className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                                            by <span className="font-bold text-gray-700">{activity.user?.name || activity.user?.email || "System"}</span>
+                                        <p className="text-xs font-medium text-gray-500 flex items-center gap-1 flex-wrap">
+                                            <span className="text-gray-400">by</span>
+                                            <span className="font-bold text-gray-700">{activity.actor?.name || activity.actor?.email || "System"}</span>
 
-                                            {activity.metadata && (
+                                            {activity.target && (
                                                 <>
-                                                    <span className="w-1 h-1 rounded-full bg-gray-300" />
-                                                    <span className="italic truncate max-w-[200px]">
+                                                    <span className="text-gray-400 mx-1">→</span>
+                                                    <span className="font-bold text-gray-700">{activity.target.name || activity.target.email}</span>
+                                                </>
+                                            )}
+
+                                            {activity.metadata && Object.keys(activity.metadata).length > 0 && (
+                                                <>
+                                                    <span className="w-1 h-1 rounded-full bg-gray-300 mx-2" />
+                                                    <span className="italic truncate max-w-[300px]">
                                                         {Object.values(activity.metadata as object).join(", ")}
                                                     </span>
                                                 </>
