@@ -159,6 +159,8 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Approval Actions UI**: Visual approval/reject interface
 - [x] **Workflow Progress Tracker**: Timeline showing current approval step
 - [x] **My Approvals Page**: Dedicated page for pending approvals
+- [x] **Request Actions**: Edit, Cancel, and Delete capabilities
+
 
 ### Phase 4: Communication & Collaboration ✅ COMPLETED
 - [x] **Request-Specific Threads**: Dedicated discussion page per request
@@ -213,11 +215,13 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Add mentioned users as collaborators automatically
    - ✅ Send notifications to mentioned users
 
-3. **Approval Workflow UI** (High Business Value)
+3. **Approval Workflow & Actions** (High Business Value)
    - ✅ Visual timeline component showing approval progress
    - ✅ Approve/reject actions with comment support
-   - ✅ "My Approvals" dedicated page
-   - ✅ Workflow progress tracker on request details
+   - ✅ "My Approvals" dedicated page for Admins/Approvers
+   - ✅ **Request Actions**: Edit request details, Cancel pending requests, and Delete drafts
+   - ✅ **Access Control**: Fixed collaboration access so mentioned employees can view shared requests
+
 
 ### Immediate Priorities
 1. **Admin Request Dashboard** (Phase 5)
