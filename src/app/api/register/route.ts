@@ -6,7 +6,7 @@ import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
 
 const registrationSchema = z.object({
-    email: z.string().email(),
+    email: z.email(),
     password: z.string().min(6),
     name: z.string().min(1),
     type: z.enum(["COMPANY", "AGENT"]),

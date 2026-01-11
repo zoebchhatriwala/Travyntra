@@ -25,8 +25,12 @@ export default async function StaffManagementPage({
                 <div className="flex items-center gap-3">
                     <div className="flex -space-x-3">
                         {staff.slice(0, 3).map((member) => (
-                            <div key={member.id} className="w-10 h-10 rounded-full border-2 border-white bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-400 uppercase">
-                                {member.name ? member.name[0] : member.email?.[0]}
+                            <div key={member.id} className="w-10 h-10 rounded-full border-2 border-white bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-400 uppercase overflow-hidden">
+                                {member.avatarUrl ? (
+                                    <img src={member.avatarUrl} alt={member.name || ""} className="w-full h-full object-cover" />
+                                ) : (
+                                    member.name ? member.name[0] : member.email?.[0]
+                                )}
                             </div>
                         ))}
                         {staff.length > 3 && (

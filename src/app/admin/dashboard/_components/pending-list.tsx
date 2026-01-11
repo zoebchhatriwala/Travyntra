@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { approveUser, rejectUser } from "../actions";
 import { UserRole } from "@prisma/client";
 import { useState } from "react";
-import { Mail, Calendar, Building, Check, X } from "lucide-react";
+import { Mail, CalendarDays, Building, Check, X } from "lucide-react";
+import { format } from "date-fns";
 
 type UserWithCompany = {
     id: string;
@@ -91,8 +92,8 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                                 {type === "AGENT" ? "Agency" : "Company Admin"}
                             </Badge>
                             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
-                                <Calendar size={12} />
-                                {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                <CalendarDays size={12} />
+                                {format(new Date(user.createdAt), 'MMM dd, yyyy')}
                             </div>
                         </div>
                         <div className="mt-4">

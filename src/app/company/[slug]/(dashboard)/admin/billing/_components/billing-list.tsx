@@ -8,6 +8,7 @@ import {
     TrendingUp,
     Clock
 } from "lucide-react";
+import { format } from "date-fns";
 import {
     Card,
     CardContent
@@ -113,7 +114,7 @@ export function BillingList({ invoices }: BillingListProps) {
                                             <p className="text-sm font-bold text-gray-600">{invoice.recipient}</p>
                                         </td>
                                         <td className="py-5 px-4">
-                                            <p className="text-sm font-bold text-gray-500">{new Date(invoice.date).toLocaleDateString()}</p>
+                                            <p className="text-sm font-bold text-gray-500">{format(new Date(invoice.date), 'MMM dd, yyyy')}</p>
                                         </td>
                                         <td className="py-5 px-4">
                                             <p className="text-sm font-black text-gray-900">${invoice.amount.toLocaleString()}</p>

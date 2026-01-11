@@ -56,6 +56,31 @@ export async function approveStaff(staffId: string, slug: string) {
 
 export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug: string) {
     try {
+        if (isBlocked) {
+            const user = await prisma.user.findUnique({
+                where: { id: staffId },
+                select: { role: true, companyId: true }
+            });
+
+            if (user?.role === UserRole.COMPANY_ADMIN) {
+                const adminCount = await prisma.user.count({
+                    where: {
+                        companyId: user.companyId,
+                        role: UserRole.COMPANY_ADMIN,
+                        isActive: true,
+                        isBlocked: false
+                    }
+                });
+
+                if (adminCount <= 1) {
+                    return {
+                        success: false,
+                        error: "Critical security protocol: Cannot block the last active administrator."
+                    };
+                }
+            }
+        }
+
         await prisma.user.update({
             where: { id: staffId },
             data: { isBlocked }
@@ -80,6 +105,32 @@ export async function toggleStaffBlock(staffId: string, isBlocked: boolean, slug
 
 export async function updateStaffRole(staffId: string, role: UserRole, slug: string) {
     try {
+        const user = await prisma.user.findUnique({
+            where: { id: staffId },
+            select: { role: true, companyId: true }
+        });
+
+        if (!user) return { success: false, error: "User not found" };
+
+        // Safety check: Don't allow demoting the last active administrator
+        if (user.role === UserRole.COMPANY_ADMIN && role === UserRole.EMPLOYEE) {
+            const adminCount = await prisma.user.count({
+                where: {
+                    companyId: user.companyId,
+                    role: UserRole.COMPANY_ADMIN,
+                    isActive: true,
+                    isBlocked: false
+                }
+            });
+
+            if (adminCount <= 1) {
+                return {
+                    success: false,
+                    error: "Critical security protocol: Cannot demote the last active administrator. Please promote another member first."
+                };
+            }
+        }
+
         await prisma.user.update({
             where: { id: staffId },
             data: { role }

@@ -1,16 +1,9 @@
-
 import Link from "next/link";
-import {
-    LayoutDashboard,
-    Users,
-    Settings,
-    CreditCard,
-    GitBranch,
-    Building2
-} from "lucide-react";
+import { Building2 } from "lucide-react";
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { prisma } from "@/lib/prisma";
+import { CompanyNav } from "./_components/company-nav";
 
 export default async function CompanyAdminLayout({
     children,
@@ -26,14 +19,6 @@ export default async function CompanyAdminLayout({
         where: { slug },
         select: { plan: true }
     });
-
-    const navLinks = [
-        { href: `/company/${slug}/admin`, label: "Dashboard", icon: LayoutDashboard },
-        { href: `/company/${slug}/admin/staff`, label: "Staff Management", icon: Users },
-        { href: `/company/${slug}/admin/workflow`, label: "Approval Workflow", icon: GitBranch },
-        { href: `/company/${slug}/admin/billing`, label: "Billing & Invoices", icon: CreditCard },
-        { href: `/company/${slug}/admin/settings`, label: "Portal Settings", icon: Settings },
-    ];
 
     return (
         <div className="flex min-h-screen bg-[#FAFAFB]">
@@ -55,18 +40,7 @@ export default async function CompanyAdminLayout({
                     </Link>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-1">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all duration-200 group"
-                        >
-                            <link.icon size={20} className="group-hover:scale-110 transition-transform" />
-                            {link.label}
-                        </Link>
-                    ))}
-                </nav>
+                <CompanyNav slug={slug} />
 
                 <div className="p-6 border-t border-gray-50 bg-gray-50/30">
                     <div className="bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 relative overflow-hidden">

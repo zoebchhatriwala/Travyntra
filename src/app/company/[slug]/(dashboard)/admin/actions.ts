@@ -53,7 +53,7 @@ export async function getCompanyDashboardStats(slug: string) {
         orderBy: { createdAt: 'desc' },
         include: {
             user: {
-                select: { name: true, email: true }
+                select: { name: true, email: true, avatarUrl: true }
             }
         }
     });
@@ -69,6 +69,7 @@ export async function getCompanyDashboardStats(slug: string) {
             id: req.id,
             title: req.title,
             userName: req.user.name || req.user.email || "Unknown",
+            userAvatar: req.user.avatarUrl,
             status: req.status,
             createdAt: req.createdAt,
             budget: Number(req.budget || 0)
