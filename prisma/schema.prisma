@@ -102,6 +102,7 @@ model TripRequest {
   user            User                  @relation(fields: [userId], references: [id])
   workflow        WorkflowAction[]
   collaborators   User[]                @relation("RequestCollaborators")
+  fulfillmentItems FulfillmentItem[]
 }
 
 model AgentBid {
@@ -115,6 +116,19 @@ model AgentBid {
   updatedAt DateTime    @updatedAt
   agent     Company     @relation(fields: [agentId], references: [id])
   request   TripRequest @relation(fields: [requestId], references: [id])
+}
+
+model FulfillmentItem {
+  id          String      @id @default(uuid())
+  requestId   String
+  title       String
+  description String?
+  isCompleted Boolean     @default(false)
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  request     TripRequest @relation(fields: [requestId], references: [id])
+  documents   Document[]  @relation("FulfillmentItemDocuments")
 }
 
 model WorkflowAction {
@@ -140,16 +154,18 @@ model Message {
 }
 
 model Document {
-  id         String       @id @default(uuid())
-  requestId  String?
-  uploaderId String
-  name       String
-  s3Key      String
-  url        String
-  type       DocType      @default(OTHER)
-  createdAt  DateTime     @default(now())
-  request    TripRequest? @relation(fields: [requestId], references: [id])
-  uploader   User         @relation(fields: [uploaderId], references: [id])
+  id                String           @id @default(uuid())
+  requestId         String?
+  uploaderId        String
+  fulfillmentItemId String?
+  name              String
+  s3Key             String
+  url               String
+  type              DocType          @default(OTHER)
+  createdAt         DateTime         @default(now())
+  request           TripRequest?     @relation(fields: [requestId], references: [id])
+  uploader          User             @relation(fields: [uploaderId], references: [id])
+  fulfillmentItem   FulfillmentItem? @relation("FulfillmentItemDocuments", fields: [fulfillmentItemId], references: [id])
 }
 
 model Expense {

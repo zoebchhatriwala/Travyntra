@@ -39,7 +39,8 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
     const integratedCompanies = await getIntegratedCompanies();
 
-    // Base filter: Must be from integrated company AND (Approved OR Bid Submitted)
+    // Base filter: Must be from integrated company AND (Approved OR Has non-accepted bid)
+    // Exclude requests where agency has already WON the bid (those go to Fulfillment Console)
     const whereCondition: any = {
         company: {
             integrationsAsClient: {
@@ -50,18 +51,39 @@ export default async function BidsPage({ searchParams }: PageProps) {
             }
         },
         OR: [
+            // Open opportunities - approved, no agent assigned yet
             {
                 status: RequestStatus.APPROVED,
                 assignedAgentId: null,
             },
+            // Agency has a PENDING bid (not yet decided)
             {
                 bids: {
                     some: {
-                        agentId: agencyId
+                        agentId: agencyId,
+                        status: "PENDING"
+                    }
+                }
+            },
+            // Agency has a REJECTED bid (keep for history/reference)
+            {
+                bids: {
+                    some: {
+                        agentId: agencyId,
+                        status: "REJECTED"
                     }
                 }
             }
-        ]
+        ],
+        // Explicitly exclude requests where this agency has an ACCEPTED bid (won)
+        NOT: {
+            bids: {
+                some: {
+                    agentId: agencyId,
+                    status: "ACCEPTED"
+                }
+            }
+        }
     };
 
     // Apply specific company filter

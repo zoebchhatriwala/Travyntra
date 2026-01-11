@@ -85,16 +85,35 @@ export default async function RequestOverviewPage({
                     <div className="p-6 rounded-3xl bg-indigo-900 text-white shadow-lg overflow-hidden relative min-h-[200px] flex flex-col justify-between">
                         <div className="relative z-10">
                             <h4 className="font-bold text-lg mb-1">Travel Documents</h4>
-                            <p className="text-indigo-200 text-xs mb-4">Tickets and visas.</p>
+                            <p className="text-indigo-200 text-xs mb-4">Tickets, visas and other documents.</p>
 
                             {request.documents.length === 0 ? (
                                 <div className="h-20 flex items-center justify-center border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-xs font-medium text-indigo-100">
                                     No documents yet
                                 </div>
                             ) : (
-                                <div className="space-y-2">
-                                    {/* Simple list for now */}
-                                    <div className="text-sm font-medium">{request.documents.length} document(s) available</div>
+                                <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                                    {request.documents.map((doc: any) => (
+                                        <a
+                                            key={doc.id}
+                                            href={doc.url}
+                                            download={doc.name}
+                                            className="flex items-center gap-3 p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors group"
+                                        >
+                                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-white truncate">{doc.name}</p>
+                                                <p className="text-[10px] text-indigo-200">{doc.type}</p>
+                                            </div>
+                                            <svg className="w-4 h-4 text-indigo-300 group-hover:text-white transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                        </a>
+                                    ))}
                                 </div>
                             )}
                         </div>
