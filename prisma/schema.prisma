@@ -65,6 +65,13 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum InvoiceStatus {
+  PENDING
+  PAID
+  VOID
+  OVERDUE
+}
+
 // Models
 
 model Company {
@@ -88,6 +95,9 @@ model Company {
   assignedRequests TripRequest[] @relation("AgentRequests")
   bids        AgentBid[]
   workflow    ApprovalWorkflow?
+  
+  invoices    Invoice[] @relation("CompanyInvoices") 
+  issuedInvoices Invoice[] @relation("AgencyInvoices")
 }
 
 model User {
@@ -163,6 +173,7 @@ model TripRequest {
   bids        AgentBid[]
   
   approvalSteps RequestApprovalStep[]
+  invoice       Invoice?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -304,4 +315,23 @@ model UserApproval {
   updatedAt               DateTime            @updatedAt
   
   @@unique([requestApprovalStepId, userId])
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  amount      Decimal
+  status      InvoiceStatus @default(PENDING)
+  dueDate     DateTime?
+  
+  requestId   String        @unique
+  request     TripRequest   @relation(fields: [requestId], references: [id])
+  
+  companyId   String        // The company being billed (Payer)
+  company     Company       @relation("CompanyInvoices", fields: [companyId], references: [id])
+  
+  agencyId    String        // The agency issuing the invoice (Issuer)
+  agency      Company       @relation("AgencyInvoices", fields: [agencyId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }

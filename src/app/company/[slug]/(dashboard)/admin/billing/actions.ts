@@ -6,34 +6,33 @@ export async function getCompanyInvoices(slug: string) {
     try {
         const company = await prisma.company.findUnique({
             where: { slug },
-            select: { id: true, plan: true }
+            select: { id: true }
         });
 
         if (!company) return [];
 
-        // For now, we'll treat completed trip requests with a budget as "Invoices" 
-        // since we don't have a dedicated Invoice model yet.
-        const requests = await prisma.tripRequest.findMany({
+        const invoices = await prisma.invoice.findMany({
             where: {
-                companyId: company.id,
-                status: 'COMPLETED',
-                budget: { not: null }
+                companyId: company.id
             },
             include: {
-                user: {
-                    select: { name: true, email: true }
+                request: {
+                    select: { title: true }
+                },
+                agency: {
+                    select: { name: true }
                 }
             },
-            orderBy: { updatedAt: 'desc' }
+            orderBy: { createdAt: 'desc' }
         });
 
-        return requests.map(req => ({
-            id: req.id,
-            amount: Number(req.budget),
-            date: req.updatedAt,
-            status: 'PAID',
-            description: `Trip: ${req.title}`,
-            recipient: req.user.name || req.user.email
+        return invoices.map((inv) => ({
+            id: inv.id,
+            amount: Number(inv.amount),
+            date: inv.createdAt,
+            status: inv.status,
+            description: `Trip: ${inv.request.title}`,
+            recipient: inv.agency.name
         }));
     } catch (error) {
         console.error("Failed to fetch invoices:", error);

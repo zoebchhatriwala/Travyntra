@@ -8,11 +8,13 @@ import {
     ShieldCheck,
     Globe,
     Plus,
-    BellRing,
     Settings,
     Trash2,
     Users,
-    Check
+    Check,
+    Search,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import {
     Card,
@@ -65,6 +67,10 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
     const [isSaving, setIsSaving] = useState(false);
     const [isSimulating, setIsSimulating] = useState(false);
+    const [searchQueries, setSearchQueries] = useState<Record<number, string>>({});
+    const [pageOffsets, setPageOffsets] = useState<Record<number, number>>({});
+
+    const USERS_PER_PAGE = 6;
 
     const addStep = () => {
         setSteps([...steps, { name: "New Step", order: steps.length + 1, type: ApprovalType.ANY, approverIds: [] }]);
@@ -317,78 +323,102 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Users size={12} /> Assigned Approvers
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableUsers.map((user) => (
-                                            <button
-                                                key={user.id}
-                                                onClick={() => toggleApprover(stepIdx, user.id)}
-                                                className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all ${step.approverIds.includes(user.id)
-                                                    ? 'bg-indigo-50 border-indigo-200 text-indigo-600 ring-2 ring-indigo-500/10'
-                                                    : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
-                                                    }`}
-                                            >
-                                                <div className="w-6 h-6 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center">
-                                                    {user.avatarUrl ? (
-                                                        <img src={user.avatarUrl} alt={user.name || ""} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <User size={12} />
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Users size={12} /> Assigned Approvers
+                                        </label>
+                                        <div className="relative">
+                                            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Input
+                                                placeholder="Search users..."
+                                                value={searchQueries[stepIdx] || ""}
+                                                onChange={(e) => {
+                                                    setSearchQueries({ ...searchQueries, [stepIdx]: e.target.value });
+                                                    setPageOffsets({ ...pageOffsets, [stepIdx]: 0 });
+                                                }}
+                                                className="h-8 pl-8 pr-3 text-[10px] font-bold rounded-xl border-gray-100 bg-white w-[180px] focus:ring-1 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {(() => {
+                                        const query = (searchQueries[stepIdx] || "").toLowerCase();
+                                        const filteredUsers = availableUsers.filter(u =>
+                                            u.name?.toLowerCase().includes(query) ||
+                                            u.email.toLowerCase().includes(query)
+                                        );
+                                        const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+                                        const currentPage = pageOffsets[stepIdx] || 0;
+                                        const paginatedUsers = filteredUsers.slice(
+                                            currentPage * USERS_PER_PAGE,
+                                            (currentPage + 1) * USERS_PER_PAGE
+                                        );
+
+                                        return (
+                                            <div className="space-y-4">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
+                                                        <button
+                                                            key={user.id}
+                                                            onClick={() => toggleApprover(stepIdx, user.id)}
+                                                            className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all ${step.approverIds.includes(user.id)
+                                                                ? 'bg-indigo-50 border-indigo-200 text-indigo-600 ring-2 ring-indigo-500/10'
+                                                                : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
+                                                                }`}
+                                                        >
+                                                            <div className="w-6 h-6 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center">
+                                                                {user.avatarUrl ? (
+                                                                    <img src={user.avatarUrl} alt={user.name || ""} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <User size={12} />
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs font-bold">{user.name || user.email}</span>
+                                                            {step.approverIds.includes(user.id) && <Check size={12} className="text-indigo-600" />}
+                                                        </button>
+                                                    )) : (
+                                                        <div className="w-full py-4 text-center">
+                                                            <p className="text-xs font-bold text-gray-400 italic">No users found matching "{searchQueries[stepIdx]}"</p>
+                                                        </div>
                                                     )}
                                                 </div>
-                                                <span className="text-xs font-bold">{user.name || user.email}</span>
-                                                {step.approverIds.includes(user.id) && <Check size={12} className="text-indigo-600" />}
-                                            </button>
-                                        ))}
-                                    </div>
+
+                                                {totalPages > 1 && (
+                                                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                            Page {currentPage + 1} of {totalPages}
+                                                        </p>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={() => setPageOffsets({ ...pageOffsets, [stepIdx]: Math.max(0, currentPage - 1) })}
+                                                                disabled={currentPage === 0}
+                                                                className="h-6 w-6 rounded-lg border-gray-100"
+                                                            >
+                                                                <ChevronLeft size={12} />
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={() => setPageOffsets({ ...pageOffsets, [stepIdx]: Math.min(totalPages - 1, currentPage + 1) })}
+                                                                disabled={currentPage >= totalPages - 1}
+                                                                className="h-6 w-6 rounded-lg border-gray-100"
+                                                            >
+                                                                <ChevronRight size={12} />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         ))}
                     </CardContent>
                 </Card>
-
-                {/* Additional Settings (Static for now) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
-                        <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
-                                <BellRing size={20} className="text-indigo-600" /> Notifications
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-8 pt-4 space-y-4">
-                            {[
-                                { label: "Notify stage approvers on entry", status: true },
-                                { label: "Notify requester on rejection", status: true },
-                                { label: "Notify requester on final approval", status: true },
-                            ].map((event, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
-                                    <span className="text-xs font-bold text-gray-600">{event.label}</span>
-                                    <div className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${event.status ? 'bg-indigo-600' : 'bg-gray-200'}`}>
-                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${event.status ? 'left-6' : 'left-1'}`} />
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
-                        <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
-                                <GitBranch size={20} className="text-indigo-600" /> Logic Overrides
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-8 pt-4 space-y-4">
-                            <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-100">
-                                <p className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">Global Bypass</p>
-                                <p className="text-[10px] font-medium text-amber-700 leading-relaxed italic">
-                                    Requests initiated by <strong>Company Admin</strong> skip regular workflow stages and go directly to Agency.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
             </div>
         </div>
     );
