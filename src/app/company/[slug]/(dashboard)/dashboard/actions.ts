@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 
 export async function getEmployeeDashboardStats() {
     const session = await getServerSession(authOptions);
@@ -143,7 +144,10 @@ export async function getCompanyGroupTrips() {
         }
     });
 
-    return groupTrips;
+    return groupTrips.map((trip: any) => ({
+        ...trip,
+        destination: trip.destination?.city || trip.destination?.formatted || "Unknown Destination"
+    }));
 }
 
 export async function getEmployeeAssets() {
@@ -186,7 +190,7 @@ export async function getEmployeeAssets() {
         url: doc.url,
         createdAt: doc.createdAt,
         tripTitle: doc.request?.title || "Unknown Trip",
-        tripDestination: doc.request?.destination,
+        tripDestination: (doc.request?.destination as any)?.city || (doc.request?.destination as any)?.formatted || "Unknown",
         uploadedBy: doc.uploader.name || "Unknown",
         uploaderRole: doc.uploader.role
     }));
@@ -217,14 +221,16 @@ export async function updateEmployeeProfile(formData: FormData) {
     }
 }
 
+
+
 export async function createTripRequest(data: {
     title: string;
-    destination: string;
+    destination: any;
     startDate: Date;
     endDate: Date;
     purpose?: string;
     budget?: number;
-    preferences?: any;
+    preferences?: TripPreferences;
     isGroup?: boolean;
     parentTripId?: string;
 }) {
@@ -234,6 +240,14 @@ export async function createTripRequest(data: {
     }
 
     try {
+        // Validate preferences if provided
+        if (data.preferences) {
+            const result = TripPreferencesSchema.safeParse(data.preferences);
+            if (!result.success) {
+                console.error("Invalid preferences format:", result.error);
+            }
+        }
+
         // Fetch company workflow
         const workflow = await prisma.approvalWorkflow.findUnique({
             where: { companyId: session.user.companyId },
@@ -267,7 +281,7 @@ export async function createTripRequest(data: {
             data: {
                 requestId: request.id,
                 senderId: session.user.id,
-                content: `🚀 Trip request created: **${data.title}** to **${data.destination}**.`
+                content: `🚀 Trip request created: **${data.title}** to **${data.destination?.city || data.destination?.formatted || 'Destination'}**.`
             }
         });
 
@@ -370,8 +384,14 @@ export async function getTripRequest(requestId: string) {
             }
         }
 
+        const destinationObj = request.destination as any;
+        const destinationString = destinationObj?.formatted || destinationObj?.city || (typeof request.destination === 'string' ? request.destination : "Unknown");
+        const hasDetails = destinationObj && typeof destinationObj === 'object' && !Array.isArray(destinationObj);
+
         return {
             ...request,
+            destination: destinationString,
+            destinationDetails: hasDetails ? destinationObj : undefined,
             budget: request.budget ? Number(request.budget) : null,
             bids: request.bids.map((bid) => ({
                 ...bid,
@@ -380,6 +400,7 @@ export async function getTripRequest(requestId: string) {
             childTrips: request.childTrips.map((child: any) => ({
                 ...child,
                 budget: child.budget ? Number(child.budget) : null,
+                destination: child.destination?.city || child.destination?.formatted || "Unknown" // Handle child trips too
             })),
         };
     } catch (e) {
@@ -549,17 +570,28 @@ export async function uploadMessageAttachment(formData: FormData) {
 
 export async function updateTripRequest(requestId: string, data: {
     title?: string;
-    destination?: string;
+    destination?: any;
     startDate?: Date;
     endDate?: Date;
     purpose?: string;
     budget?: number;
-    preferences?: any;
+    preferences?: TripPreferences;
+    isGroup?: boolean;
+    parentTripId?: string;
 }) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };
 
     try {
+        // Validate preferences if provided
+        if (data.preferences) {
+            const result = TripPreferencesSchema.safeParse(data.preferences);
+            if (!result.success) {
+                console.error("Invalid preferences format:", result.error);
+                // Can soft fail or throw
+            }
+        }
+
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
             select: {
@@ -572,7 +604,9 @@ export async function updateTripRequest(requestId: string, data: {
                 endDate: true,
                 purpose: true,
                 budget: true,
-                preferences: true
+                preferences: true,
+                isGroup: true,
+                parentTripId: true
             }
         });
 
@@ -602,6 +636,8 @@ export async function updateTripRequest(requestId: string, data: {
                 purpose: data.purpose,
                 budget: data.budget !== undefined ? new Prisma.Decimal(data.budget) : undefined,
                 preferences: data.preferences ?? (request.preferences || {}),
+                isGroup: data.isGroup !== undefined ? data.isGroup : undefined,
+                parentTripId: data.parentTripId !== undefined ? (data.parentTripId === "none" ? null : data.parentTripId) : undefined,
                 updatedAt: new Date()
             }
         });
@@ -611,7 +647,7 @@ export async function updateTripRequest(requestId: string, data: {
         const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         if (data.title && data.title !== request.title) changes.push(`- **Title**: "${request.title}" → "${data.title}"`);
-        if (data.destination && data.destination !== request.destination) changes.push(`- **Destination**: ${request.destination} → ${data.destination}`);
+        if (data.destination && JSON.stringify(data.destination) !== JSON.stringify(request.destination)) changes.push(`- **Destination**: ${(request.destination as any)?.city || 'Old'} → ${(data.destination as any)?.city || 'New'}`);
         if (data.startDate && data.startDate.getTime() !== new Date(request.startDate).getTime()) changes.push(`- **Start Date**: ${formatDate(request.startDate)} → ${formatDate(data.startDate)}`);
         if (data.endDate && data.endDate.getTime() !== new Date(request.endDate).getTime()) changes.push(`- **End Date**: ${formatDate(request.endDate)} → ${formatDate(data.endDate)}`);
         if (data.purpose && data.purpose !== request.purpose) changes.push(`- **Purpose**: Updated`);

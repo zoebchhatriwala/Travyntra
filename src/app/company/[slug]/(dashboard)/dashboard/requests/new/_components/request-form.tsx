@@ -42,29 +42,29 @@ const requestSchema = z.object({
     isGroup: z.boolean().default(false),
     parentTripId: z.string().optional(),
     destinationDetails: z.object({
-        street: z.string().min(1, "Street is required"),
-        city: z.string().min(1, "City is required"),
-        state: z.string().min(1, "State is required"),
-        country: z.string().min(1, "Country is required"),
-        zipcode: z.string(),
+        street: z.string().default(""),
+        city: z.string().default(""),
+        state: z.string().default(""),
+        country: z.string().default(""),
+        zipcode: z.string().default(""),
         latitude: z.string().optional(),
         longitude: z.string().optional(),
     }).optional(),
     carPickupDetails: z.object({
-        street: z.string().min(1, "Street is required"),
-        city: z.string().min(1, "City is required"),
-        state: z.string().min(1, "State is required"),
-        country: z.string().min(1, "Country is required"),
-        zipcode: z.string(),
+        street: z.string().default(""),
+        city: z.string().default(""),
+        state: z.string().default(""),
+        country: z.string().default(""),
+        zipcode: z.string().default(""),
         latitude: z.string().optional(),
         longitude: z.string().optional(),
     }).optional(),
     carDropoffDetails: z.object({
-        street: z.string().min(1, "Street is required"),
-        city: z.string().min(1, "City is required"),
-        state: z.string().min(1, "State is required"),
-        country: z.string().min(1, "Country is required"),
-        zipcode: z.string(),
+        street: z.string().default(""),
+        city: z.string().default(""),
+        state: z.string().default(""),
+        country: z.string().default(""),
+        zipcode: z.string().default(""),
         latitude: z.string().optional(),
         longitude: z.string().optional(),
     }).optional(),
@@ -149,7 +149,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             title: initialData?.title || "",
             destination: initialData?.destination || "",
             purpose: initialData?.purpose || "",
-            budget: initialData?.budget ? initialData.budget.toString() : "",
+            budget: (initialData?.budget !== undefined && initialData?.budget !== null) ? initialData.budget.toString() : "",
 
             // Flight
             flightPreferences: typeof preferences?.flight === 'string' ? preferences.flight : preferences?.flight?.details || "",
@@ -174,7 +174,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : "",
             isGroup: initialData?.isGroup || false,
             parentTripId: initialData?.parentTripId || "none",
-            destinationDetails: preferences?.destinationDetails || undefined,
+            destinationDetails: initialData?.destinationDetails || preferences?.destinationDetails || undefined,
             carPickupDetails: preferences?.car?.pickupDetails || undefined,
             carDropoffDetails: preferences?.car?.dropoffDetails || undefined,
         },
@@ -209,12 +209,14 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             if (initialData && requestId) {
                 const result = await updateTripRequest(requestId, {
                     title: data.title,
-                    destination: data.destination,
+                    destination: data.destinationDetails || { formatted: data.destination, city: data.destination },
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
-                    budget: data.budget ? Number(data.budget) : undefined,
+                    budget: (data.budget !== undefined && data.budget !== "") ? Number(data.budget) : undefined,
                     preferences,
+                    isGroup: data.isGroup,
+                    parentTripId: data.parentTripId,
                 });
 
                 if (result.error) {
@@ -227,7 +229,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             } else {
                 const result = await createTripRequest({
                     title: data.title,
-                    destination: data.destination,
+                    destination: data.destinationDetails || { formatted: data.destination, city: data.destination },
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
@@ -246,6 +248,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                 router.push(`/company/${slug}/dashboard`);
             }
         } catch (error) {
+            console.error("Form Submission Error:", error);
             toast.error("Something went wrong. Please try again.");
         } finally {
             setIsSubmitting(false);
