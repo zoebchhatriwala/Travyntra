@@ -33,7 +33,7 @@ export default async function EditRequestPage({
             <RequestForm
                 slug={slug}
                 currency={company?.currency || "USD"}
-                initialData={request}
+                initialData={request as any}
                 requestId={requestId}
             />
         </div>

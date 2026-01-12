@@ -92,7 +92,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
             approverIds: s.approvers.map((a) => a.id),
             approverTags: s.approverTags || []
         })) || [
-            { name: "Manager Approval", order: 1, type: ApprovalType.ANY, approverIds: [], approverTags: [] }
+            { name: "Step 1 Approval", order: 1, type: ApprovalType.ANY, approverIds: [], approverTags: [] }
         ]
     );
 

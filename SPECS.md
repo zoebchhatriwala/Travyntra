@@ -74,7 +74,10 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 
 ### 🛡 The Hierarchical Workflow Engine
 - Requests do not go to the Agency immediately.
-- They must pass through the company's internal "Chain of Approval."
+- They must pass through the company's internal "Chain of Approval" sequentially.
+- **Sequential Processing**: Only one step is active at a time. Step 2 only begins after Step 1 is fully approved.
+- **Direct User Assignment**: Each step is assigned to specific users who are authorized to approve.
+- **Approval Types**: Each step can require either **ANY** (one person approves) or **ALL** (everyone must approve) for progression.
 - **Example Flow**: `Request` -> `Reporting Manager` -> `Department Head` -> `Company Admin` -> `Fulfillment Agency`.
 - If any stage rejects, the flow breaks and notifies the employee.
 

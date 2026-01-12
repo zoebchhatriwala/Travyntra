@@ -42,7 +42,7 @@ export default async function EmployeeLayout({
 
                 <div className="p-6 border-t border-gray-50 bg-gray-50/30 font-medium">
                     <p className="text-[10px] text-gray-400 text-center">
-                        {isAdmin ? "Admin Console | Elevated Access" : "Need help? Contact your manager."}
+                        {isAdmin ? "Admin Console | Elevated Access" : "Need help? Contact an approver."}
                     </p>
                 </div>
             </aside>

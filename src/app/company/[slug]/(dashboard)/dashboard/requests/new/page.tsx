@@ -23,7 +23,7 @@ export default async function NewRequestPage({
                 <h1 className="text-4xl font-display font-bold text-gray-900 tracking-tight">New Trip Request</h1>
                 <p className="text-lg text-gray-500 mt-3 leading-relaxed">
                     Planning a business trip? Fill out the details below to initiate the approval process.
-                    Your request will be routed to your manager automatically.
+                    Your request will be routed to the designated approvers automatically.
                 </p>
             </div>
 

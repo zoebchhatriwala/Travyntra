@@ -163,12 +163,33 @@ async function main() {
         }
     });
 
+    // Get admin users to assign as approvers
+    const adminUsers = await prisma.user.findMany({
+        where: { companyId: clientCompany.id, role: UserRole.COMPANY_ADMIN }
+    });
+
+    // Create workflow steps
     await prisma.workflowStep.create({
         data: {
             workflowId: workflow.id,
             name: "Manager Approval",
             order: 1,
-            type: ApprovalType.ANY
+            type: ApprovalType.ANY,
+            approvers: {
+                connect: adminUsers.map(admin => ({ id: admin.id }))
+            }
+        }
+    });
+
+    await prisma.workflowStep.create({
+        data: {
+            workflowId: workflow.id,
+            name: "Finance Approval",
+            order: 2,
+            type: ApprovalType.ALL,
+            approvers: {
+                connect: adminUsers.map(admin => ({ id: admin.id }))
+            }
         }
     });
 
@@ -266,6 +287,43 @@ async function main() {
             }
         }
     }
+
+    // --- 3.5. CREATE A TEST REQUEST WITH PENDING APPROVAL ---
+    console.log("Creating test request with pending approval...");
+    const testEmployee = employeeRecords[0];
+    const testRequest = await prisma.tripRequest.create({
+        data: {
+            userId: testEmployee.id,
+            companyId: clientCompany.id,
+            title: "Annual Conference - San Francisco",
+            destination: { city: "San Francisco", country: "USA", formatted: "San Francisco, CA, USA" },
+            startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+            endDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000), // 18 days from now
+            status: RequestStatus.PENDING_COMPANY_APPROVAL,
+            purpose: "Attend annual tech conference and meet with west coast clients",
+            budget: 3500,
+            preferences: { flight: "Business", hotel: "Downtown area" }
+        }
+    });
+
+    // Create approval steps for the test request
+    const workflowSteps = await prisma.workflowStep.findMany({
+        where: { workflowId: workflow.id, deletedAt: null },
+        orderBy: { order: 'asc' }
+    });
+
+    for (let stepIndex = 0; stepIndex < workflowSteps.length; stepIndex++) {
+        const step = workflowSteps[stepIndex];
+        await prisma.requestApprovalStep.create({
+            data: {
+                requestId: testRequest.id,
+                stepId: step.id,
+                status: stepIndex === 0 ? 'PENDING' : 'WAITING'
+            }
+        });
+    }
+
+    console.log(`✓ Created test request "${testRequest.title}" with ${workflowSteps.length} approval steps`);
 
     // --- 4. SUPER ADMIN ---
     await prisma.user.create({

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { Prisma } from "@prisma/client";
+import { Prisma, ApprovalStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 
@@ -293,13 +293,39 @@ export async function createTripRequest(data: {
 
         // If workflow exists, create approval steps
         if (workflow && workflow.steps.length > 0) {
+            // Re-fetch steps to ensure correct ordering and include approvers for notification
+            const stepsWithApprovers = await prisma.workflowStep.findMany({
+                where: { workflowId: workflow.id, deletedAt: null },
+                orderBy: { order: 'asc' },
+                include: { approvers: { select: { id: true, name: true } } }
+            });
+
             await prisma.requestApprovalStep.createMany({
-                data: workflow.steps.map(step => ({
+                data: stepsWithApprovers.map((step, index) => ({
                     requestId: request.id,
                     stepId: step.id,
-                    status: 'PENDING'
+                    status: index === 0 ? ApprovalStatus.PENDING : ApprovalStatus.WAITING
                 }))
             });
+
+            // Notify Step 1 approvers
+            const firstStep = stepsWithApprovers[0];
+            if (firstStep) {
+                const { createNotification } = await import("@/lib/notifications");
+
+                await Promise.all(
+                    firstStep.approvers.map(approver =>
+                        createNotification({
+                            userId: approver.id,
+                            title: "New Approval Request",
+                            message: `"${data.title}" requires your approval (${firstStep.name})`,
+                            type: "INFO",
+                            link: `/company/${session.user.companySlug}/dashboard/requests/${request.id}`,
+                            sendEmail: true
+                        })
+                    )
+                );
+            }
 
             // Create activity log for workflow initiation
             await prisma.activityLog.create({

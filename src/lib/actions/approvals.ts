@@ -26,6 +26,13 @@ export async function getMyPendingApprovals() {
                             id: session.user.id
                         }
                     }
+                },
+                // Exclude if this specific user has already processed this step
+                approvals: {
+                    none: {
+                        userId: session.user.id,
+                        status: { in: [ApprovalStatus.APPROVED, ApprovalStatus.REJECTED] }
+                    }
                 }
             },
             include: {
@@ -247,19 +254,25 @@ export async function processApproval({
                     sendEmail: true
                 });
             } else {
+                // Update next step status to PENDING
+                await prisma.requestApprovalStep.update({
+                    where: { id: nextStep.id },
+                    data: { status: ApprovalStatus.PENDING }
+                });
+
                 // Notify approvers of the next step
-                const nextStepApprovers = await prisma.workflowStep.findUnique({
+                const nextStepConfig = await prisma.workflowStep.findUnique({
                     where: { id: nextStep.stepId },
                     include: { approvers: { select: { id: true, name: true } } }
                 });
 
-                if (nextStepApprovers) {
+                if (nextStepConfig) {
                     await Promise.all(
-                        nextStepApprovers.approvers.map(approver =>
+                        nextStepConfig.approvers.map(approver =>
                             createNotification({
                                 userId: approver.id,
                                 title: "New Approval Request",
-                                message: `"${approvalStep.request.title}" requires your approval`,
+                                message: `"${approvalStep.request.title}" requires your approval (${nextStepConfig.name})`,
                                 type: "INFO",
                                 link: `/company/${approvalStep.request.company.slug}/dashboard/requests/${approvalStep.requestId}`,
                                 sendEmail: true
@@ -370,5 +383,150 @@ export async function getRequestApprovalProgress(requestId: string) {
     } catch (e) {
         console.error("Error fetching approval progress:", e);
         return null;
+    }
+}
+
+
+/**
+ * Reset all pending approval steps for requests in PENDING_COMPANY_APPROVAL status
+ * This is called when the workflow configuration is updated
+ */
+export async function resetPendingApprovalSteps(companyId: string, editorId: string,) {
+    try {
+        // Get the current workflow for the company
+        const workflow = await prisma.approvalWorkflow.findUnique({
+            where: { companyId },
+            include: {
+                steps: {
+                    where: { deletedAt: null },
+                    orderBy: { order: 'asc' },
+                    include: {
+                        approvers: { select: { id: true, name: true } }
+                    }
+                },
+                company: {
+                    select: { slug: true }
+                }
+            }
+        });
+
+        if (!workflow || workflow.steps.length === 0) {
+            return { success: true, message: "No workflow configured", requestsReset: 0 };
+        }
+
+        // Find all requests in PENDING_COMPANY_APPROVAL status for this company
+        const pendingRequests = await prisma.tripRequest.findMany({
+            where: {
+                companyId,
+                status: 'PENDING_COMPANY_APPROVAL'
+            },
+            select: {
+                id: true,
+                title: true,
+                user: { select: { id: true, name: true } }
+            }
+        });
+
+        if (pendingRequests.length === 0) {
+            return { success: true, message: "No pending requests to reset", requestsReset: 0 };
+        }
+
+        let requestsReset = 0;
+        const notifiedUsers = new Set<string>();
+
+        // Process each pending request
+        for (const request of pendingRequests) {
+            await prisma.$transaction(async (tx) => {
+                // 1. Delete old approval steps and user approvals
+                const oldSteps = await tx.requestApprovalStep.findMany({
+                    where: { requestId: request.id },
+                    select: { id: true }
+                });
+
+                if (oldSteps.length > 0) {
+                    await tx.userApproval.deleteMany({
+                        where: {
+                            requestApprovalStepId: { in: oldSteps.map(s => s.id) }
+                        }
+                    });
+
+                    await tx.requestApprovalStep.deleteMany({
+                        where: { requestId: request.id }
+                    });
+                }
+
+                // 2. Create new approval steps based on updated workflow
+                for (let i = 0; i < workflow.steps.length; i++) {
+                    const step = workflow.steps[i];
+                    await tx.requestApprovalStep.create({
+                        data: {
+                            requestId: request.id,
+                            stepId: step.id,
+                            status: i === 0 ? ApprovalStatus.PENDING : ApprovalStatus.WAITING
+                        }
+                    });
+                }
+
+                // 3. Create activity log
+                await tx.activityLog.create({
+                    data: {
+                        companyId,
+                        actorId: editorId,
+                        action: 'WORKFLOW_UPDATED_APPROVALS_RESET',
+                        description: `Approval workflow updated - "${request.title}" approval steps reset`,
+                        metadata: {
+                            requestId: request.id,
+                            newStepsCount: workflow.steps.length
+                        }
+                    }
+                });
+            });
+
+            requestsReset++;
+
+            // 4. Notify request owner
+            if (!notifiedUsers.has(request.user.id)) {
+                await createNotification({
+                    userId: request.user.id,
+                    title: "Approval Workflow Updated",
+                    message: `The approval workflow has been updated. Your request "${request.title}" will be reviewed under the new process.`,
+                    type: "INFO",
+                    link: `/company/${workflow.company.slug}/dashboard/requests/${request.id}`,
+                    sendEmail: false
+                });
+                notifiedUsers.add(request.user.id);
+            }
+        }
+
+        // 5. Notify first-step approvers about all pending requests
+        const firstStep = workflow.steps[0];
+        if (firstStep && firstStep.approvers.length > 0) {
+            const requestTitles = pendingRequests.map(r => r.title).join('", "');
+            await Promise.all(
+                firstStep.approvers.map(approver =>
+                    createNotification({
+                        userId: approver.id,
+                        title: "Workflow Updated - Approvals Needed",
+                        message: `The approval workflow was updated. ${requestsReset} request(s) need your review: "${requestTitles}"`,
+                        type: "INFO",
+                        link: `/company/${workflow.company.slug}/dashboard/approvals`,
+                        sendEmail: true
+                    })
+                )
+            );
+        }
+
+        revalidatePath(`/company/${workflow.company.slug}/dashboard/approvals`);
+        revalidatePath(`/company/${workflow.company.slug}/dashboard/requests`);
+
+        return {
+            success: true,
+            message: `Reset ${requestsReset} pending request(s) with new workflow`,
+            requestsReset,
+            notifiedUsers: notifiedUsers.size
+        };
+    } catch (e) {
+        console.error("Error resetting pending approval steps:", e);
+        return { error: "Failed to reset pending approval steps" };
     }
 }

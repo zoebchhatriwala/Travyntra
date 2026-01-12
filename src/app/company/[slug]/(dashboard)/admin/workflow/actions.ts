@@ -132,6 +132,17 @@ export async function saveWorkflowConfig(
         }
     });
 
+    // Reset all pending approval requests to use the new workflow
+    const { resetPendingApprovalSteps } = await import("@/lib/actions/approvals");
+    const resetResult = await resetPendingApprovalSteps(company.id, actor?.id || '');
+
+    if (resetResult.error) {
+        console.error("Failed to reset pending approvals:", resetResult.error);
+    } else {
+        console.log(`Reset ${resetResult.requestsReset || 0} pending requests with new workflow`);
+    }
+
     revalidatePath(`/company/${companySlug}/admin/workflow`);
-    return { success: true };
+    revalidatePath(`/company/${companySlug}/dashboard/approvals`);
+    return { success: true, resetResult };
 }

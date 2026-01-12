@@ -105,7 +105,7 @@ export default async function CompanyAdminPage({
                                 <div className="text-center py-20 bg-gray-50/50 rounded-[24px] border-2 border-dashed border-gray-100">
                                     <Ship size={40} className="mx-auto text-gray-300 mb-4" />
                                     <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No active requests found</p>
-                                    <p className="text-gray-300 text-[10px] mt-1 italic leading-relaxed">Staff requests awaiting manager approval will appear here.</p>
+                                    <p className="text-gray-300 text-[10px] mt-1 italic leading-relaxed">Staff requests awaiting approval will appear here.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
