@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -35,11 +35,15 @@ export function ManualAddressDialog({ open, onOpenChange, onSave, initialValue }
         longitude: "",
     });
 
-    useEffect(() => {
-        if (open && initialValue) {
-            setAddress(initialValue);
-        } else if (open && !initialValue) {
-            setAddress({
+    const [errors, setErrors] = useState<{ street?: string; country?: string; city?: string; state?: string }>({});
+    const [prevOpen, setPrevOpen] = useState(open);
+    const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
+
+    if (open !== prevOpen || initialValue !== prevInitialValue) {
+        setPrevOpen(open);
+        setPrevInitialValue(initialValue);
+        if (open) {
+            setAddress(initialValue || {
                 street: "",
                 city: "",
                 state: "",
@@ -48,14 +52,13 @@ export function ManualAddressDialog({ open, onOpenChange, onSave, initialValue }
                 latitude: "",
                 longitude: "",
             });
+            setErrors({});
         }
-    }, [open, initialValue]);
+    }
 
     const handleChange = (field: keyof Address, value: string) => {
         setAddress(prev => ({ ...prev, [field]: value }));
     };
-
-    const [errors, setErrors] = useState<{ street?: string; country?: string; city?: string; state?: string }>({});
 
     const handleSave = () => {
         const newErrors: { street?: string; country?: string; city?: string; state?: string } = {};

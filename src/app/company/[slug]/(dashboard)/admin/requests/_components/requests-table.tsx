@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import {
     Search,
@@ -59,7 +59,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-    const fetchRequests = async () => {
+    const fetchRequests = useCallback(async () => {
         setIsLoading(true);
         try {
             const result = await getCompanyRequests(slug, {
@@ -67,7 +67,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                 query: search,
                 status: statusFilter
             });
-            setRequests(result.requests as any);
+            setRequests(result.requests as Request[]);
             setTotal(result.total);
             setTotalPages(result.totalPages);
             setCurrency(result.currency);
@@ -76,14 +76,14 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [slug, page, search, statusFilter]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchRequests();
         }, 300);
         return () => clearTimeout(timer);
-    }, [page, search, statusFilter]);
+    }, [fetchRequests]);
 
     const toggleSelectAll = () => {
         if (selectedIds.length === requests.length) {
@@ -112,7 +112,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                 setPage(1); // Reset to first page to see updates
                 return `Successfully processed ${data.count} requests`;
             },
-            error: (err: any) => err.message || "Failed to process requests"
+            error: (err: { message?: string }) => err.message || "Failed to process requests"
         });
     };
 
@@ -124,7 +124,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                 fetchRequests();
                 return `Request ${action.toLowerCase()}d successfully`;
             },
-            error: (err: any) => err.message || "Failed to process request"
+            error: (err: { message?: string }) => err.message || "Failed to process request"
         });
     };
 

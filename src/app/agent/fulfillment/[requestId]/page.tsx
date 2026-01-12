@@ -10,6 +10,11 @@ import { FulfillmentChecklist } from "./_components/fulfillment-checklist";
 import { StatusActions } from "./_components/status-actions";
 import { RecentMessages } from "./_components/recent-messages";
 
+interface Location {
+    city?: string;
+    formatted?: string;
+}
+
 export default async function FulfillmentDetailPage({
     params,
 }: {
@@ -82,7 +87,7 @@ export default async function FulfillmentDetailPage({
                                     </div>
                                     <div>
                                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Destination</p>
-                                        <p className="font-semibold text-gray-900">{request.destination}</p>
+                                        <p className="font-semibold text-gray-900">{(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">

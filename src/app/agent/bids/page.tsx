@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { RequestStatus, IntegrationStatus } from "@prisma/client";
+import { Prisma, RequestStatus, IntegrationStatus } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,11 @@ import { SearchInput } from "@/components/ui/search-input";
 import { BidsFilter } from "./_components/bids-filter";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { getIntegratedCompanies } from "./actions";
+
+interface Location {
+    city?: string;
+    formatted?: string;
+}
 
 interface PageProps {
     searchParams: Promise<{
@@ -28,7 +33,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) redirect("/");
 
-    const agencyId = session.user.companyId;
+    const agencyId = session.user.companyId as string;
     const params = await searchParams;
     const query = params.query || "";
     const companyId = params.companyId;
@@ -41,7 +46,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
     // Base filter: Must be from integrated company AND (Approved OR Has non-accepted bid)
     // Exclude requests where agency has already WON the bid (those go to Fulfillment Console)
-    const whereCondition: any = {
+    const whereCondition: Prisma.TripRequestWhereInput = {
         company: {
             integrationsAsClient: {
                 some: {
@@ -97,7 +102,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
             {
                 OR: [
                     { title: { contains: query, mode: "insensitive" } },
-                    { destination: { contains: query, mode: "insensitive" } },
+                    // { destination: { contains: query, mode: "insensitive" } }, // Disabled due to JSON change
                 ]
             }
         ];
@@ -105,9 +110,10 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
     // Apply Date Filter (Trip Start Date)
     if (startDate || endDate) {
-        whereCondition.startDate = {};
-        if (startDate) whereCondition.startDate.gte = new Date(startDate);
-        if (endDate) whereCondition.startDate.lte = new Date(endDate);
+        const dateFilter: Prisma.DateTimeFilter = {};
+        if (startDate) dateFilter.gte = new Date(startDate);
+        if (endDate) dateFilter.lte = new Date(endDate);
+        whereCondition.startDate = dateFilter;
     }
 
     const [requests, totalCount] = await Promise.all([
@@ -188,7 +194,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
                                                             <MapPin size={14} />
                                                         </div>
-                                                        {req.destination}
+                                                        {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">

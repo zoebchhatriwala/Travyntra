@@ -31,37 +31,50 @@ type Notification = {
 export function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [prevUnreadCount, setPrevUnreadCount] = useState(0);
+    const prevUnreadCountRef = useRef(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const fetchNotifications = async () => {
         const data = await getNotifications(20);
         // Convert dates to Date objects if they are strings
-        const formattedData = data.map((n: any) => ({
+        const formattedData: Notification[] = data.map((n: {
+            id: string;
+            title: string;
+            message: string;
+            type: string | null;
+            link: string | null;
+            read: boolean;
+            createdAt: string | Date;
+        }) => ({
             ...n,
             createdAt: new Date(n.createdAt)
         }));
         setNotifications(formattedData);
-        const count = formattedData.filter((n: any) => !n.read).length;
+        const count = formattedData.filter((n) => !n.read).length;
         setUnreadCount(count);
     };
 
     useEffect(() => {
-        fetchNotifications();
+        const timer = setTimeout(() => {
+            fetchNotifications();
+        }, 0);
         // Poll every 30 seconds
         const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
+        return () => {
+            clearTimeout(timer);
+            clearInterval(interval);
+        };
     }, []);
 
     useEffect(() => {
-        if (unreadCount > prevUnreadCount && prevUnreadCount !== 0) {
+        if (unreadCount > prevUnreadCountRef.current && prevUnreadCountRef.current !== 0) {
             // New notification arrived
             if (audioRef.current) {
                 audioRef.current.play().catch(e => console.error("Error playing sound:", e));
             }
         }
-        setPrevUnreadCount(unreadCount);
-    }, [unreadCount, prevUnreadCount]);
+        prevUnreadCountRef.current = unreadCount;
+    }, [unreadCount]);
 
     const handleMarkAsRead = async (id: string) => {
         await markAsRead(id);

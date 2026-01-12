@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus } from "@prisma/client";
+import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -19,10 +19,13 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const DICEBEAR_AVATAR_STYLE = "avataaars";
+const DICEBEAR_COMPANY_STYLE = "identicon";
+
 async function main() {
     console.log("💣 Clearing database...");
 
-    // Order matters for deletion due to foreign keys
+    // Cleanup
     try {
         await prisma.notification.deleteMany();
         await prisma.activityLog.deleteMany();
@@ -42,46 +45,52 @@ async function main() {
         await prisma.user.deleteMany();
         await prisma.company.deleteMany();
     } catch (e) {
-        console.warn("Error clearing db (might be empty already):", e);
+        console.warn("Error clearing db:", e);
     }
 
     console.log("🌱 Database cleared. Starting seed...");
 
     const passwordHash = await hash("password", 10);
 
-    // --- AGENCIES ---
-    console.log("Creating Agencies...");
-
-    const joyTravels = await prisma.company.create({
+    // --- 1. CREATE AGENCY ---
+    console.log("Creating Agency...");
+    const agency = await prisma.company.create({
         data: {
-            name: "Joy Travels & Tours",
-            slug: "joy-travels",
-            domain: "joytravels.com",
+            name: "Premium Travel Agency",
+            slug: "premium-travel",
+            domain: "premiumtravel.com",
             type: CompanyType.AGENT,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
-            logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Joy",
-            country: "USA"
+            country: "USA",
+            currency: "USD",
+            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/svg?seed=premium-travel`,
         }
     });
 
-    const globalWings = await prisma.company.create({
-        data: {
-            name: "Global Wings",
-            slug: "global-wings",
-            domain: "globalwings.com",
-            type: CompanyType.AGENT,
-            status: CompanyStatus.ACTIVE,
-            plan: SubscriptionPlan.STARTER,
-            logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Global",
-            country: "UK"
-        }
-    });
+    // Create 2 Agents
+    const agents = [
+        { name: "John Agent", email: "john@premiumtravel.com" },
+        { name: "Sarah Agent", email: "sarah@premiumtravel.com" },
+    ];
 
-    // --- COMPANIES ---
-    console.log("Creating Client Companies...");
+    for (const a of agents) {
+        await prisma.user.create({
+            data: {
+                name: a.name,
+                email: a.email,
+                password: passwordHash,
+                role: UserRole.TRAVEL_AGENT,
+                companyId: agency.id,
+                isActive: true,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${a.name}`,
+            }
+        });
+    }
 
-    const acmeCorp = await prisma.company.create({
+    // --- 2. CREATE CLIENT COMPANY ---
+    console.log("Creating Client Company...");
+    const clientCompany = await prisma.company.create({
         data: {
             name: "Acme Corp",
             slug: "acme",
@@ -89,28 +98,176 @@ async function main() {
             type: CompanyType.ENTERPRISE,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
-            logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Acme",
-            currency: "JPY"
+            country: "USA",
+            currency: "USD",
+            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/svg?seed=acme`,
         }
     });
 
-    const techStart = await prisma.company.create({
+    // Create 2 Admins
+    const admins = [
+        { name: "Alice Admin", email: "alice@acme.com" },
+        { name: "Bob Admin", email: "bob@acme.com" },
+    ];
+
+    for (const a of admins) {
+        await prisma.user.create({
+            data: {
+                name: a.name,
+                email: a.email,
+                password: passwordHash,
+                role: UserRole.COMPANY_ADMIN,
+                companyId: clientCompany.id,
+                isActive: true,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${a.name}`,
+            }
+        });
+    }
+
+    // Create 3 Employees
+    const employees = [
+        { name: "Charlie Employee", email: "charlie@acme.com" },
+        { name: "David Employee", email: "david@acme.com" },
+        { name: "Eve Employee", email: "eve@acme.com" },
+    ];
+
+    for (const e of employees) {
+        await prisma.user.create({
+            data: {
+                name: e.name,
+                email: e.email,
+                password: passwordHash,
+                role: UserRole.EMPLOYEE,
+                companyId: clientCompany.id,
+                isActive: true,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${e.name}`,
+            }
+        });
+    }
+
+    // Integrate Client Company with Agency
+    await prisma.agencyIntegration.create({
         data: {
-            name: "TechStart",
-            slug: "techstart",
-            domain: "techstart.io",
-            type: CompanyType.ENTERPRISE,
-            status: CompanyStatus.ACTIVE,
-            plan: SubscriptionPlan.STARTER,
-            logoUrl: "https://api.dicebear.com/7.x/identicon/svg?seed=Tech",
-            currency: "JPY"
+            companyId: clientCompany.id,
+            agencyId: agency.id,
+            status: "ACTIVE"
         }
     });
 
-    // --- USERS ---
-    console.log("Creating Users...");
+    // Create a default workflow for the client company
+    const workflow = await prisma.approvalWorkflow.create({
+        data: {
+            name: "Standard Approval Workflow",
+            companyId: clientCompany.id,
+            isActive: true
+        }
+    });
 
-    // Super Admin
+    await prisma.workflowStep.create({
+        data: {
+            workflowId: workflow.id,
+            name: "Manager Approval",
+            order: 1,
+            type: ApprovalType.ANY
+        }
+    });
+
+    // --- 3. CREATE REQUESTS & OTHER DATA ---
+    console.log("Generating Requests and interactions...");
+
+    const CITIES = ["New York", "London", "Paris", "Tokyo", "Singapore", "Dubai", "Sydney", "Berlin"];
+    const TRIP_TITLES = ["Client Meeting", "Q3 Planning", "Tech Conference", "Partner Summit", "Sales Pitch"];
+    const getRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+    const getRandomDate = (start: Date, days: number) => {
+        const date = new Date(start);
+        date.setDate(date.getDate() + Math.floor(Math.random() * days));
+        return date;
+    };
+
+    const employeeRecords = await prisma.user.findMany({
+        where: { companyId: clientCompany.id, role: UserRole.EMPLOYEE }
+    });
+
+    for (const employee of employeeRecords) {
+        // Create 2-3 requests per employee
+        const numReqs = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < numReqs; i++) {
+            const dest = getRandom(CITIES);
+            const title = `${getRandom(TRIP_TITLES)} - ${dest}`;
+            const startDate = getRandomDate(new Date(), 30);
+            const endDate = getRandomDate(startDate, 5);
+
+            // Varied statuses
+            const status = i === 0 ? RequestStatus.PENDING_AGENT_ACTION :
+                i === 1 ? RequestStatus.BOOKED :
+                    RequestStatus.DRAFT;
+
+            const request = await prisma.tripRequest.create({
+                data: {
+                    userId: employee.id,
+                    companyId: clientCompany.id,
+                    title,
+                    destination: { city: dest, country: "Various", formatted: dest },
+                    startDate,
+                    endDate,
+                    status: status,
+                    purpose: `Business travel for ${title}`,
+                    budget: 2500,
+                    preferences: { flight: "Economy", hotel: "Central location" }
+                }
+            });
+
+            // If pending agent action or further, create a bid
+            if (status !== RequestStatus.DRAFT) {
+                await prisma.tripRequest.update({
+                    where: { id: request.id },
+                    data: { assignedAgentId: agency.id }
+                });
+
+                await prisma.agentBid.create({
+                    data: {
+                        requestId: request.id,
+                        agentId: agency.id,
+                        amount: 2200,
+                        message: "We have found a great deal for your trip.",
+                        status: status === RequestStatus.BOOKED ? "ACCEPTED" : "PENDING"
+                    }
+                });
+
+                // Add some messages
+                await prisma.message.create({
+                    data: {
+                        requestId: request.id,
+                        senderId: employee.id,
+                        content: "I need to be close to the convention center."
+                    }
+                });
+
+                await prisma.message.create({
+                    data: {
+                        requestId: request.id,
+                        senderId: agents[0].email === "john@premiumtravel.com"
+                            ? (await prisma.user.findUnique({ where: { email: "john@premiumtravel.com" } }))!.id
+                            : (await prisma.user.findUnique({ where: { email: "sarah@premiumtravel.com" } }))!.id,
+                        content: "We've selected a hotel just 2 blocks away."
+                    }
+                });
+
+                // If booked, add fulfillment steps
+                if (status === RequestStatus.BOOKED) {
+                    await prisma.fulfillmentItem.createMany({
+                        data: [
+                            { requestId: request.id, title: "Flight Tickets", isCompleted: true, order: 1 },
+                            { requestId: request.id, title: "Hotel Voucher", isCompleted: true, order: 2 },
+                            { requestId: request.id, title: "Travel Insurance", isCompleted: true, order: 3 }
+                        ]
+                    });
+                }
+            }
+        }
+    }
+
+    // --- 4. SUPER ADMIN ---
     await prisma.user.create({
         data: {
             email: "admin@travyntra.com",
@@ -118,235 +275,23 @@ async function main() {
             password: passwordHash,
             role: UserRole.SUPER_ADMIN,
             isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zoeb"
-        }
-    });
-
-    // Joy Travels Agent
-    const joyAgent = await prisma.user.create({
-        data: {
-            email: "sarah@joytravels.com",
-            name: "Sarah Joy",
-            password: passwordHash,
-            role: UserRole.TRAVEL_AGENT,
-            companyId: joyTravels.id,
-            isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
-        }
-    });
-
-    // Global Wings Agent
-    await prisma.user.create({
-        data: {
-            email: "mike@globalwings.com",
-            name: "Mike Wings",
-            password: passwordHash,
-            role: UserRole.TRAVEL_AGENT,
-            companyId: globalWings.id,
-            isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike"
-        }
-    });
-
-    // Acme Corp Employees
-    const acmeAdmin = await prisma.user.create({
-        data: {
-            email: "alice@acme.com",
-            name: "Alice Admin",
-            password: passwordHash,
-            role: UserRole.COMPANY_ADMIN,
-            companyId: acmeCorp.id,
-            isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
-        }
-    });
-
-    const acmeEmployee = await prisma.user.create({
-        data: {
-            email: "bob@acme.com",
-            name: "Bob Builder",
-            password: passwordHash,
-            role: UserRole.EMPLOYEE,
-            companyId: acmeCorp.id,
-            isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"
-        }
-    });
-
-    // TechStart Employees
-    const techAdmin = await prisma.user.create({
-        data: {
-            email: "dave@techstart.io",
-            name: "Dave Developer",
-            password: passwordHash,
-            role: UserRole.COMPANY_ADMIN,
-            companyId: techStart.id,
-            isActive: true,
-            avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dave"
-        }
-    });
-
-    // --- INTEGRATIONS ---
-    console.log("Creating Integrations...");
-
-    // Acme integrates with Joy Travels
-    await prisma.agencyIntegration.create({
-        data: {
-            companyId: acmeCorp.id,
-            agencyId: joyTravels.id,
-            status: "ACTIVE"
-        }
-    });
-
-    // TechStart integrates with Global Wings
-    await prisma.agencyIntegration.create({
-        data: {
-            companyId: techStart.id,
-            agencyId: globalWings.id,
-            status: "ACTIVE"
-        }
-    });
-
-    // --- TRIP REQUESTS & BIDS ---
-    console.log("Creating Trip Requests & Bids...");
-
-    // ========================================
-    // 1. IN_PROGRESS: Ready for Fulfillment
-    // ========================================
-    // This request has an accepted bid and is assigned to Joy Travels
-    // Agent can now add fulfillment items, upload documents, and complete
-    const reqFulfillment = await prisma.tripRequest.create({
-        data: {
-            title: "NYC Client Summit",
-            destination: "New York, USA",
-            startDate: new Date("2026-06-10"),
-            endDate: new Date("2026-06-15"),
-            status: RequestStatus.IN_PROGRESS, // Ready for fulfillment!
-            userId: acmeEmployee.id,
-            companyId: acmeCorp.id,
-            assignedAgentId: joyTravels.id,
-            purpose: "Annual client summit with key stakeholders.",
-            budget: 2500,
-            preferences: {
-                flight: "Morning flight, Delta preferred, Aisle seat",
-                hotel: "Marriott Downtown, King bed",
-                car: "Uber voucher preferred"
-            }
-        }
-    });
-
-    // Accepted bid for this request
-    await prisma.agentBid.create({
-        data: {
-            requestId: reqFulfillment.id,
-            agentId: joyTravels.id,
-            amount: 2400,
-            message: "We can secure the Marriott at a corporate rate. Flight and hotel package deal available.",
-            status: "ACCEPTED"
-        }
-    });
-
-    // Initial discussion message
-    await prisma.message.create({
-        data: {
-            requestId: reqFulfillment.id,
-            senderId: joyAgent.id,
-            content: "**Bid Accepted!** We're excited to work on your NYC trip. We'll start booking immediately and upload the documents as they come in."
-        }
-    });
-
-    // ========================================
-    // 2. APPROVED: Open for Bidding
-    // ========================================
-    // This request is approved but no bid accepted yet
-    const reqBidding = await prisma.tripRequest.create({
-        data: {
-            title: "London Tech Week",
-            destination: "London, UK",
-            startDate: new Date("2026-07-01"),
-            endDate: new Date("2026-07-07"),
-            status: RequestStatus.APPROVED, // Open for bidding
-            userId: acmeAdmin.id,
-            companyId: acmeCorp.id,
-            purpose: "Attending London Tech Week conference.",
-            budget: 4000,
-            preferences: {
-                flight: "British Airways, Business Class if within budget",
-                hotel: "Near ExCeL London",
-                train: "Heathrow Express ticket needed"
-            }
-        }
-    });
-
-    // Pending bid from Joy Travels
-    await prisma.agentBid.create({
-        data: {
-            requestId: reqBidding.id,
-            agentId: joyTravels.id,
-            amount: 3800,
-            message: "We have partner rates with BA and can get you business class within budget. Hilton ExCeL available.",
-            status: "PENDING"
-        }
-    });
-
-    // ========================================
-    // 3. PENDING_COMPANY_APPROVAL: Awaiting Approval
-    // ========================================
-    await prisma.tripRequest.create({
-        data: {
-            title: "Team Retreat - Bali",
-            destination: "Bali, Indonesia",
-            startDate: new Date("2026-08-15"),
-            endDate: new Date("2026-08-22"),
-            status: RequestStatus.PENDING_COMPANY_APPROVAL,
-            userId: techAdmin.id,
-            companyId: techStart.id,
-            purpose: "Annual company retreat for team bonding.",
-            isGroup: true,
-            preferences: {
-                other: "Need villa for 15 people with coworking space"
-            }
-        }
-    });
-
-    // ========================================
-    // 4. DRAFT: Not yet submitted
-    // ========================================
-    await prisma.tripRequest.create({
-        data: {
-            title: "SF Partner Meeting",
-            destination: "San Francisco, USA",
-            startDate: new Date("2026-09-05"),
-            endDate: new Date("2026-09-07"),
-            status: RequestStatus.DRAFT,
-            userId: acmeEmployee.id,
-            companyId: acmeCorp.id,
-            purpose: "Meeting with potential partners.",
-            budget: 1500
+            avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=Zoeb`
         }
     });
 
     console.log("");
-    console.log("✅ Seed completed successfully!");
-    console.log("");
-    console.log("📋 Test Accounts:");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("Super Admin:     admin@travyntra.com");
-    console.log("Joy Agent:       sarah@joytravels.com (Joy Travels)");
-    console.log("Global Agent:    mike@globalwings.com (Global Wings)");
-    console.log("Acme Admin:      alice@acme.com (Acme Corp)");
-    console.log("Acme Employee:   bob@acme.com (Acme Corp)");
-    console.log("TechStart Admin: dave@techstart.io (TechStart)");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("Password for all: password");
-    console.log("");
-    console.log("🎯 Fulfillment Workflow Test:");
-    console.log("1. Login as sarah@joytravels.com");
-    console.log("2. Go to Fulfillment Console (/agent/fulfillment)");
-    console.log("3. Click 'NYC Client Summit' request");
-    console.log("4. Add checklist items and upload documents");
-    console.log("5. Mark items as complete and finish the request");
-    console.log("");
+    console.log("✅ Seed Completed!");
+    console.log("------------------------------------------------");
+    console.log("Created 1 Agency (2 Agents)");
+    console.log("Created 1 Client Company (2 Admins, 3 Employees)");
+    console.log("Generated Sample Requests, Bids, and Messages");
+    console.log("------------------------------------------------");
+    console.log("Login with password: 'password'");
+    console.log("- Super Admin: admin@travyntra.com");
+    console.log("- Agency Admin/Agent: john@premiumtravel.com, sarah@premiumtravel.com");
+    console.log("- Company Admin: alice@acme.com, bob@acme.com");
+    console.log("- Employee: charlie@acme.com, david@acme.com, eve@acme.com");
+    console.log("------------------------------------------------");
 }
 
 main()

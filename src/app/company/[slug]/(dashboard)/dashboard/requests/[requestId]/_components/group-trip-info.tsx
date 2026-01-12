@@ -5,7 +5,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 interface GroupTripInfoProps {
-    request: any;
+    request: {
+        isGroup: boolean;
+        parentTrip?: {
+            id: string;
+            title: string;
+        } | null;
+        childTrips?: Array<{
+            id: string;
+            title: string;
+            status: string;
+            user: {
+                name: string | null;
+                avatarUrl: string | null;
+            };
+        }>;
+    };
     slug: string;
 }
 
@@ -25,7 +40,7 @@ export function GroupTripInfo({ request, slug }: GroupTripInfoProps) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {hasParent && (
+                {hasParent && request.parentTrip && (
                     <div className="flex flex-col gap-2">
                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Parent Trip</span>
                         <Link
@@ -54,7 +69,7 @@ export function GroupTripInfo({ request, slug }: GroupTripInfoProps) {
                             <p className="text-sm text-gray-500 italic py-2">No participants joined yet.</p>
                         ) : (
                             <div className="space-y-2">
-                                {participants.map((child: any) => (
+                                {participants.map((child) => (
                                     <Link
                                         key={child.id}
                                         href={`/company/${slug}/dashboard/requests/${child.id}`}

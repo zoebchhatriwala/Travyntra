@@ -62,7 +62,7 @@ export default function CompanyRegisterPage() {
                         </div>
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4 uppercase">Registration Sent</h2>
                         <p className="text-gray-500 font-medium leading-relaxed mb-8">
-                            We've sent your request to the <span className="text-indigo-600 font-bold uppercase tracking-wider">{slug}</span> administrators. You'll receive a notification once they verify your profile.
+                            We&apos;ve sent your request to the <span className="text-indigo-600 font-bold uppercase tracking-wider">{slug}</span> administrators. You&apos;ll receive a notification once they verify your profile.
                         </p>
                         <Button
                             onClick={() => router.push("/login")}
@@ -181,7 +181,7 @@ export default function CompanyRegisterPage() {
                                 <ShieldCheck size={18} />
                             </div>
                             <p className="text-[11px] text-indigo-600 font-bold leading-relaxed">
-                                By registering, you agree to your company's travel policies and our terms of service. Your account will require approval.
+                                By registering, you agree to your company&apos;s travel policies and our terms of service. Your account will require approval.
                             </p>
                         </div>
 

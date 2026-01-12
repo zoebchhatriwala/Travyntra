@@ -21,10 +21,17 @@ function useDebounceValue(value: string, delay: number) {
     return debouncedValue;
 }
 
+interface AgencyResult {
+    id: string;
+    name: string;
+    logoUrl?: string | null;
+    isIntegrated: boolean;
+}
+
 export function AgencySearch() {
     const [query, setQuery] = useState("");
     const debouncedQuery = useDebounceValue(query, 500);
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<AgencyResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -58,7 +65,7 @@ export function AgencySearch() {
                 ));
                 // Optional: Trigger parent refresh if needed
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to update");
         } finally {
             setProcessingId(null);
@@ -132,7 +139,7 @@ export function AgencySearch() {
 
             {!isLoading && query.length >= 2 && results.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                    No agencies found matching "{query}"
+                    No agencies found matching &quot;{query}&quot;
                 </div>
             )}
         </div>

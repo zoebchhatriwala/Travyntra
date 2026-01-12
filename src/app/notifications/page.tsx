@@ -42,6 +42,16 @@ function GoBackLink() {
     );
 }
 
+interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: string | null;
+    link: string | null;
+    read: boolean;
+    createdAt: string;
+}
+
 function NotificationsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -49,7 +59,7 @@ function NotificationsContent() {
     const page = parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
 
-    const [data, setData] = useState<{ notifications: any[], total: number, pages: number }>({
+    const [data, setData] = useState<{ notifications: Notification[], total: number, pages: number }>({
         notifications: [],
         total: 0,
         pages: 0
@@ -57,8 +67,8 @@ function NotificationsContent() {
     const [loading, setLoading] = useState(true);
     const [searchInput, setSearchInput] = useState(search);
 
-    const fetchNotifications = useCallback(async () => {
-        setLoading(true);
+    const fetchNotifications = useCallback(async (isInitial = false) => {
+        if (!isInitial) setLoading(true);
         const result = await getNotificationsPaged({
             page,
             search,
@@ -69,7 +79,10 @@ function NotificationsContent() {
     }, [page, search]);
 
     useEffect(() => {
-        fetchNotifications();
+        const timer = setTimeout(() => {
+            fetchNotifications(true);
+        }, 0);
+        return () => clearTimeout(timer);
     }, [fetchNotifications]);
 
     const handleSearch = (e: React.FormEvent) => {

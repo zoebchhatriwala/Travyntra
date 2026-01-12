@@ -1,9 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plane, Calendar, MapPin, DollarSign, FileText, Building2 } from "lucide-react";
 import { format } from "date-fns";
+import { TripPreferences } from "@/lib/types/trip-preferences";
+import { Prisma } from "@prisma/client";
 
-export function RequestInfo({ request, currency }: { request: any, currency: string }) {
-    const preferences = request.preferences as any;
+interface RequestInfoProps {
+    request: {
+        title: string;
+        destination: Prisma.JsonValue;
+        budget?: number | string | null;
+        startDate: Date | string;
+        endDate: Date | string;
+        purpose?: string | null;
+        preferences?: Prisma.JsonValue;
+    };
+    currency: string;
+}
+
+export function RequestInfo({ request, currency }: RequestInfoProps) {
+    const preferences: TripPreferences = request.preferences as TripPreferences;
+
+    const destination = request.destination as { city?: string; formatted?: string } | null;
 
     return (
         <div className="space-y-6">
@@ -22,7 +39,9 @@ export function RequestInfo({ request, currency }: { request: any, currency: str
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destination</p>
-                                <p className="text-base font-bold text-gray-900">{request.destination}</p>
+                                <p className="text-base font-bold text-gray-900">
+                                    {destination?.city || destination?.formatted || "Unknown Destination"}
+                                </p>
                             </div>
                         </div>
 
@@ -79,41 +98,69 @@ export function RequestInfo({ request, currency }: { request: any, currency: str
                         {preferences.flight && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Flight Requirements</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    {preferences.flight}
-                                </p>
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {typeof preferences.flight === 'string' ? (
+                                        preferences.flight
+                                    ) : (
+                                        <div className="space-y-1">
+                                            {preferences.flight.from && <p><strong>From:</strong> {preferences.flight.from}</p>}
+                                            {preferences.flight.to && <p><strong>To:</strong> {preferences.flight.to}</p>}
+                                            {preferences.flight.details && <p><strong>Details:</strong> {preferences.flight.details}</p>}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {preferences.hotel && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Hotel Requirements</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     {preferences.hotel}
-                                </p>
+                                </div>
                             </div>
                         )}
                         {preferences.train && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Train / Rail Requirements</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    {preferences.train}
-                                </p>
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {typeof preferences.train === 'string' ? (
+                                        preferences.train
+                                    ) : (
+                                        <div className="space-y-1">
+                                            {preferences.train.from && <p><strong>From:</strong> {preferences.train.from}</p>}
+                                            {preferences.train.to && <p><strong>To:</strong> {preferences.train.to}</p>}
+                                            {preferences.train.details && <p><strong>Details:</strong> {preferences.train.details}</p>}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {preferences.car && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Car / Taxi Requirements</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    {preferences.car}
-                                </p>
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {typeof preferences.car === 'string' ? (
+                                        preferences.car
+                                    ) : (
+                                        <div className="space-y-1">
+                                            {preferences.car.pickup && (
+                                                <p><strong>Pickup:</strong> {typeof preferences.car.pickup === 'string' ? preferences.car.pickup : (preferences.car.pickup.formatted || preferences.car.pickup.city || 'Custom Location')}</p>
+                                            )}
+                                            {preferences.car.dropoff && (
+                                                <p><strong>Dropoff:</strong> {typeof preferences.car.dropoff === 'string' ? preferences.car.dropoff : (preferences.car.dropoff.formatted || preferences.car.dropoff.city || 'Custom Location')}</p>
+                                            )}
+                                            {preferences.car.details && <p><strong>Details:</strong> {preferences.car.details}</p>}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {preferences.other && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Other Requests</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    {preferences.other}
-                                </p>
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    {typeof preferences.other === 'string' ? preferences.other : JSON.stringify(preferences.other)}
+                                </div>
                             </div>
                         )}
                     </CardContent>

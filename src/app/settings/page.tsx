@@ -60,7 +60,7 @@ export default function SettingsPage() {
         setProfileSuccess(false);
 
         const formData = new FormData(e.currentTarget);
-        const result = await updateProfile(formData);
+        const result = await updateProfile(formData) as { success: boolean; error?: string; avatarUrl?: string | null };
 
         if (result.success) {
             setProfileSuccess(true);
@@ -70,9 +70,9 @@ export default function SettingsPage() {
             await updateSession({
                 ...session,
                 user: {
-                    ...session?.user,
+                    ...(session?.user ?? {}),
                     name: formData.get("name") as string,
-                    image: (result as any).avatarUrl || session?.user?.image
+                    image: result.avatarUrl || session?.user?.image
                 }
             });
 

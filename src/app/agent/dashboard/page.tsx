@@ -5,6 +5,11 @@ import { Bell, Briefcase, FileCheck, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
+interface Location {
+    city?: string;
+    formatted?: string;
+}
+
 export default async function AgencyDashboard() {
     const stats = await getAgencyStats();
     const opportunities = await getRecentOpportunities();
@@ -61,7 +66,7 @@ export default async function AgencyDashboard() {
                                 <Card className="h-full hover:shadow-md transition-shadow">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">
-                                            {req.destination}
+                                            {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
                                         </CardTitle>
                                         <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                                             {req.company.name.substring(0, 2).toUpperCase()}
@@ -91,7 +96,14 @@ export default async function AgencyDashboard() {
     );
 }
 
-function StatsCard({ title, value, icon: Icon, description }: any) {
+interface StatsCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ElementType;
+    description: string;
+}
+
+function StatsCard({ title, value, icon: Icon, description }: StatsCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

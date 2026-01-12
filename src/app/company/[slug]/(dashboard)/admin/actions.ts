@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { ApprovalStatus } from "@prisma/client";
+import { Prisma, ApprovalStatus, RequestStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
@@ -105,6 +105,11 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
 }
 
 
+interface Location {
+    city?: string;
+    formatted?: string;
+}
+
 export async function getCompanyRequests(slug: string, options: {
     page?: number;
     limit?: number;
@@ -128,7 +133,7 @@ export async function getCompanyRequests(slug: string, options: {
 
     if (!company) return { requests: [], total: 0, totalPages: 0, currency: "USD" };
 
-    const where: any = {
+    const where: Prisma.TripRequestWhereInput = {
         companyId: company.id,
     };
 
@@ -142,9 +147,9 @@ export async function getCompanyRequests(slug: string, options: {
 
     if (status) {
         if (Array.isArray(status)) {
-            where.status = { in: status };
+            where.status = { in: status as RequestStatus[] }; // Status is string[] but prisma expects RequestStatus[]
         } else if (status !== 'ALL') {
-            where.status = status;
+            where.status = status as RequestStatus;
         }
     }
 
@@ -178,7 +183,7 @@ export async function getCompanyRequests(slug: string, options: {
             status: req.status,
             createdAt: req.createdAt,
             budget: Number(req.budget || 0),
-            destination: req.destination,
+            destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
             startDate: req.startDate,
             endDate: req.endDate
         })),
@@ -326,7 +331,7 @@ export async function getCompanyAnalytics(slug: string) {
     });
 
     // 4. Budget trends (by month)
-    const budgetByMonth = await prisma.$queryRaw`
+    const budgetByMonth: { month: string; total: number | bigint }[] = await prisma.$queryRaw`
         SELECT 
             TO_CHAR("createdAt", 'Mon YYYY') as month,
             SUM(budget) as total
@@ -338,28 +343,28 @@ export async function getCompanyAnalytics(slug: string) {
     `;
 
     // 5. Top destinations
-    const topDestinations = await prisma.tripRequest.groupBy({
-        by: ['destination'],
-        where: { companyId: company.id },
-        _count: {
-            id: true
-        },
-        orderBy: {
-            _count: {
-                id: 'desc'
-            }
-        },
-        take: 5
-    });
+    const topDestinationsRaw: { name: string; count: bigint }[] = await prisma.$queryRaw`
+        SELECT destination->>'city' as name, COUNT(*) as count
+        FROM "TripRequest"
+        WHERE "companyId" = ${company.id}
+        GROUP BY destination->>'city'
+        ORDER BY count DESC
+        LIMIT 5
+    `;
+
+    const topDestinations = topDestinationsRaw.map(d => ({
+        name: d.name || "Unknown",
+        count: Number(d.count)
+    }));
 
     return {
         avgApprovalTime: avgApprovalTimeDays.toFixed(1),
         mtdBudget: Number(mtdBudget._sum.budget || 0).toLocaleString(),
         violations,
-        budgetByMonth: budgetByMonth as any[],
+        budgetByMonth,
         topDestinations: topDestinations.map(d => ({
-            name: d.destination,
-            count: d._count.id
+            name: d.name,
+            count: d.count
         })),
         currency: company.currency || "USD"
     };
@@ -399,7 +404,7 @@ export async function exportCompanyRequests(slug: string) {
         req.title,
         req.user.name || "Unknown",
         req.user.email,
-        req.destination,
+        (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
         req.status,
         req.budget?.toString() || "0",
         req.createdAt.toISOString()

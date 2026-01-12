@@ -78,7 +78,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         revalidatePath(`/agent/bids/${requestId}`);
         revalidatePath(`/agent/bids`);
         return { success: true };
-    } catch (e) {
+    } catch {
         return { error: "Failed to update bid" };
     }
 }

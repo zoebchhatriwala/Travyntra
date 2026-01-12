@@ -11,6 +11,13 @@ import { redirect } from "next/navigation";
 import { SearchInput } from "@/components/ui/search-input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
+import { Prisma, RequestStatus } from "@prisma/client";
+
+interface Location {
+    city?: string;
+    formatted?: string;
+}
+
 interface PageProps {
     searchParams: Promise<{
         query?: string;
@@ -32,17 +39,17 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
 
     // Fulfillment Console shows requests where this agency has won the bid
     // i.e., the request is assigned to this agency
-    const whereCondition: any = {
+    const whereCondition: Prisma.TripRequestWhereInput = {
         assignedAgentId: agencyId,
         // Only show IN_PROGRESS, BOOKED, or COMPLETED statuses for fulfillment
         status: {
-            in: ["IN_PROGRESS", "BOOKED", "COMPLETED"]
+            in: [RequestStatus.IN_PROGRESS, RequestStatus.BOOKED, RequestStatus.COMPLETED]
         }
     };
 
     // Apply status filter
     if (status) {
-        whereCondition.status = status;
+        whereCondition.status = status as RequestStatus;
     }
 
     // Apply Text Search
@@ -51,7 +58,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
             {
                 OR: [
                     { title: { contains: query, mode: "insensitive" } },
-                    { destination: { contains: query, mode: "insensitive" } },
+                    // { destination: { contains: query, mode: "insensitive" } }, // Disabled due to JSON change
                 ]
             }
         ];
@@ -212,7 +219,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
                                                             <MapPin size={14} />
                                                         </div>
-                                                        {req.destination}
+                                                        {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">

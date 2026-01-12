@@ -25,7 +25,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
             } else {
                 toast.success("Request marked as booked!");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to update status");
         } finally {
             setIsLoading(null);
@@ -55,7 +55,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
             } else {
                 toast.success("Request completed successfully!");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to complete request");
         } finally {
             setIsLoading(null);
@@ -95,8 +95,8 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
                 onClick={handleMarkCompleted}
                 disabled={isLoading !== null || !canComplete}
                 className={`rounded-xl font-semibold shadow-lg ${canComplete
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
                     }`}
                 title={!canComplete ? 'Complete all checklist items to enable' : ''}
             >

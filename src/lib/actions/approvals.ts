@@ -1,4 +1,5 @@
 "use server";
+interface Location { city?: string; formatted?: string; }
 
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -55,7 +56,7 @@ export async function getMyPendingApprovals() {
             id: approval.id,
             requestId: approval.requestId,
             requestTitle: approval.request.title,
-            requestDestination: approval.request.destination,
+            requestDestination: (approval.request.destination as unknown as Location)?.city || (approval.request.destination as unknown as Location)?.formatted || "Unknown",
             requestStartDate: approval.request.startDate,
             requestEndDate: approval.request.endDate,
             requestBudget: Number(approval.request.budget || 0),
@@ -280,16 +281,16 @@ export async function processApproval({
         revalidatePath(`/company/${approvalStep.request.company.slug}/dashboard/approvals`);
 
         // BULK APPROVAL LOGIC: If this is a group trip, apply the same action to child trips
-        const requestDetails = await (prisma.tripRequest as any).findUnique({
+        const requestDetails = await prisma.tripRequest.findUnique({
             where: { id: approvalStep.requestId },
             select: { isGroup: true, childTrips: { select: { id: true } } }
         });
 
         if (requestDetails?.isGroup && requestDetails.childTrips.length > 0) {
             // Find matching approval steps for child trips
-            const childStepIds = await (prisma.requestApprovalStep as any).findMany({
+            const childStepIds = await prisma.requestApprovalStep.findMany({
                 where: {
-                    requestId: { in: requestDetails.childTrips.map((c: any) => c.id) },
+                    requestId: { in: requestDetails.childTrips.map((c) => c.id) },
                     stepId: approvalStep.stepId,
                     status: ApprovalStatus.PENDING
                 },

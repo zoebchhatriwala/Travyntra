@@ -5,8 +5,20 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { approveBid } from "@/app/agent/bids/[requestId]/actions";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import Image from "next/image";
 
-export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { bids: any[], requestId: string, isAuthorized: boolean, currency?: string }) {
+interface Bid {
+    id: string;
+    amount: number | string;
+    status: string;
+    message?: string | null;
+    agent: {
+        name: string;
+        logoUrl?: string | null;
+    };
+}
+
+export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { bids: Bid[], requestId: string, isAuthorized: boolean, currency?: string }) {
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     async function handleApprove(bidId: string) {
@@ -20,7 +32,7 @@ export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { b
             } else {
                 toast.success("Bid approved successfully");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to approve bid");
         } finally {
             setProcessingId(null);
@@ -52,7 +64,7 @@ export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { b
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                                 <div className="w-5 h-5 rounded bg-gray-200 flex items-center justify-center overflow-hidden">
                                     {bid.agent.logoUrl ? (
-                                        <img src={bid.agent.logoUrl} alt="" className="w-full h-full object-cover" />
+                                        <Image src={bid.agent.logoUrl} alt="" width={20} height={20} className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-[10px] font-bold text-gray-500">{bid.agent.name[0]}</span>
                                     )}

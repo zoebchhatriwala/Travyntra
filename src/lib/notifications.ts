@@ -1,3 +1,4 @@
+import { Notification } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 import { sendUserEmail } from "@/lib/email";
@@ -51,7 +52,7 @@ export async function getNotifications(userId: string, limit: number = 20) {
 
     const readsToFetch = Math.max(0, limit - unreads.length);
 
-    let reads: any[] = [];
+    let reads: Notification[] = [];
     if (readsToFetch > 0) {
         reads = await prisma.notification.findMany({
             where: { userId, read: true },

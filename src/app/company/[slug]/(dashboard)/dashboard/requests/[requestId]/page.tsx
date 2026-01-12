@@ -93,7 +93,7 @@ export default async function RequestOverviewPage({
                                 </div>
                             ) : (
                                 <div className="space-y-2 max-h-[180px] overflow-y-auto">
-                                    {request.documents.map((doc: any) => (
+                                    {request.documents.map((doc: { id: string; url: string; name: string; type: string }) => (
                                         <a
                                             key={doc.id}
                                             href={doc.url}

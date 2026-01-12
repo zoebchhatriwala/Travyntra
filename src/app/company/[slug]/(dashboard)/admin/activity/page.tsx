@@ -42,10 +42,26 @@ const getActionIcon = (action: string) => {
     return { icon: Activity, color: "text-gray-600 bg-gray-50" };
 };
 
+interface ActivityLog {
+    id: string;
+    action: string;
+    description: string;
+    createdAt: Date;
+    actor?: {
+        name: string | null;
+        email: string;
+    } | null;
+    target?: {
+        name: string | null;
+        email: string;
+    } | null;
+    metadata?: unknown;
+}
+
 export default function ActivityLogPage() {
     const params = useParams();
     const slug = params?.slug as string;
-    const [activities, setActivities] = useState<any[]>([]);
+    const [activities, setActivities] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterDays, setFilterDays] = useState<number | undefined>(30); // Default to 30 days
     const [searchQuery, setSearchQuery] = useState("");
@@ -152,11 +168,11 @@ export default function ActivityLogPage() {
                                                 </>
                                             )}
 
-                                            {activity.metadata && Object.keys(activity.metadata).length > 0 && (
+                                            {!!activity.metadata && typeof activity.metadata === 'object' && Object.keys(activity.metadata as Record<string, unknown>).length > 0 && (
                                                 <>
                                                     <span className="w-1 h-1 rounded-full bg-gray-300 mx-2" />
                                                     <span className="italic truncate max-w-[300px]">
-                                                        {Object.values(activity.metadata as object).join(", ")}
+                                                        {Object.values(activity.metadata as Record<string, unknown>).join(", ")}
                                                     </span>
                                                 </>
                                             )}

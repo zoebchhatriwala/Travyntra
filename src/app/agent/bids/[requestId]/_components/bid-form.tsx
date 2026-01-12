@@ -57,7 +57,7 @@ export function BidForm({ requestId, currency = "USD", existingBid }: BidFormPro
                 toast.success(existingBid ? "Bid updated successfully" : "Bid submitted successfully");
                 router.refresh();
             }
-        } catch (error) {
+        } catch {
             toast.error("Something went wrong");
         } finally {
             setIsSubmitting(false);

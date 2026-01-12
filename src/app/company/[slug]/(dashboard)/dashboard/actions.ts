@@ -7,6 +7,12 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 
+interface Location {
+    city?: string;
+    formatted?: string;
+    [key: string]: Prisma.InputJsonValue | undefined;
+}
+
 export async function getEmployeeDashboardStats() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return null;
@@ -121,7 +127,7 @@ export async function getCompanyGroupTrips() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return [];
 
-    const groupTrips = await (prisma.tripRequest as any).findMany({
+    const groupTrips = await prisma.tripRequest.findMany({
         where: {
             companyId: session.user.companyId,
             isGroup: true,
@@ -144,9 +150,9 @@ export async function getCompanyGroupTrips() {
         }
     });
 
-    return groupTrips.map((trip: any) => ({
+    return groupTrips.map((trip) => ({
         ...trip,
-        destination: trip.destination?.city || trip.destination?.formatted || "Unknown Destination"
+        destination: (trip.destination as unknown as Location)?.city || (trip.destination as unknown as Location)?.formatted || "Unknown Destination"
     }));
 }
 
@@ -190,7 +196,7 @@ export async function getEmployeeAssets() {
         url: doc.url,
         createdAt: doc.createdAt,
         tripTitle: doc.request?.title || "Unknown Trip",
-        tripDestination: (doc.request?.destination as any)?.city || (doc.request?.destination as any)?.formatted || "Unknown",
+        tripDestination: (doc.request?.destination as unknown as Location)?.city || (doc.request?.destination as unknown as Location)?.formatted || "Unknown",
         uploadedBy: doc.uploader.name || "Unknown",
         uploaderRole: doc.uploader.role
     }));
@@ -216,7 +222,7 @@ export async function updateEmployeeProfile(formData: FormData) {
         // Trigger session update implicitly by revalidating
         revalidatePath("/company/[slug]/dashboard/settings", "page");
         return { success: "Profile updated successfully." };
-    } catch (e) {
+    } catch {
         return { error: "Failed to update profile." };
     }
 }
@@ -225,7 +231,7 @@ export async function updateEmployeeProfile(formData: FormData) {
 
 export async function createTripRequest(data: {
     title: string;
-    destination: any;
+    destination: Location;
     startDate: Date;
     endDate: Date;
     purpose?: string;
@@ -259,7 +265,7 @@ export async function createTripRequest(data: {
         });
 
         // Create the trip request
-        const request = await (prisma.tripRequest as any).create({
+        const request = await prisma.tripRequest.create({
             data: {
                 userId: session.user.id,
                 companyId: session.user.companyId,
@@ -384,7 +390,7 @@ export async function getTripRequest(requestId: string) {
             }
         }
 
-        const destinationObj = request.destination as any;
+        const destinationObj = request.destination as unknown as Location;
         const destinationString = destinationObj?.formatted || destinationObj?.city || (typeof request.destination === 'string' ? request.destination : "Unknown");
         const hasDetails = destinationObj && typeof destinationObj === 'object' && !Array.isArray(destinationObj);
 
@@ -397,10 +403,10 @@ export async function getTripRequest(requestId: string) {
                 ...bid,
                 amount: Number(bid.amount)
             })),
-            childTrips: request.childTrips.map((child: any) => ({
+            childTrips: request.childTrips.map((child) => ({
                 ...child,
                 budget: child.budget ? Number(child.budget) : null,
-                destination: child.destination?.city || child.destination?.formatted || "Unknown" // Handle child trips too
+                destination: (child.destination as unknown as Location)?.city || (child.destination as unknown as Location)?.formatted || "Unknown" // Handle child trips too
             })),
         };
     } catch (e) {
@@ -570,7 +576,7 @@ export async function uploadMessageAttachment(formData: FormData) {
 
 export async function updateTripRequest(requestId: string, data: {
     title?: string;
-    destination?: any;
+    destination?: Location;
     startDate?: Date;
     endDate?: Date;
     purpose?: string;
@@ -647,7 +653,7 @@ export async function updateTripRequest(requestId: string, data: {
         const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         if (data.title && data.title !== request.title) changes.push(`- **Title**: "${request.title}" → "${data.title}"`);
-        if (data.destination && JSON.stringify(data.destination) !== JSON.stringify(request.destination)) changes.push(`- **Destination**: ${(request.destination as any)?.city || 'Old'} → ${(data.destination as any)?.city || 'New'}`);
+        if (data.destination && JSON.stringify(data.destination) !== JSON.stringify(request.destination)) changes.push(`- **Destination**: ${(request.destination as unknown as Location)?.city || 'Old'} → ${(data.destination as unknown as Location)?.city || 'New'}`);
         if (data.startDate && data.startDate.getTime() !== new Date(request.startDate).getTime()) changes.push(`- **Start Date**: ${formatDate(request.startDate)} → ${formatDate(data.startDate)}`);
         if (data.endDate && data.endDate.getTime() !== new Date(request.endDate).getTime()) changes.push(`- **End Date**: ${formatDate(request.endDate)} → ${formatDate(data.endDate)}`);
         if (data.purpose && data.purpose !== request.purpose) changes.push(`- **Purpose**: Updated`);

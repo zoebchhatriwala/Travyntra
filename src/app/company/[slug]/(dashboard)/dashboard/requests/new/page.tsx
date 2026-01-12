@@ -30,7 +30,13 @@ export default async function NewRequestPage({
             <RequestForm
                 slug={slug}
                 currency={company?.currency || "USD"}
-                groupTrips={groupTrips as any}
+                groupTrips={groupTrips.map(gt => ({
+                    id: gt.id,
+                    title: gt.title,
+                    destination: gt.destination,
+                    startDate: gt.startDate,
+                    endDate: gt.endDate
+                }))}
             />
         </div>
     );

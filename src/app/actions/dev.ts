@@ -9,7 +9,7 @@ export async function getDevUsers() {
 
     try {
         const users = await prisma.user.findMany({
-            take: 10,
+            take: 100,
             include: {
                 company: {
                     select: { name: true, slug: true }

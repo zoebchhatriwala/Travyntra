@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type ActivityLogFilter = {
@@ -18,7 +19,7 @@ export async function getCompanyActivities(slug: string, filter?: ActivityLogFil
         throw new Error("Company not found");
     }
 
-    const where: any = {
+    const where: Prisma.ActivityLogWhereInput = {
         companyId: company.id,
     };
 

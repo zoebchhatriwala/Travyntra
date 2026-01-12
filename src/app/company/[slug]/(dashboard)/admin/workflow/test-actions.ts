@@ -16,7 +16,11 @@ export async function createTestRequest(companySlug: string, userId: string) {
     const request = await prisma.tripRequest.create({
         data: {
             title: "Internal Sandbox Request",
-            destination: "London, UK",
+            destination: {
+                city: "London",
+                country: "UK",
+                formatted: "London, UK"
+            },
             startDate: new Date(),
             endDate: new Date(Date.now() + 86400000 * 3),
             purpose: "Training & Development",

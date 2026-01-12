@@ -8,6 +8,7 @@ import { BidForm } from "./_components/bid-form";
 import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
 import { Calendar, MapPin, Building2, User } from "lucide-react";
 import { format } from "date-fns";
+import { TripPreferences } from "@/lib/types/trip-preferences";
 
 export default async function RequestDetailsPage({
     params
@@ -53,6 +54,11 @@ export default async function RequestDetailsPage({
 
     const myBid = request.bids[0] || null;
 
+    interface Location {
+        city?: string;
+        formatted?: string;
+    }
+
     // Available users for mentions (Request Creator)
     const availableUsers = [
         {
@@ -91,7 +97,7 @@ export default async function RequestDetailsPage({
                             <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Destination</span>
                             <div className="flex items-center gap-2 text-gray-900 font-medium">
                                 <MapPin size={18} className="text-indigo-500" />
-                                {request.destination}
+                                {(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown Destination"}
                             </div>
                         </div>
                         <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1">
@@ -111,43 +117,51 @@ export default async function RequestDetailsPage({
                             )}
                             {/* Render JSON preferences if needed */}
                             {(() => {
-                                const prefs = request.preferences as any;
+                                const prefs = request.preferences as TripPreferences;
                                 if (!prefs) return null;
+
+                                interface TravelPrefDetail {
+                                    from?: string;
+                                    to?: string;
+                                    pickup?: string | Location;
+                                    dropoff?: string | Location;
+                                    details?: string;
+                                }
+
+                                const renderItem = (title: string, content: string | TravelPrefDetail | null | undefined) => {
+                                    if (!content) return null;
+
+                                    const renderedContent = typeof content === 'string' ? content : (
+                                        <div className="space-y-1">
+                                            {content.from && <p><strong>From:</strong> {content.from}</p>}
+                                            {content.to && <p><strong>To:</strong> {content.to}</p>}
+                                            {content.pickup && (
+                                                <p><strong>Pickup:</strong> {typeof content.pickup === 'string' ? content.pickup : ((content.pickup as Location).formatted || (content.pickup as Location).city || 'Custom Location')}</p>
+                                            )}
+                                            {content.dropoff && (
+                                                <p><strong>Dropoff:</strong> {typeof content.dropoff === 'string' ? content.dropoff : ((content.dropoff as Location).formatted || (content.dropoff as Location).city || 'Custom Location')}</p>
+                                            )}
+                                            {content.details && <p><strong>Details:</strong> {content.details}</p>}
+                                        </div>
+                                    );
+
+                                    return (
+                                        <div className="bg-white p-3 rounded border border-gray-100 shadow-sm">
+                                            <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">{title}</span>
+                                            <div className="text-sm">{renderedContent}</div>
+                                        </div>
+                                    );
+                                };
 
                                 return (
                                     <div className="mt-6 space-y-4">
                                         <h4 className="font-bold text-gray-900 border-b pb-2">Travel Preferences</h4>
                                         <div className="grid gap-4 md:grid-cols-2">
-                                            {prefs.flight && (
-                                                <div className="bg-white p-3 rounded border border-gray-100 shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">Flight</span>
-                                                    <p className="text-sm">{prefs.flight}</p>
-                                                </div>
-                                            )}
-                                            {prefs.hotel && (
-                                                <div className="bg-white p-3 rounded border border-gray-100 shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">Hotel</span>
-                                                    <p className="text-sm">{prefs.hotel}</p>
-                                                </div>
-                                            )}
-                                            {prefs.train && (
-                                                <div className="bg-white p-3 rounded border border-gray-100 shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">Train / Rail</span>
-                                                    <p className="text-sm">{prefs.train}</p>
-                                                </div>
-                                            )}
-                                            {prefs.car && (
-                                                <div className="bg-white p-3 rounded border border-gray-100 shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">Car / Taxi</span>
-                                                    <p className="text-sm">{prefs.car}</p>
-                                                </div>
-                                            )}
-                                            {prefs.other && (
-                                                <div className="col-span-full bg-white p-3 rounded border border-gray-100 shadow-sm">
-                                                    <span className="text-xs font-bold text-indigo-600 uppercase block mb-1">Other Requests</span>
-                                                    <p className="text-sm">{prefs.other}</p>
-                                                </div>
-                                            )}
+                                            {renderItem("Flight", prefs.flight)}
+                                            {renderItem("Hotel", prefs.hotel)}
+                                            {renderItem("Train / Rail", prefs.train)}
+                                            {renderItem("Car / Taxi", prefs.car)}
+                                            {renderItem("Other Requests", prefs.other)}
                                         </div>
                                     </div>
                                 );

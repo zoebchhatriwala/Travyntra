@@ -197,7 +197,7 @@ export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps)
                                                                     </div>
                                                                     {approval.comment && (
                                                                         <p className="text-xs text-gray-600 italic bg-white/50 p-2 rounded-lg">
-                                                                            "{approval.comment}"
+                                                                            &quot;{approval.comment}&quot;
                                                                         </p>
                                                                     )}
                                                                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
     GitBranch,
     ArrowRight,
@@ -50,19 +51,45 @@ interface WorkflowBuilderProps {
         avatarUrl: string | null;
         tags: string[];
     }[];
-    initialWorkflow: any;
-    simulationRequests?: any[];
+    initialWorkflow: {
+        steps: Array<{
+            id: string;
+            name: string;
+            order: number;
+            type: ApprovalType;
+            approvers: Array<{ id: string }>;
+            approverTags: string[];
+        }>;
+    } | null;
+    simulationRequests?: Array<{
+        id: string;
+        title: string;
+        user: { name: string | null; email: string };
+        approvalSteps: Array<{
+            status: string;
+            step: { name: string };
+            approvals: Array<{
+                userId: string;
+                status: string;
+                user: { name: string | null; email: string };
+            }>;
+        }>;
+        workflow: Array<{
+            action: string;
+            comment?: string | null;
+        }>;
+    }>;
     currentUserId?: string;
 }
 
 export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulationRequests = [], currentUserId }: WorkflowBuilderProps) {
     const [steps, setSteps] = useState<WorkflowStep[]>(
-        initialWorkflow?.steps?.map((s: any) => ({
+        initialWorkflow?.steps?.map((s) => ({
             id: s.id,
             name: s.name,
             order: s.order,
             type: s.type,
-            approverIds: s.approvers.map((a: any) => a.id),
+            approverIds: s.approvers.map((a) => a.id),
             approverTags: s.approverTags || []
         })) || [
             { name: "Manager Approval", order: 1, type: ApprovalType.ANY, approverIds: [], approverTags: [] }
@@ -116,7 +143,13 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await saveWorkflowConfig(slug, steps as any);
+            await saveWorkflowConfig(slug, steps.map(s => ({
+                name: s.name,
+                order: s.order,
+                type: s.type,
+                approverIds: s.approverIds,
+                approverTags: s.approverTags
+            })));
             toast.success("Workflow configuration updated successfully!");
         } catch (error) {
             toast.error("Failed to save workflow configuration.");
@@ -221,8 +254,8 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                         <CardDescription className="text-gray-500 font-medium">Test your workflow configuration with dummy requests.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 pt-4 space-y-4">
-                        {simulationRequests.map((req: any) => {
-                            const currentStep = req.approvalSteps.find((s: any) => s.status === "PENDING");
+                        {simulationRequests.map((req) => {
+                            const currentStep = req.approvalSteps.find((s) => s.status === "PENDING");
                             return (
                                 <div key={req.id} className="p-6 bg-indigo-50/30 rounded-[32px] border border-indigo-100 space-y-4">
                                     <div className="flex items-center justify-between">
@@ -237,7 +270,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
                                     {currentStep && (
                                         <div className="flex flex-wrap gap-4">
-                                            {currentStep.approvals.filter((a: any) => a.status === "PENDING").map((approval: any) => (
+                                            {currentStep.approvals.filter((a) => a.status === "PENDING").map((approval) => (
                                                 <div key={approval.userId} className="flex items-center gap-3 p-3 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                                                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-black">
                                                         {approval.user.name?.[0] || approval.user.email[0]}
@@ -268,7 +301,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                         <div className="pt-4 border-t border-indigo-100 gap-2 flex flex-col">
                                             <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Audit Trail</p>
                                             <div className="space-y-2">
-                                                {req.workflow.map((action: any, idx: number) => (
+                                                {req.workflow.map((action, idx: number) => (
                                                     <div key={idx} className="flex items-center gap-2 text-[10px] font-medium text-indigo-700">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                                                         <span className="font-black italic underline decoration-indigo-200">{action.action}</span>
@@ -411,9 +444,9 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                                     : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
                                                                 }`}
                                                         >
-                                                            <div className="w-6 h-6 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center">
+                                                            <div className="w-6 h-6 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center relative">
                                                                 {user.avatarUrl ? (
-                                                                    <img src={user.avatarUrl} alt={user.name || ""} className="w-full h-full object-cover" />
+                                                                    <Image src={user.avatarUrl} alt={user.name || ""} width={24} height={24} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <User size={12} />
                                                                 )}
@@ -426,7 +459,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                         </button>
                                                     )) : (
                                                         <div className="w-full py-4 text-center">
-                                                            <p className="text-xs font-bold text-gray-400 italic">No users found matching "{searchQueries[stepIdx]}"</p>
+                                                            <p className="text-xs font-bold text-gray-400 italic">No users found matching &quot;{searchQueries[stepIdx]}&quot;</p>
                                                         </div>
                                                     )}
                                                 </div>

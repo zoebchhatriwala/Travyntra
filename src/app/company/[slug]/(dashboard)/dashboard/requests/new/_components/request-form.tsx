@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LocationSelector } from "@/components/location-selector";
 import { ManualAddressDialog, type Address } from "@/components/manual-address-dialog";
 import { MapPin, Pencil } from "lucide-react";
+import { TripPreferences } from "@/lib/types/trip-preferences";
 
 
 const requestSchema = z.object({
@@ -75,7 +76,18 @@ type RequestFormValues = z.infer<typeof requestSchema>;
 interface RequestFormProps {
     slug: string;
     currency: string;
-    initialData?: any;
+    initialData?: {
+        title: string;
+        destination: string;
+        purpose: string;
+        budget?: number | string | null;
+        startDate: Date | string;
+        endDate: Date | string;
+        isGroup?: boolean;
+        parentTripId?: string;
+        preferences?: TripPreferences;
+        destinationDetails?: Address;
+    };
     requestId?: string;
     groupTrips?: {
         id: string;
@@ -122,10 +134,12 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
     // UI State for Travel Modes
     const [selectedModes, setSelectedModes] = useState<string[]>(() => {
         const modes = [];
-        if (initialData?.preferences?.flight?.details || initialData?.preferences?.flight?.from) modes.push('flight');
-        if (initialData?.preferences?.hotel) modes.push('hotel');
-        if (initialData?.preferences?.train?.details || initialData?.preferences?.train?.from) modes.push('train');
-        if (initialData?.preferences?.car?.details || initialData?.preferences?.car?.pickup) modes.push('car');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const prefs = initialData?.preferences as any;
+        if (prefs?.flight?.details || prefs?.flight?.from) modes.push('flight');
+        if (prefs?.hotel) modes.push('hotel');
+        if (prefs?.train?.details || prefs?.train?.from) modes.push('train');
+        if (prefs?.car?.details || prefs?.car?.pickup) modes.push('car');
         return modes.length > 0 ? modes : ['flight', 'hotel']; // Default
     });
 
@@ -141,9 +155,11 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
         );
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const preferences = initialData?.preferences as any;
 
     const form = useForm<RequestFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(requestSchema) as any,
         defaultValues: {
             title: initialData?.title || "",

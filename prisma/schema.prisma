@@ -78,7 +78,7 @@ model TripRequest {
   assignedAgentId String?
   status          RequestStatus         @default(DRAFT)
   title           String
-  destination     String
+  destination     Json
   startDate       DateTime
   endDate         DateTime
   purpose         String?

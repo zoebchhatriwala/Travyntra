@@ -16,7 +16,7 @@ interface AnalyticsWidgetsProps {
         avgApprovalTime: string;
         mtdBudget: string;
         violations: number;
-        budgetByMonth: any[];
+        budgetByMonth: unknown[];
         topDestinations: { name: string, count: number }[];
         currency?: string;
     } | null;

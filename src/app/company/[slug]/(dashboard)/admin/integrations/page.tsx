@@ -15,7 +15,7 @@ export default async function IntegrationsPage() {
             <div className="text-center space-y-4 py-8">
                 <h1 className="text-4xl font-bold tracking-tight text-gray-900">Travel Partner Network</h1>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Connect with verified travel agencies to fulfill your company's trip requests.
+                    Connect with verified travel agencies to fulfill your company&apos;s trip requests.
                     Streamline bookings, billing, and support in one place.
                 </p>
             </div>

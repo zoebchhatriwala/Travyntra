@@ -74,7 +74,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                 setNewDescription("");
                 setIsAdding(false);
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to add item");
         } finally {
             setLoadingItemId(null);
@@ -89,7 +89,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             if (result.error) {
                 toast.error(result.error);
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to update item");
         } finally {
             setLoadingItemId(null);
@@ -108,7 +108,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             } else {
                 toast.success("Item deleted");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to delete item");
         } finally {
             setLoadingItemId(null);
@@ -130,7 +130,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             } else {
                 toast.success("Documents uploaded");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to upload");
         } finally {
             setUploadingItemId(null);
@@ -147,7 +147,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             } else {
                 toast.success("Document deleted");
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to delete");
         } finally {
             setDeletingDocId(null);
