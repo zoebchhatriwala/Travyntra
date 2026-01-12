@@ -11,10 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { createTripRequest, updateTripRequest } from "../../../actions";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Plane, Calendar, FileText, Users } from "lucide-react";
+import { Loader2, Plane, Calendar, FileText, Users, Train, Car, Building, Globe } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LocationSelector } from "@/components/location-selector";
+import { ManualAddressDialog, type Address } from "@/components/manual-address-dialog";
+import { MapPin, Pencil } from "lucide-react";
+
 
 const requestSchema = z.object({
     title: z.string().min(5, "Title acts as the subject line, make it descriptive (min 5 chars)."),
@@ -24,12 +29,45 @@ const requestSchema = z.object({
     purpose: z.string().min(10, "Please provide more context about the purpose of this trip."),
     budget: z.string().optional(),
     flightPreferences: z.string().optional(),
+    flightFrom: z.string().optional(),
+    flightTo: z.string().optional(),
     hotelPreferences: z.string().optional(),
     carPreferences: z.string().optional(),
+    carPickup: z.string().optional(),
+    carDropoff: z.string().optional(),
     trainPreferences: z.string().optional(),
+    trainFrom: z.string().optional(),
+    trainTo: z.string().optional(),
     otherPreferences: z.string().optional(),
     isGroup: z.boolean().default(false),
     parentTripId: z.string().optional(),
+    destinationDetails: z.object({
+        street: z.string().min(1, "Street is required"),
+        city: z.string().min(1, "City is required"),
+        state: z.string().min(1, "State is required"),
+        country: z.string().min(1, "Country is required"),
+        zipcode: z.string(),
+        latitude: z.string().optional(),
+        longitude: z.string().optional(),
+    }).optional(),
+    carPickupDetails: z.object({
+        street: z.string().min(1, "Street is required"),
+        city: z.string().min(1, "City is required"),
+        state: z.string().min(1, "State is required"),
+        country: z.string().min(1, "Country is required"),
+        zipcode: z.string(),
+        latitude: z.string().optional(),
+        longitude: z.string().optional(),
+    }).optional(),
+    carDropoffDetails: z.object({
+        street: z.string().min(1, "Street is required"),
+        city: z.string().min(1, "City is required"),
+        state: z.string().min(1, "State is required"),
+        country: z.string().min(1, "Country is required"),
+        zipcode: z.string(),
+        latitude: z.string().optional(),
+        longitude: z.string().optional(),
+    }).optional(),
 });
 
 type RequestFormValues = z.infer<typeof requestSchema>;
@@ -51,6 +89,57 @@ interface RequestFormProps {
 export function RequestForm({ slug, currency, initialData, requestId, groupTrips = [] }: RequestFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+    const [pickupAddressDialogOpen, setPickupAddressDialogOpen] = useState(false);
+    const [dropoffAddressDialogOpen, setDropoffAddressDialogOpen] = useState(false);
+
+    // Handler for saving address from manual dialog
+    const handleAddressSave = (address: Address) => {
+        // Format destination string for display/search
+        const parts = [address.city, address.country].filter(Boolean);
+        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Destination";
+
+        form.setValue("destination", formatted);
+        form.setValue("destinationDetails", address);
+    };
+
+    const handlePickupAddressSave = (address: Address) => {
+        const parts = [address.city, address.country].filter(Boolean);
+        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Pickup";
+
+        form.setValue("carPickup", formatted);
+        form.setValue("carPickupDetails", address);
+    };
+
+    const handleDropoffAddressSave = (address: Address) => {
+        const parts = [address.city, address.country].filter(Boolean);
+        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Dropoff";
+
+        form.setValue("carDropoff", formatted);
+        form.setValue("carDropoffDetails", address);
+    };
+
+    // UI State for Travel Modes
+    const [selectedModes, setSelectedModes] = useState<string[]>(() => {
+        const modes = [];
+        if (initialData?.preferences?.flight?.details || initialData?.preferences?.flight?.from) modes.push('flight');
+        if (initialData?.preferences?.hotel) modes.push('hotel');
+        if (initialData?.preferences?.train?.details || initialData?.preferences?.train?.from) modes.push('train');
+        if (initialData?.preferences?.car?.details || initialData?.preferences?.car?.pickup) modes.push('car');
+        return modes.length > 0 ? modes : ['flight', 'hotel']; // Default
+    });
+
+    // Auto-detection State
+    const [originCountry, setOriginCountry] = useState<string | null>(null);
+    const [destCountry, setDestCountry] = useState<string | null>(null);
+
+    const isInternational = originCountry && destCountry && originCountry !== destCountry;
+
+    const toggleMode = (mode: string) => {
+        setSelectedModes(prev =>
+            prev.includes(mode) ? prev.filter(m => m !== mode) : [...prev, mode]
+        );
+    };
 
     const preferences = initialData?.preferences as any;
 
@@ -61,15 +150,33 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             destination: initialData?.destination || "",
             purpose: initialData?.purpose || "",
             budget: initialData?.budget ? initialData.budget.toString() : "",
-            flightPreferences: preferences?.flight || "",
+
+            // Flight
+            flightPreferences: typeof preferences?.flight === 'string' ? preferences.flight : preferences?.flight?.details || "",
+            flightFrom: preferences?.flight?.from || "",
+            flightTo: preferences?.flight?.to || "",
+
+            // Hotel
             hotelPreferences: preferences?.hotel || "",
-            carPreferences: preferences?.car || "",
-            trainPreferences: preferences?.train || "",
+
+            // Car
+            carPreferences: typeof preferences?.car === 'string' ? preferences.car : preferences?.car?.details || "",
+            carPickup: preferences?.car?.pickup || "",
+            carDropoff: preferences?.car?.dropoff || "",
+
+            // Train
+            trainPreferences: typeof preferences?.train === 'string' ? preferences.train : preferences?.train?.details || "",
+            trainFrom: preferences?.train?.from || "",
+            trainTo: preferences?.train?.to || "",
+
             otherPreferences: preferences?.other || "",
             startDate: initialData?.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : "",
             endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : "",
             isGroup: initialData?.isGroup || false,
             parentTripId: initialData?.parentTripId || "none",
+            destinationDetails: preferences?.destinationDetails || undefined,
+            carPickupDetails: preferences?.car?.pickupDetails || undefined,
+            carDropoffDetails: preferences?.car?.dropoffDetails || undefined,
         },
     });
 
@@ -77,11 +184,26 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
         setIsSubmitting(true);
         try {
             const preferences = {
-                flight: data.flightPreferences,
+                flight: {
+                    details: data.flightPreferences,
+                    from: data.flightFrom,
+                    to: data.flightTo
+                },
                 hotel: data.hotelPreferences,
-                car: data.carPreferences,
-                train: data.trainPreferences,
+                car: {
+                    details: data.carPreferences,
+                    pickup: data.carPickup,
+                    dropoff: data.carDropoff,
+                    pickupDetails: data.carPickupDetails,
+                    dropoffDetails: data.carDropoffDetails,
+                },
+                train: {
+                    details: data.trainPreferences,
+                    from: data.trainFrom,
+                    to: data.trainTo
+                },
                 other: data.otherPreferences,
+                destinationDetails: data.destinationDetails,
             };
 
             if (initialData && requestId) {
@@ -169,9 +291,35 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                             <FormItem>
                                                 <FormLabel>Destination</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="City, Country" {...field} className="bg-white" />
+                                                    <div className="flex gap-2">
+                                                        <div className="relative flex-1">
+                                                            <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                            <Input
+                                                                placeholder="City, Country"
+                                                                {...field}
+                                                                readOnly
+                                                                className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
+                                                                onClick={() => setAddressDialogOpen(true)}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => setAddressDialogOpen(true)}
+                                                            title="Edit Address"
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
+                                                <ManualAddressDialog
+                                                    open={addressDialogOpen}
+                                                    onOpenChange={setAddressDialogOpen}
+                                                    onSave={handleAddressSave}
+                                                    initialValue={form.getValues("destinationDetails")}
+                                                />
                                             </FormItem>
                                         )}
                                     />
@@ -224,86 +372,301 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                     Help the travel agents book the best options for you.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="flightPreferences"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Flight Preferences</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Airline, Seat choice, Time..."
-                                                        className="resize-none bg-white h-24"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="hotelPreferences"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Hotel Preferences</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Location, Room type, Amenities..."
-                                                        className="resize-none bg-white h-24"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="trainPreferences"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Train / Rail</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Class, Seat type, Route..."
-                                                        className="resize-none bg-white h-24"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="carPreferences"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Car Rental / Taxi</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Car type, Transmission, Pickup..."
-                                                        className="resize-none bg-white h-24"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                            <CardContent className="space-y-6">
+                                {/* Mode Selection */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                    {[
+                                        { id: 'flight', icon: Plane, label: 'Flight' },
+                                        { id: 'hotel', icon: Building, label: 'Hotel' },
+                                        { id: 'train', icon: Train, label: 'Train' },
+                                        { id: 'car', icon: Car, label: 'Car / Taxi' },
+                                    ].map((mode) => (
+                                        <div
+                                            key={mode.id}
+                                            onClick={() => toggleMode(mode.id)}
+                                            className={`
+                                                cursor-pointer flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200
+                                                ${selectedModes.includes(mode.id)
+                                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
+                                                    : 'border-transparent bg-gray-100/50 text-gray-500 hover:bg-gray-100 hover:scale-105'}
+                                            `}
+                                        >
+                                            <mode.icon className={`w-6 h-6 mb-2 ${selectedModes.includes(mode.id) ? 'stroke-2' : ''}`} />
+                                            <span className="font-semibold text-sm">{mode.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Dynamic Fields based on Modes */}
+                                <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+
+                                    {selectedModes.includes('flight') && (
+                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                            <div className="flex items-center justify-between">
+                                                <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
+                                                    <Plane className="w-4 h-4" /> Flight Preferences
+                                                </FormLabel>
+                                                {isInternational && (
+                                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 gap-1">
+                                                        <Globe className="w-3 h-3" /> International
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="flightFrom"
+                                                    render={({ field }) => (
+                                                        <FormItem className="min-w-0">
+                                                            <FormLabel className="text-xs text-gray-500 uppercase tracking-wide">Origin</FormLabel>
+                                                            <FormControl>
+                                                                <LocationSelector
+                                                                    mode="flight"
+                                                                    value={field.value}
+                                                                    onChange={field.onChange}
+                                                                    onCountryChange={setOriginCountry}
+                                                                    placeholder="From Airport..."
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="flightTo"
+                                                    render={({ field }) => (
+                                                        <FormItem className="min-w-0">
+                                                            <FormLabel className="text-xs text-gray-500 uppercase tracking-wide">Destination</FormLabel>
+                                                            <FormControl>
+                                                                <LocationSelector
+                                                                    mode="flight"
+                                                                    value={field.value}
+                                                                    onChange={field.onChange}
+                                                                    onCountryChange={setDestCountry}
+                                                                    placeholder="To Airport..."
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <FormField
+                                                control={form.control}
+                                                name="flightPreferences"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Textarea
+                                                                placeholder="Additional airline preferences, seat choice, timing constraints..."
+                                                                className="resize-none bg-white min-h-[80px]"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {selectedModes.includes('hotel') && (
+                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                            <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
+                                                <Building className="w-4 h-4" /> Hotel Preferences
+                                            </FormLabel>
+                                            <FormField
+                                                control={form.control}
+                                                name="hotelPreferences"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Textarea
+                                                                placeholder="Preferred area, star rating, room type, specific amenities..."
+                                                                className="resize-none bg-white h-24"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {selectedModes.includes('train') && (
+                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                            <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
+                                                <Train className="w-4 h-4" /> Train / Rail
+                                            </FormLabel>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="trainFrom"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <LocationSelector
+                                                                    mode="train"
+                                                                    value={field.value}
+                                                                    onChange={field.onChange}
+                                                                    placeholder="From Station..."
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="trainTo"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <LocationSelector
+                                                                    mode="train"
+                                                                    value={field.value}
+                                                                    onChange={field.onChange}
+                                                                    placeholder="To Station..."
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <FormField
+                                                control={form.control}
+                                                name="trainPreferences"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Textarea
+                                                                placeholder="Class, Seat type, Route..."
+                                                                className="resize-none bg-white min-h-[60px]"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {selectedModes.includes('car') && (
+                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                            <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
+                                                <Car className="w-4 h-4" /> Car Rental / Taxi
+                                            </FormLabel>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="carPickup"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <div className="flex gap-2">
+                                                                    <div className="relative flex-1">
+                                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                        <Input
+                                                                            placeholder="Pickup Address..."
+                                                                            {...field}
+                                                                            readOnly
+                                                                            className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
+                                                                            onClick={() => setPickupAddressDialogOpen(true)}
+                                                                        />
+                                                                    </div>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => setPickupAddressDialogOpen(true)}
+                                                                        title="Edit Pickup Address"
+                                                                    >
+                                                                        <Pencil className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                            <ManualAddressDialog
+                                                                open={pickupAddressDialogOpen}
+                                                                onOpenChange={setPickupAddressDialogOpen}
+                                                                onSave={handlePickupAddressSave}
+                                                                initialValue={form.getValues("carPickupDetails")}
+                                                            />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="carDropoff"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <div className="flex gap-2">
+                                                                    <div className="relative flex-1">
+                                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                        <Input
+                                                                            placeholder="Dropoff Address..."
+                                                                            {...field}
+                                                                            readOnly
+                                                                            className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
+                                                                            onClick={() => setDropoffAddressDialogOpen(true)}
+                                                                        />
+                                                                    </div>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => setDropoffAddressDialogOpen(true)}
+                                                                        title="Edit Dropoff Address"
+                                                                    >
+                                                                        <Pencil className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                            <ManualAddressDialog
+                                                                open={dropoffAddressDialogOpen}
+                                                                onOpenChange={setDropoffAddressDialogOpen}
+                                                                onSave={handleDropoffAddressSave}
+                                                                initialValue={form.getValues("carDropoffDetails")}
+                                                            />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <FormField
+                                                control={form.control}
+                                                name="carPreferences"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Textarea
+                                                                placeholder="Vehicle type, needed duration, transmission..."
+                                                                className="resize-none bg-white min-h-[60px]"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    )}
+
                                     <FormField
                                         control={form.control}
                                         name="otherPreferences"
                                         render={({ field }) => (
-                                            <FormItem className="md:col-span-2">
+                                            <FormItem className="pt-4 border-t">
                                                 <FormLabel>Other Requests</FormLabel>
                                                 <FormControl>
                                                     <Textarea
                                                         placeholder="Visa assistance, Meal requirements, Accessibility needs..."
-                                                        className="resize-none bg-white h-24"
+                                                        className="resize-none bg-white h-20"
                                                         {...field}
                                                     />
                                                 </FormControl>

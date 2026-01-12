@@ -205,12 +205,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Invoice Generation**: Create invoices for completed requests
 - [ ] **Financial Tracking**: Revenue and receivables dashboard
 
-### Phase 8: UX & Advanced Request Logic 📋 PLANNED
-- [ ] **Global Country Selector**: Implement real country selector in Company/Agency settings.
-- [ ] **Transport-Aware Locations**: 
-    - Flights: Airport selection (via `openaip.net`).
+### Phase 8: UX & Advanced Request Logic �️ ACTIVE
+- [x] **Global Country Selector**: Implement real country selector in Company/Agency settings.
+- [x] **Transport-Aware Locations**: 
+    - Flights: Airport selection (via `openaip.net` / major list).
     - Trains: Railway station selection (Domestic).
-    - Car/Others: Google Address integration.
+    - Car/Others: Google Address integration (Mock/Input).
 - [ ] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
 
 ### Phase 9: Smart Logic & Automation 📋 PLANNED
@@ -262,8 +262,8 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 
 ### Immediate Priorities
 1. **UX & Request Refinements** (Phases 8)
-   - Real country selector in settings
-   - Transport-specific location selectors (Airports/Stations/Addresses)
+   - ✅ Real country selector in settings
+   - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
    - Manual collaborator management UI
 2. **Smart Logic & Automation** (Phase 9)
    - Policy-based auto-approvals (< ₹50k, Domestic)

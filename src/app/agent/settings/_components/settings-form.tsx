@@ -32,6 +32,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { TIMEZONES } from "@/lib/constants/timezones";
+import { CountrySelect } from "@/components/ui/country-select";
 import { toast } from "sonner";
 
 interface SettingsFormProps {
@@ -195,11 +197,11 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                         <SelectValue placeholder="Select Timezone" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
-                                        <SelectItem value="EST">EST (GMT-5)</SelectItem>
-                                        <SelectItem value="PST">PST (GMT-8)</SelectItem>
-                                        <SelectItem value="IST">IST (GMT+5:30)</SelectItem>
-                                        <SelectItem value="CET">CET (GMT+1)</SelectItem>
+                                        {TIMEZONES.map((tz) => (
+                                            <SelectItem key={tz} value={tz}>
+                                                {tz.replace(/_/g, " ")}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -208,13 +210,12 @@ export function SettingsForm({ company }: SettingsFormProps) {
                         <div className="space-y-2">
                             <Label htmlFor="country" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</Label>
                             <div className="relative group">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
-                                <Input
-                                    id="country"
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors z-10 pointer-events-none" />
+                                <CountrySelect
                                     value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
+                                    onChange={setCountry}
                                     className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
-                                    placeholder="e.g. United States"
+                                    placeholder="Select Country"
                                 />
                             </div>
                         </div>
