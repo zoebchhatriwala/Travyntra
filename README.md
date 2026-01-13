@@ -30,8 +30,8 @@ Travyntra is a modern, multi-tenant travel management ecosystem that bridges the
 
 1.  **Clone the repository**
     ```bash
-    git clone <repository_url>
-    cd app.travel_portal
+    git clone https://github.com/zoebchhatriwala/Travyntra.git
+    cd Travyntra
     ```
 
 2.  **Install dependencies**
