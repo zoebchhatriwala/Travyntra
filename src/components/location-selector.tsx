@@ -12,9 +12,10 @@ interface LocationSelectorProps {
     onCountryChange?: (country: string) => void;
     placeholder?: string;
     className?: string;
+    allowCustom?: boolean;
 }
 
-export function LocationSelector({ mode, value, onChange, onCountryChange, placeholder, className }: LocationSelectorProps) {
+export function LocationSelector({ mode, value, onChange, onCountryChange, placeholder, className, allowCustom }: LocationSelectorProps) {
 
 
     // Wrapper to adapt server action to combobox expectation
@@ -63,6 +64,7 @@ export function LocationSelector({ mode, value, onChange, onCountryChange, place
             placeholder={placeholder || (mode === "flight" ? "Select airport..." : "Select station...")}
             searchPlaceholder="Search city, code, station..."
             className={className}
+            allowCustom={allowCustom}
         />
     );
 }

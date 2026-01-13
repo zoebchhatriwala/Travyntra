@@ -269,7 +269,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 1. **UX & Request Refinements** (Phases 8)
    - ✅ Real country selector in settings
    - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
-   - [ ] Custom Train Option (Manual Entry)
+   - ✅ Custom Train Option (Manual Entry)
    - [ ] Searchable Country & Timezone Selectors
    - [ ] Asset Vault: Search, Filters, Pagination
    - Manual collaborator management UI

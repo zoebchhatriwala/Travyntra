@@ -42,11 +42,11 @@ const getCompanyColor = (index: number) => COLORS[index % COLORS.length];
 
 interface DevUser {
     id: string;
-    email: string;
+    email: string | null;
     name: string | null;
     role: string;
     companyName?: string;
-    companySlug?: string;
+    companySlug?: string | null;
 }
 
 export function DevLoginSwitcher() {
@@ -57,6 +57,32 @@ export function DevLoginSwitcher() {
     // Filtering State
     const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isFilterInitialized, setIsFilterInitialized] = useState(false);
+
+    // Determine storage key
+    const STORAGE_KEY = "dev-console-company-filter";
+
+    // Load from LocalStorage
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    setSelectedCompanies(JSON.parse(saved));
+                } catch (e) {
+                    console.error("Failed to parse dev filter", e);
+                }
+            }
+            setIsFilterInitialized(true);
+        }
+    }, []);
+
+    // Save to LocalStorage
+    useEffect(() => {
+        if (isFilterInitialized) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedCompanies));
+        }
+    }, [selectedCompanies, isFilterInitialized]);
 
     useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
@@ -129,6 +155,8 @@ export function DevLoginSwitcher() {
 
     const handleSwitch = async (user: DevUser) => {
         const { email, role, companySlug } = user;
+        if (!email) return;
+
         let targetUrl = "/";
         if (role === 'SUPER_ADMIN') targetUrl = "/admin/dashboard";
         else if (role === 'TRAVEL_AGENT') targetUrl = "/agent/dashboard";
@@ -138,7 +166,7 @@ export function DevLoginSwitcher() {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999]">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999]">
             <DropdownMenu onOpenChange={(open) => {
                 setIsOpen(open);
                 if (!open) setIsFilterOpen(false); // Close filter view when menu closes
@@ -167,7 +195,7 @@ export function DevLoginSwitcher() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    align="end"
+                    align="center"
                     side="top"
                     className="w-[400px] h-[600px] rounded-[32px] p-0 border-2 border-indigo-50 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 flex flex-col overflow-hidden bg-white"
                 >

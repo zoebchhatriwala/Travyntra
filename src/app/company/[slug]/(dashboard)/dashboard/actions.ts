@@ -9,12 +9,21 @@ import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-prefere
 import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
 
+/**
+ * Represents a location/destination structure with extensible properties.
+ */
 interface Location {
     city?: string;
     formatted?: string;
     [key: string]: Prisma.InputJsonValue | undefined;
 }
 
+/**
+ * Retrieves dashboard statistics for the currently authenticated employee.
+ * Returns counts of active/completed trips and the 5 most recent requests.
+ * 
+ * @returns {Promise<Object|null>} Dashboard stats object or null if unauthenticated.
+ */
 export async function getEmployeeDashboardStats() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return null;
@@ -75,6 +84,16 @@ export async function getEmployeeDashboardStats() {
     };
 }
 
+/**
+ * Fetches a paginated list of trip requests for the current employee.
+ * Supports filtering by a search query (title).
+ * 
+ * @param {Object} params - Query parameters.
+ * @param {number} [params.page=1] - Page number.
+ * @param {number} [params.limit=10] - Items per page.
+ * @param {string} [params.query=""] - Search term for filtering requests.
+ * @returns {Promise<Object>} Paginated requests, total count, and total pages.
+ */
 export async function getEmployeeRequests({
     page = 1,
     limit = 10,
@@ -140,6 +159,12 @@ export async function getEmployeeRequests({
     };
 }
 
+/**
+ * Retrieves a list of active group trips associated with the user's company.
+ * Used for linking individual requests to parent group trips.
+ * 
+ * @returns {Promise<Array>} List of group trips with summary details.
+ */
 export async function getCompanyGroupTrips() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return [];
@@ -173,6 +198,12 @@ export async function getCompanyGroupTrips() {
     }));
 }
 
+/**
+ * Fetches all documents (assets) linked to the user's trip requests.
+ * Includes tickets, visas, and other fulfillment artifacts.
+ * 
+ * @returns {Promise<Array>} List of employee assets/documents.
+ */
 export async function getEmployeeAssets() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return [];
@@ -219,6 +250,12 @@ export async function getEmployeeAssets() {
     }));
 }
 
+/**
+ * Updates the profile information of the current authenticated user.
+ * 
+ * @param {FormData} formData - Form data containing profile fields (e.g., name).
+ * @returns {Promise<Object>} Success message or error object.
+ */
 export async function updateEmployeeProfile(formData: FormData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };
@@ -246,6 +283,22 @@ export async function updateEmployeeProfile(formData: FormData) {
 
 
 
+/**
+ * Creates a new trip request for the current user.
+ * Initiates the approval workflow if configured for the company.
+ * 
+ * @param {Object} data - Trip request payload.
+ * @param {string} data.title - Title of the trip.
+ * @param {Location} data.destination - Destination object.
+ * @param {Date} data.startDate - Trip start date.
+ * @param {Date} data.endDate - Trip end date.
+ * @param {string} [data.purpose] - Purpose of the trip.
+ * @param {Money} [data.budget] - Estimated budget.
+ * @param {TripPreferences} [data.preferences] - Travel preferences (flight, hotel, etc.).
+ * @param {boolean} [data.isGroup] - Whether this is a group trip leader request.
+ * @param {string} [data.parentTripId] - ID of parent group trip to link to.
+ * @returns {Promise<Object>} Success result with requestId or error object.
+ */
 export async function createTripRequest(data: {
     title: string;
     destination: Location;
@@ -490,6 +543,14 @@ export async function getTripRequest(requestId: string) {
 }
 
 
+/**
+ * Posts a new message/comment to a trip request's discussion thread.
+ * Handles @mentions to automatically add collaborators and send notifications.
+ * 
+ * @param {string} requestId - ID of the trip request.
+ * @param {string} content - Message content (markdown supported).
+ * @returns {Promise<Object>} Success result or error object.
+ */
 export async function postTripMessage(requestId: string, content: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };
@@ -594,6 +655,13 @@ export async function postTripMessage(requestId: string, content: string) {
     }
 }
 
+/**
+ * Uploads one or more file attachments to a request discussion.
+ * Enforces file size limits and allowed counts.
+ * 
+ * @param {FormData} formData - Contains 'files' and 'requestId'.
+ * @returns {Promise<Object>} Success result with URLs or error object.
+ */
 export async function uploadMessageAttachment(formData: FormData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };
@@ -648,6 +716,15 @@ export async function uploadMessageAttachment(formData: FormData) {
     }
 }
 
+/**
+ * Updates an existing trip request.
+ * Only allows updates if the request is in an editable status (DRAFT or PENDING).
+ * Logs significant changes to the discussion thread and activity log.
+ * 
+ * @param {string} requestId - ID of the request to update.
+ * @param {Object} data - Fields to update.
+ * @returns {Promise<Object>} Success result or error object.
+ */
 export async function updateTripRequest(requestId: string, data: {
     title?: string;
     destination?: Location;
@@ -739,6 +816,14 @@ export async function updateTripRequest(requestId: string, data: {
             }
         }
 
+        if (data.preferences) {
+            const oldPrefs = JSON.stringify(request.preferences || {});
+            const newPrefs = JSON.stringify(data.preferences);
+            if (oldPrefs !== newPrefs) {
+                changes.push(`- **Preferences**: Requirements updated`);
+            }
+        }
+
         const changeMsg = changes.length > 0 ? `\n\n**Changes:**\n${changes.join('\n')}` : '';
 
         // Log activity
@@ -770,6 +855,13 @@ export async function updateTripRequest(requestId: string, data: {
     }
 }
 
+/**
+ * Cancels a trip request.
+ * Only the owner can cancel, and only if the request is in a cancellable state.
+ * 
+ * @param {string} requestId - ID of the request to cancel.
+ * @returns {Promise<Object>} Success result or error object.
+ */
 export async function cancelTripRequest(requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };
@@ -820,6 +912,13 @@ export async function cancelTripRequest(requestId: string) {
     }
 }
 
+/**
+ * Permanently deletes a trip request.
+ * Only allowed for DRAFT or CANCELLED requests to maintain audit trails for active workflows.
+ * 
+ * @param {string} requestId - ID of the request to delete.
+ * @returns {Promise<Object>} Success result or error object.
+ */
 export async function deleteTripRequest(requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return { error: "Unauthenticated" };

@@ -540,6 +540,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                     value={field.value}
                                                                     onChange={field.onChange}
                                                                     placeholder="From Station..."
+                                                                    allowCustom={true}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -557,6 +558,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                     value={field.value}
                                                                     onChange={field.onChange}
                                                                     placeholder="To Station..."
+                                                                    allowCustom={true}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />

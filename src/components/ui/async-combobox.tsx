@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,7 @@ interface AsyncComboboxProps {
     searchPlaceholder?: string
     emptyText?: string
     className?: string
+    allowCustom?: boolean
 }
 
 export function AsyncCombobox({
@@ -46,11 +47,13 @@ export function AsyncCombobox({
     placeholder = "Select option...",
     searchPlaceholder = "Search...",
     emptyText = "No results found.",
-    className
+    className,
+    allowCustom = false
 }: AsyncComboboxProps) {
     const [open, setOpen] = React.useState(false)
     const [options, setOptions] = React.useState<ComboboxOption[]>([])
     const [loading, setLoading] = React.useState(false)
+    const [query, setQuery] = React.useState("")
 
     // Manage display label
     const [label, setLabel] = React.useState<string>(initialValueLabel || placeholder)
@@ -68,14 +71,14 @@ export function AsyncCombobox({
     }, [value, options, initialValueLabel, placeholder]);
 
 
-    const handleSearch = useDebouncedCallback(async (query: string) => {
-        if (!query) {
+    const debouncedSearch = useDebouncedCallback(async (q: string) => {
+        if (!q) {
             setOptions([]);
             return;
         }
         setLoading(true);
         try {
-            const results = await onSearch(query);
+            const results = await onSearch(q);
             setOptions(results);
         } catch (e) {
             console.error("Search failed", e);
@@ -84,6 +87,11 @@ export function AsyncCombobox({
             setLoading(false);
         }
     }, 300);
+
+    const handleSearch = (q: string) => {
+        setQuery(q);
+        debouncedSearch(q);
+    }
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -107,7 +115,7 @@ export function AsyncCombobox({
                     <CommandList>
                         {loading && <div className="p-4 text-center text-sm text-gray-500 flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>}
 
-                        {!loading && options.length === 0 && (
+                        {!loading && options.length === 0 && query && !allowCustom && (
                             <CommandEmpty>{emptyText}</CommandEmpty>
                         )}
 
@@ -137,6 +145,23 @@ export function AsyncCombobox({
                                 </CommandItem>
                             ))}
                         </CommandGroup>
+
+                        {allowCustom && query && !loading && (
+                            <CommandGroup heading="Custom">
+                                <CommandItem
+                                    value={`custom-entry-${query}`}
+                                    onSelect={() => {
+                                        onChange(query, { value: query, label: query });
+                                        setLabel(query);
+                                        setOpen(false);
+                                    }}
+                                    className="cursor-pointer font-medium text-indigo-600 data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Use "{query}"
+                                </CommandItem>
+                            </CommandGroup>
+                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

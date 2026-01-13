@@ -27,10 +27,10 @@ interface Approval {
     requestEndDate: Date;
     requestBudget: number;
     requesterName: string | null;
-    requesterEmail: string;
+    requesterEmail: string | null;
     requesterAvatar: string | null;
     companyName: string;
-    companySlug: string;
+    companySlug: string | null;
     stepName: string;
     stepOrder: number;
     createdAt: Date;
