@@ -1,6 +1,7 @@
 "use client";
 
 import ReactMarkdown from 'react-markdown';
+import Image from "next/image";
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -162,7 +163,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
             } else {
                 toast.success("Message sent!");
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to send message");
             setNewMessage(content);
             setAttachments(files);
@@ -241,7 +242,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                                     isAgent ? "bg-gradient-to-br from-amber-400 to-orange-500" : "bg-gradient-to-br from-indigo-500 to-purple-600"
                                 )}>
                                     {msg.sender.avatarUrl ? (
-                                        <img src={msg.sender.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                        <Image src={msg.sender.avatarUrl} alt="" width={36} height={36} className="w-full h-full object-cover" />
                                     ) : (
                                         msg.sender.name?.[0] || <UserIcon size={16} />
                                     )}
@@ -269,12 +270,12 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                                             <div className="break-words markdown-content">
                                                 <ReactMarkdown
                                                     components={{
-                                                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0 leading-relaxed" {...props} />,
-                                                        a: ({ node, ...props }) => <a className="text-indigo-200 underline hover:text-white" {...props} />,
-                                                        strong: ({ node, ...props }) => <span className="font-bold" {...props} />,
-                                                        ul: ({ node, ...props }) => <ul className="list-disc list-inside my-1 space-y-0.5" {...props} />,
-                                                        ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-1 space-y-0.5" {...props} />,
-                                                        li: ({ node, ...props }) => <li className="ml-2" {...props} />,
+                                                        p: ({ node, ...props }) => { void node; return <p className="mb-2 last:mb-0 leading-relaxed" {...props} />; },
+                                                        a: ({ node, ...props }) => { void node; return <a className="text-indigo-200 underline hover:text-white" {...props} />; },
+                                                        strong: ({ node, ...props }) => { void node; return <span className="font-bold" {...props} />; },
+                                                        ul: ({ node, ...props }) => { void node; return <ul className="list-disc list-inside my-1 space-y-0.5" {...props} />; },
+                                                        ol: ({ node, ...props }) => { void node; return <ol className="list-decimal list-inside my-1 space-y-0.5" {...props} />; },
+                                                        li: ({ node, ...props }) => { void node; return <li className="ml-2" {...props} />; },
                                                     }}
                                                 >
                                                     {text}
@@ -357,7 +358,7 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                             >
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden ring-2 ring-white shadow-sm">
                                     {user.avatarUrl ? (
-                                        <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                        <Image src={user.avatarUrl} alt="" width={32} height={32} className="w-full h-full object-cover" />
                                     ) : (
                                         user.name?.[0]
                                     )}

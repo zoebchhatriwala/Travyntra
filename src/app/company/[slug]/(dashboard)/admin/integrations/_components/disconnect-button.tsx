@@ -30,7 +30,7 @@ export function DisconnectButton({ agencyId }: DisconnectButtonProps) {
                 toast.success("Disconnected successfully");
                 router.refresh(); // Ensure the UI updates
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to disconnect");
         } finally {
             setIsLoading(false);

@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
+import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
 export async function getCompanyDashboardStats(slug: string, userId?: string) {
     const session = await getServerSession(authOptions);
@@ -62,15 +63,24 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
         });
     }
 
-    const totalSpend = await prisma.tripRequest.aggregate({
+    // Fetch completed requests and sum their budgets manually (can't use aggregate on JSON fields)
+    const completedRequests = await prisma.tripRequest.findMany({
         where: {
             companyId: company.id,
             status: 'COMPLETED'
         },
-        _sum: {
+        select: {
             budget: true
         }
     });
+
+    const totalSpend = completedRequests.reduce((sum, req) => {
+        if (req.budget) {
+            const money = parseMoney(req.budget);
+            return sum + (money ? moneyToDecimal(money) : 0);
+        }
+        return sum;
+    }, 0);
 
     const recentRequests = await prisma.tripRequest.findMany({
         where: { companyId: company.id },
@@ -91,7 +101,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
         pendingStaff,
         activeRequests,
         pendingApprovalsCount,
-        totalSpend: Number(totalSpend._sum.budget || 0),
+        totalSpend: totalSpend,
         recentRequests: recentRequests.map(req => ({
             id: req.id,
             title: req.title,
@@ -99,7 +109,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
             userAvatar: req.user.avatarUrl,
             status: req.status,
             createdAt: req.createdAt,
-            budget: Number(req.budget || 0)
+            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
         }))
     };
 }
@@ -182,7 +192,7 @@ export async function getCompanyRequests(slug: string, options: {
             userAvatar: req.user.avatarUrl,
             status: req.status,
             createdAt: req.createdAt,
-            budget: Number(req.budget || 0),
+            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0,
             destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
             startDate: req.startDate,
             endDate: req.endDate
@@ -310,17 +320,25 @@ export async function getCompanyAnalytics(slug: string) {
         avgApprovalTimeDays = Math.max(0.1, (totalDurationMs / requestsWithTime.length) / (1000 * 60 * 60 * 24));
     }
 
-    // 2. Total Budget (MTD)
-    const mtdBudget = await prisma.tripRequest.aggregate({
+    // 2. Total Budget (MTD) - Sum up all Money objects
+    const mtdRequests = await prisma.tripRequest.findMany({
         where: {
             companyId: company.id,
             createdAt: { gte: startOfMonth },
             status: { not: 'CANCELLED' }
         },
-        _sum: {
+        select: {
             budget: true
         }
     });
+
+    const mtdBudget = mtdRequests.reduce((sum, req) => {
+        if (req.budget) {
+            const money = parseMoney(req.budget);
+            return sum + (money ? moneyToDecimal(money) : 0);
+        }
+        return sum;
+    }, 0);
 
     // 3. Policy Violations (Placeholder: requests where budget > 5000)
     const violations = await prisma.tripRequest.count({
@@ -359,7 +377,7 @@ export async function getCompanyAnalytics(slug: string) {
 
     return {
         avgApprovalTime: avgApprovalTimeDays.toFixed(1),
-        mtdBudget: Number(mtdBudget._sum.budget || 0).toLocaleString(),
+        mtdBudget: mtdBudget,
         violations,
         budgetByMonth,
         topDestinations: topDestinations.map(d => ({

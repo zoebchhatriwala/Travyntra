@@ -65,7 +65,7 @@ export function ApprovalActions({
                 // Refresh the page to show updated status
                 window.location.reload();
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to process approval");
         } finally {
             setIsProcessing(false);

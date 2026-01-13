@@ -14,7 +14,7 @@ import {
 interface AnalyticsWidgetsProps {
     analytics: {
         avgApprovalTime: string;
-        mtdBudget: string;
+        mtdBudget: number;
         violations: number;
         budgetByMonth: unknown[];
         topDestinations: { name: string, count: number }[];
@@ -38,7 +38,7 @@ export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
                     style: 'currency',
                     currency: analytics?.currency || "USD",
                     maximumFractionDigits: 0
-                }).format(Number(analytics?.mtdBudget || 0))}
+                }).format(analytics?.mtdBudget || 0)}
                 subtitle="Current month"
                 icon={TrendingUp}
                 color="emerald"

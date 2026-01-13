@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { Check, Clock, X, User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -159,7 +160,7 @@ export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps)
                                                         {/* Approver Avatar */}
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden ring-2 ring-white flex-shrink-0">
                                                             {approver.avatarUrl ? (
-                                                                <img src={approver.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                                                <Image src={approver.avatarUrl} alt="" width={40} height={40} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 approver.name?.[0] || <User size={16} />
                                                             )}

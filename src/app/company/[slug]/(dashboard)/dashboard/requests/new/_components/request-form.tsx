@@ -20,6 +20,7 @@ import { LocationSelector } from "@/components/location-selector";
 import { ManualAddressDialog, type Address } from "@/components/manual-address-dialog";
 import { MapPin, Pencil } from "lucide-react";
 import { TripPreferences } from "@/lib/types/trip-preferences";
+import { type Money, createMoney, moneyToDecimal } from "@/lib/types/money";
 
 
 const requestSchema = z.object({
@@ -73,14 +74,14 @@ const requestSchema = z.object({
 
 type RequestFormValues = z.infer<typeof requestSchema>;
 
-interface RequestFormProps {
+export interface RequestFormProps {
     slug: string;
     currency: string;
     initialData?: {
         title: string;
         destination: string;
         purpose: string;
-        budget?: number | string | null;
+        budget?: Money | number | string | null;
         startDate: Date | string;
         endDate: Date | string;
         isGroup?: boolean;
@@ -165,7 +166,15 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             title: initialData?.title || "",
             destination: initialData?.destination || "",
             purpose: initialData?.purpose || "",
-            budget: (initialData?.budget !== undefined && initialData?.budget !== null) ? initialData.budget.toString() : "",
+            budget: (() => {
+                if (!initialData?.budget) return "";
+                // If it's already a Money object
+                if (typeof initialData.budget === 'object' && 'amount' in initialData.budget) {
+                    return moneyToDecimal(initialData.budget as Money).toString();
+                }
+                // If it's a number or string
+                return initialData.budget.toString();
+            })(),
 
             // Flight
             flightPreferences: typeof preferences?.flight === 'string' ? preferences.flight : preferences?.flight?.details || "",
@@ -229,7 +238,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
-                    budget: (data.budget !== undefined && data.budget !== "") ? Number(data.budget) : undefined,
+                    budget: (data.budget && data.budget !== "") ? createMoney(Number(data.budget), currency) : undefined,
                     preferences,
                     isGroup: data.isGroup,
                     parentTripId: data.parentTripId,
@@ -249,7 +258,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
-                    budget: data.budget ? Number(data.budget) : undefined,
+                    budget: data.budget ? createMoney(Number(data.budget), currency) : undefined,
                     preferences,
                     isGroup: data.isGroup,
                     parentTripId: data.parentTripId === "none" ? undefined : data.parentTripId,

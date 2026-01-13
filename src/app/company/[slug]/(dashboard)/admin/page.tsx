@@ -1,4 +1,4 @@
-
+import Image from "next/image";
 import { getCompanyDashboardStats } from "./actions";
 import {
     Users,
@@ -114,7 +114,7 @@ export default async function CompanyAdminPage({
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
                                                     {req.userAvatar ? (
-                                                        <img src={req.userAvatar} alt={req.userName} className="w-full h-full object-cover" />
+                                                        <Image src={req.userAvatar} alt={req.userName} width={40} height={40} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <Ship size={18} />
                                                     )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 
 import {
     Search,
@@ -23,6 +24,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests } from "../../actions";
@@ -49,6 +51,7 @@ interface RequestsTableProps {
 }
 
 export function RequestsTable({ slug, initialRequests, total: initialTotal, totalPages: initialTotalPages, currency: initialCurrency }: RequestsTableProps) {
+    const router = useRouter();
     const [requests, setRequests] = useState<Request[]>(initialRequests);
     const [total, setTotal] = useState(initialTotal);
     const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -71,7 +74,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             setTotal(result.total);
             setTotalPages(result.totalPages);
             setCurrency(result.currency);
-        } catch (error) {
+        } catch {
             toast.error("Failed to fetch requests");
         } finally {
             setIsLoading(false);
@@ -140,7 +143,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             a.click();
             window.URL.revokeObjectURL(url);
             toast.success("Download started", { id: toastId });
-        } catch (error) {
+        } catch {
             toast.error("Export failed", { id: toastId });
         }
     };
@@ -250,8 +253,12 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                 </tr>
                             ) : (
                                 requests.map((req) => (
-                                    <tr key={req.id} className="group hover:bg-gray-50/50 transition-colors">
-                                        <td className="p-6">
+                                    <tr
+                                        key={req.id}
+                                        className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                        onClick={() => router.push(`/company/${slug}/dashboard/requests/${req.id}`)}
+                                    >
+                                        <td className="p-6" onClick={(e) => e.stopPropagation()}>
                                             <Checkbox
                                                 checked={selectedIds.includes(req.id)}
                                                 onCheckedChange={() => toggleSelect(req.id)}
@@ -262,7 +269,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform overflow-hidden ring-2 ring-white">
                                                     {req.userAvatar ? (
-                                                        <img src={req.userAvatar} alt="" className="w-full h-full object-cover" />
+                                                        <Image src={req.userAvatar} alt="" width={48} height={48} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <span className="font-black text-lg">{req.userName[0]}</span>
                                                     )}
@@ -286,7 +293,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             <p className="font-black text-gray-900">{currency} {req.budget.toLocaleString()}</p>
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Est. Spend</p>
                                         </td>
-                                        <td className="p-6 text-right">
+                                        <td className="p-6 text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button size="icon" variant="ghost" asChild className="rounded-xl hover:bg-indigo-50 hover:text-indigo-600">
                                                     <Link href={`/company/${slug}/dashboard/requests/${req.id}`}>

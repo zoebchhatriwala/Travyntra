@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTripRequest } from "../../actions";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,7 @@ export default async function RequestLayout({
                                 <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
                                     <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 overflow-hidden">
                                         {request.user.avatarUrl ? (
-                                            <img src={request.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                            <Image src={request.user.avatarUrl} alt="" width={20} height={20} className="w-full h-full object-cover" />
                                         ) : (
                                             request.user.name?.[0]
                                         )}

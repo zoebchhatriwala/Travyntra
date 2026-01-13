@@ -151,9 +151,8 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                 approverTags: s.approverTags
             })));
             toast.success("Workflow configuration updated successfully!");
-        } catch (error) {
+        } catch {
             toast.error("Failed to save workflow configuration.");
-            console.error(error);
         } finally {
             setIsSaving(false);
         }
@@ -168,7 +167,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
         try {
             await createTestRequest(slug, currentUserId);
             toast.success("Simulation request created!");
-        } catch (error) {
+        } catch {
             toast.error("Failed to create simulation request.");
         } finally {
             setIsSimulating(false);

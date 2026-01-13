@@ -6,10 +6,11 @@ import { toast } from "sonner";
 import { approveBid } from "@/app/agent/bids/[requestId]/actions";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import Image from "next/image";
+import { type Money, formatMoney } from "@/lib/types/money";
 
 interface Bid {
     id: string;
-    amount: number | string;
+    amount: Money | null;
     status: string;
     message?: string | null;
     agent: {
@@ -18,7 +19,7 @@ interface Bid {
     };
 }
 
-export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { bids: Bid[], requestId: string, isAuthorized: boolean, currency?: string }) {
+export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], requestId: string, isAuthorized: boolean }) {
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     async function handleApprove(bidId: string) {
@@ -52,7 +53,7 @@ export function BidList({ bids, requestId, isAuthorized, currency = "USD" }: { b
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <span className="font-bold text-xl text-gray-900">
-                                    {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(bid.amount))}
+                                    {bid.amount ? formatMoney(bid.amount) : 'N/A'}
                                 </span>
                                 <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${bid.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
                                     bid.status === 'REJECTED' ? 'bg-red-50 text-red-600' :

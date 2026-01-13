@@ -3,6 +3,15 @@ import { hash } from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
+// Helper to create Money objects
+function createMoney(amount: number, currencyCode: string = "USD", multiplier: number = 100) {
+    return {
+        amount: Math.round(amount * multiplier),
+        currencyCode,
+        multiplier
+    };
+}
+
 // Setup adapter for seeding to match the main app configuration
 const getDatabaseUrl = () => {
     if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
@@ -233,7 +242,7 @@ async function main() {
                     endDate,
                     status: status,
                     purpose: `Business travel for ${title}`,
-                    budget: 2500,
+                    budget: createMoney(2500, "USD"),
                     preferences: { flight: "Economy", hotel: "Central location" }
                 }
             });
@@ -249,7 +258,7 @@ async function main() {
                     data: {
                         requestId: request.id,
                         agentId: agency.id,
-                        amount: 2200,
+                        amount: createMoney(2200, "USD"),
                         message: "We have found a great deal for your trip.",
                         status: status === RequestStatus.BOOKED ? "ACCEPTED" : "PENDING"
                     }
@@ -301,7 +310,7 @@ async function main() {
             endDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000), // 18 days from now
             status: RequestStatus.PENDING_COMPANY_APPROVAL,
             purpose: "Attend annual tech conference and meet with west coast clients",
-            budget: 3500,
+            budget: createMoney(3500, "USD"),
             preferences: { flight: "Business", hotel: "Downtown area" }
         }
     });

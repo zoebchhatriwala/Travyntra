@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getTripRequest } from "../../../actions";
 import { notFound } from "next/navigation";
-import { RequestForm } from "../../new/_components/request-form";
+import { RequestForm, type RequestFormProps } from "../../new/_components/request-form";
 
 export default async function EditRequestPage({
     params,
@@ -33,7 +33,7 @@ export default async function EditRequestPage({
             <RequestForm
                 slug={slug}
                 currency={company?.currency || "USD"}
-                initialData={request as any}
+                initialData={request as RequestFormProps["initialData"]}
                 requestId={requestId}
             />
         </div>

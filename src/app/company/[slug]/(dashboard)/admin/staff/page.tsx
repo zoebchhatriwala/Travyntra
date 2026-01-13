@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getCompanyStaff } from "./actions";
 import { StaffList } from "./_components/staff-list";
 import { Users2, ShieldCheck } from "lucide-react";
@@ -27,7 +28,7 @@ export default async function StaffManagementPage({
                         {staff.slice(0, 3).map((member) => (
                             <div key={member.id} className="w-10 h-10 rounded-full border-2 border-white bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-400 uppercase overflow-hidden">
                                 {member.avatarUrl ? (
-                                    <img src={member.avatarUrl} alt={member.name || ""} className="w-full h-full object-cover" />
+                                    <Image src={member.avatarUrl} alt={member.name || ""} width={40} height={40} className="w-full h-full object-cover" />
                                 ) : (
                                     member.name ? member.name[0] : member.email?.[0]
                                 )}

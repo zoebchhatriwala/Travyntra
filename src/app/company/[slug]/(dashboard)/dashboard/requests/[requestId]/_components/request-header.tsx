@@ -50,7 +50,7 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
                 toast.success("Request cancelled successfully");
                 router.refresh();
             }
-        } catch (e) {
+        } catch {
             toast.error("Failed to cancel request");
         } finally {
             setIsCancelling(false);

@@ -12,7 +12,8 @@ import {
     Activity,
     CheckCircle2,
     LucideIcon,
-    Share2
+    Share2,
+    Plane
 } from "lucide-react";
 
 
@@ -32,6 +33,7 @@ export function CompanyNav({ slug }: CompanyNavProps) {
     const navLinks: NavLink[] = [
         { href: `/company/${slug}/admin`, label: "Dashboard", icon: LayoutDashboard },
         { href: `/company/${slug}/admin/requests`, label: "Trip Requests", icon: Activity },
+        { href: `/company/${slug}/dashboard/requests`, label: "My Requests", icon: Plane },
         { href: `/company/${slug}/admin/approvals`, label: "My Approvals", icon: CheckCircle2 },
         { href: `/company/${slug}/admin/staff`, label: "Staff Management", icon: Users },
         { href: `/company/${slug}/admin/workflow`, label: "Approval Workflow", icon: GitBranch },

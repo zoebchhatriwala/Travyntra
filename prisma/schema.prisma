@@ -82,8 +82,8 @@ model TripRequest {
   startDate       DateTime
   endDate         DateTime
   purpose         String?
-  budget          Decimal?
-  cost            Decimal?
+  budget          Json?
+  cost            Json?
   preferences     Json?
   parentTripId    String?
   isGroup         Boolean               @default(false)
@@ -109,7 +109,7 @@ model AgentBid {
   id        String      @id @default(uuid())
   requestId String
   agentId   String
-  amount    Decimal?
+  amount    Json?
   message   String?
   status    String      @default("PENDING")
   createdAt DateTime    @default(now())

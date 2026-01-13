@@ -23,7 +23,7 @@ export function AdminRequestActions({ slug }: AdminRequestActionsProps) {
             a.click();
             window.URL.revokeObjectURL(url);
             toast.success("Audit export ready", { id: toastId });
-        } catch (error) {
+        } catch {
             toast.error("Audit export failed", { id: toastId });
         }
     };

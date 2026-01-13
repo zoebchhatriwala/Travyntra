@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
     Search,
     UserCheck,
@@ -406,7 +407,7 @@ function StaffCard({
                         <div className="relative">
                             <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner uppercase overflow-hidden">
                                 {member.avatarUrl ? (
-                                    <img src={member.avatarUrl} alt={member.name || ""} className="w-full h-full object-cover" />
+                                    <Image src={member.avatarUrl} alt={member.name || ""} width={56} height={56} className="w-full h-full object-cover" />
                                 ) : (
                                     member.name ? member.name[0] : member.email?.[0]
                                 )}

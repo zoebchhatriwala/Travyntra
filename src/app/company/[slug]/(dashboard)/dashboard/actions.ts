@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 import { Prisma, ApprovalStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
+import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
 
 interface Location {
     city?: string;
@@ -64,7 +65,7 @@ export async function getEmployeeDashboardStats() {
             title: req.title,
             status: req.status,
             createdAt: req.createdAt,
-            budget: Number(req.budget || 0)
+            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
         }))
     };
 }
@@ -116,7 +117,7 @@ export async function getEmployeeRequests({
             title: req.title,
             status: req.status,
             createdAt: req.createdAt,
-            budget: Number(req.budget || 0)
+            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
         })),
         total,
         totalPages: Math.ceil(total / limit),
@@ -235,7 +236,7 @@ export async function createTripRequest(data: {
     startDate: Date;
     endDate: Date;
     purpose?: string;
-    budget?: number;
+    budget?: Money;
     preferences?: TripPreferences;
     isGroup?: boolean;
     parentTripId?: string;
@@ -274,7 +275,7 @@ export async function createTripRequest(data: {
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
-                budget: data.budget ? new Prisma.Decimal(data.budget) : undefined,
+                budget: data.budget ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
                 preferences: data.preferences ?? {},
                 isGroup: data.isGroup || false,
                 parentTripId: data.parentTripId || null,
@@ -423,15 +424,19 @@ export async function getTripRequest(requestId: string) {
         return {
             ...request,
             destination: destinationString,
+            purpose: request.purpose || "",
+            isGroup: request.isGroup || false,
+            parentTripId: request.parentTripId || undefined,
+            preferences: (request.preferences as unknown as TripPreferences) || undefined,
             destinationDetails: hasDetails ? destinationObj : undefined,
-            budget: request.budget ? Number(request.budget) : null,
+            budget: request.budget ? parseMoney(request.budget) : null,
             bids: request.bids.map((bid) => ({
                 ...bid,
-                amount: Number(bid.amount)
+                amount: bid.amount ? parseMoney(bid.amount) : null
             })),
             childTrips: request.childTrips.map((child) => ({
                 ...child,
-                budget: child.budget ? Number(child.budget) : null,
+                budget: child.budget ? parseMoney(child.budget) : null,
                 destination: (child.destination as unknown as Location)?.city || (child.destination as unknown as Location)?.formatted || "Unknown" // Handle child trips too
             })),
         };
@@ -606,7 +611,7 @@ export async function updateTripRequest(requestId: string, data: {
     startDate?: Date;
     endDate?: Date;
     purpose?: string;
-    budget?: number;
+    budget?: Money;
     preferences?: TripPreferences;
     isGroup?: boolean;
     parentTripId?: string;
@@ -666,7 +671,7 @@ export async function updateTripRequest(requestId: string, data: {
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
-                budget: data.budget !== undefined ? new Prisma.Decimal(data.budget) : undefined,
+                budget: data.budget !== undefined ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
                 preferences: data.preferences ?? (request.preferences || {}),
                 isGroup: data.isGroup !== undefined ? data.isGroup : undefined,
                 parentTripId: data.parentTripId !== undefined ? (data.parentTripId === "none" ? null : data.parentTripId) : undefined,
@@ -683,8 +688,12 @@ export async function updateTripRequest(requestId: string, data: {
         if (data.startDate && data.startDate.getTime() !== new Date(request.startDate).getTime()) changes.push(`- **Start Date**: ${formatDate(request.startDate)} → ${formatDate(data.startDate)}`);
         if (data.endDate && data.endDate.getTime() !== new Date(request.endDate).getTime()) changes.push(`- **End Date**: ${formatDate(request.endDate)} → ${formatDate(data.endDate)}`);
         if (data.purpose && data.purpose !== request.purpose) changes.push(`- **Purpose**: Updated`);
-        if (data.budget !== undefined && Number(data.budget) !== Number(request.budget || 0)) {
-            changes.push(`- **Budget**: ${Number(request.budget || 0)} → ${data.budget}`);
+        if (data.budget !== undefined) {
+            const oldBudget = request.budget ? moneyToDecimal(parseMoney(request.budget)) : 0;
+            const newBudget = moneyToDecimal(data.budget);
+            if (newBudget !== oldBudget) {
+                changes.push(`- **Budget**: ${oldBudget} → ${newBudget}`);
+            }
         }
 
         const changeMsg = changes.length > 0 ? `\n\n**Changes:**\n${changes.join('\n')}` : '';

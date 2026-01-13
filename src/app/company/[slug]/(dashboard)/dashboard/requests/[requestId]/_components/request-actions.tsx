@@ -45,7 +45,7 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
             } else {
                 toast.error(result.error || "Failed to cancel request");
             }
-        } catch (error) {
+        } catch {
             toast.error("An unexpected error occurred");
         } finally {
             setIsCancelling(false);
@@ -62,7 +62,7 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
             } else {
                 toast.error(result.error || "Failed to delete request");
             }
-        } catch (error) {
+        } catch {
             toast.error("An unexpected error occurred");
         } finally {
             setIsDeleting(false);

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,7 +79,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                 setApprovals(prev => prev.filter(a => a.id !== selectedApproval.id));
                 handleCloseDialog();
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to process approval");
         } finally {
             setIsProcessing(false);
@@ -116,7 +117,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                 <div className="flex items-start gap-4">
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden ring-2 ring-white">
                                         {approval.requesterAvatar ? (
-                                            <img src={approval.requesterAvatar} alt="" className="w-full h-full object-cover" />
+                                            <Image src={approval.requesterAvatar} alt="" width={48} height={48} className="w-full h-full object-cover" />
                                         ) : (
                                             approval.requesterName?.[0] || <User size={20} />
                                         )}
