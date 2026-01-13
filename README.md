@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Travyntra — Corporate Travel Infrastructure
 
-## Getting Started
+Travyntra is a modern, multi-tenant travel management ecosystem that bridges the gap between Travel Agencies, Corporations, and their Staff. It facilitates seamless journey planning, hierarchical approval workflows, and centralized financial operations.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Multi-Tenant Architecture**: Dedicated portals for multiple companies (`/company/[slug]`).
+- **Agency Fulfillment Console**: Specialized dashboard for travel agencies to bid on and fulfill requests.
+- **Hierarchical Workflows**: customizable approval chains (Manager -> Finance -> Agency).
+- **Real-time Collaboration**: Slack-like discussion threads for every travel request with file attachments.
+- **Role-Based Access**: Granular permissions for Super Admins, Company Admins, Employees, and Agents.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Database**: PostgreSQL
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
+- **Styling**: Tailwind CSS & Vanilla CSS Modules
+- **Validation**: Zod & React Hook Form
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚡️ Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 18+
+- Docker (for local database)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  **Clone the repository**
+    ```bash
+    git clone <repository_url>
+    cd app.travel_portal
+    ```
 
-## Deploy on Vercel
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3.  **Setup Environment Variables**
+    Copy the example env file and update if necessary:
+    ```bash
+    cp .env.example .env
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4.  **Start Database**
+    Use Docker Compose to spin up a local PostgreSQL instance:
+    ```bash
+    docker-compose up -d
+    ```
+
+5.  **Initialize Database**
+    Push the schema and seed initial data:
+    ```bash
+    npx prisma db push
+    npm run seed
+    # Or: npx prisma migrate dev
+    ```
+
+6.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🔐 Default Login Credentials (Seeded)
+
+The seed script creates a complete ecosystem for testing:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Super Admin** | `admin@travyntra.com` | `password` |
+| **Agency Agent** | `john@premiumtravel.com` | `password` |
+| **Company Admin** | `alice@acme.com` | `password` |
+| **Employee** | `charlie@acme.com` | `password` |
+
+## 📂 Project Structure
+
+- `/src/app`: App Router pages and layouts.
+- `/src/components`: UI components (clean separation of concerns).
+- `/src/lib`: Utilities, database clients, and shared logic.
+- `/prisma`: Database schema and seed scripts.
+- `/SPECS.md`: Detailed technical specifications and roadmap.
+
+## 🤝 Contributing
+
+Please read `SPECS.md` and `BRANDING.md` before making changes to ensure alignment with the technical and design vision.
