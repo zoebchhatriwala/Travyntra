@@ -8,7 +8,7 @@ interface RequestInfoProps {
     request: {
         title: string;
         destination: Prisma.JsonValue;
-        budget?: number | string | null;
+        budget?: number | string | null | any;
         startDate: Date | string;
         endDate: Date | string;
         purpose?: string | null;
@@ -52,7 +52,9 @@ export function RequestInfo({ request, currency }: RequestInfoProps) {
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Est. Budget</p>
                                 <p className="text-base font-bold text-gray-900">
-                                    {currency} {Number(request.budget || 0).toLocaleString()}
+                                    {typeof request.budget === 'object' && request.budget !== null
+                                        ? `${request.budget.currencyCode} ${Number(request.budget.amount / (request.budget.multiplier || 100)).toLocaleString()}`
+                                        : `${currency} ${Number(request.budget || 0).toLocaleString()}`}
                                 </p>
                             </div>
                         </div>

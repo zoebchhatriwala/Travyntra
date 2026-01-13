@@ -31,7 +31,7 @@ export default async function RequestOverviewPage({
         select: { currency: true }
     });
 
-    const currency = company?.currency || "USD";
+    const currency = request.budget?.currencyCode || company?.currency || "USD";
 
     // Get approval workflow progress
     const approvalProgress = await getRequestApprovalProgress(requestId);
@@ -66,7 +66,6 @@ export default async function RequestOverviewPage({
                             bids={request.bids}
                             requestId={request.id}
                             isAuthorized={session?.user?.role === 'COMPANY_ADMIN' || session?.user?.role === 'SUPER_ADMIN'}
-                            currency={currency}
                         />
                     )}
 

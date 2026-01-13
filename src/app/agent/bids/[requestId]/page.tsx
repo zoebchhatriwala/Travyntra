@@ -9,6 +9,7 @@ import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/
 import { Calendar, MapPin, Building2, User } from "lucide-react";
 import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
+import { parseMoney } from "@/lib/types/money";
 
 export default async function RequestDetailsPage({
     params
@@ -53,6 +54,8 @@ export default async function RequestDetailsPage({
     }
 
     const myBid = request.bids[0] || null;
+    const budget = request.budget ? parseMoney(request.budget) : null;
+    const currency = budget?.currencyCode || request.company.currency || "USD";
 
     interface Location {
         city?: string;
@@ -182,7 +185,7 @@ export default async function RequestDetailsPage({
             <div className="space-y-6">
                 <BidForm
                     requestId={request.id}
-                    currency={request.company.currency || "USD"}
+                    currency={currency}
                     existingBid={myBid ? {
                         id: myBid.id,
                         amount: Number(myBid.amount),

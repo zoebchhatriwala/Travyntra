@@ -102,15 +102,19 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
         activeRequests,
         pendingApprovalsCount,
         totalSpend: totalSpend,
-        recentRequests: recentRequests.map(req => ({
-            id: req.id,
-            title: req.title,
-            userName: req.user.name || req.user.email || "Unknown",
-            userAvatar: req.user.avatarUrl,
-            status: req.status,
-            createdAt: req.createdAt,
-            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
-        }))
+        recentRequests: recentRequests.map(req => {
+            const money = req.budget ? parseMoney(req.budget) : null;
+            return {
+                id: req.id,
+                title: req.title,
+                userName: req.user.name || req.user.email || "Unknown",
+                userAvatar: req.user.avatarUrl,
+                status: req.status,
+                createdAt: req.createdAt,
+                budget: moneyToDecimal(money),
+                currency: money?.currencyCode || company.currency || "USD"
+            };
+        })
     };
 }
 
@@ -185,18 +189,22 @@ export async function getCompanyRequests(slug: string, options: {
     ]);
 
     return {
-        requests: requests.map(req => ({
-            id: req.id,
-            title: req.title,
-            userName: req.user.name || req.user.email || "Unknown",
-            userAvatar: req.user.avatarUrl,
-            status: req.status,
-            createdAt: req.createdAt,
-            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0,
-            destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
-            startDate: req.startDate,
-            endDate: req.endDate
-        })),
+        requests: requests.map(req => {
+            const money = req.budget ? parseMoney(req.budget) : null;
+            return {
+                id: req.id,
+                title: req.title,
+                userName: req.user.name || req.user.email || "Unknown",
+                userAvatar: req.user.avatarUrl,
+                status: req.status,
+                createdAt: req.createdAt,
+                budget: moneyToDecimal(money),
+                currency: money?.currencyCode || company.currency || "USD",
+                destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
+                startDate: req.startDate,
+                endDate: req.endDate
+            };
+        }),
         total,
         totalPages: Math.ceil(total / limit),
         currency: company.currency || "USD"
@@ -341,18 +349,29 @@ export async function getCompanyAnalytics(slug: string) {
     }, 0);
 
     // 3. Policy Violations (Placeholder: requests where budget > 5000)
-    const violations = await prisma.tripRequest.count({
-        where: {
-            companyId: company.id,
-            budget: { gt: 5000 }
-        }
+    const allRequests = await prisma.tripRequest.findMany({
+        where: { companyId: company.id },
+        select: { budget: true }
     });
+
+    const violations = allRequests.filter(req => {
+        if (!req.budget) return false;
+        const money = parseMoney(req.budget);
+        const amount = money ? moneyToDecimal(money) : (typeof req.budget === 'number' ? req.budget : 0);
+        return amount > 5000;
+    }).length;
 
     // 4. Budget trends (by month)
     const budgetByMonth: { month: string; total: number | bigint }[] = await prisma.$queryRaw`
         SELECT 
             TO_CHAR("createdAt", 'Mon YYYY') as month,
-            SUM(budget) as total
+            SUM(
+                CASE 
+                    WHEN jsonb_typeof(budget) = 'object' THEN (budget->>'amount')::numeric / NULLIF((budget->>'multiplier')::numeric, 0)
+                    WHEN jsonb_typeof(budget) = 'number' THEN budget::text::numeric
+                    ELSE 0
+                END
+            ) as total
         FROM "TripRequest"
         WHERE "companyId" = ${company.id} AND status = 'COMPLETED'
         GROUP BY TO_CHAR("createdAt", 'Mon YYYY'), DATE_TRUNC('month', "createdAt")

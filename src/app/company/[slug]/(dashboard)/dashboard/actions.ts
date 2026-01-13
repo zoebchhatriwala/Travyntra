@@ -60,13 +60,17 @@ export async function getEmployeeDashboardStats() {
         activeRequests,
         completedTrips,
         currency: company?.currency || "USD",
-        recentRequests: recentRequests.map(req => ({
-            id: req.id,
-            title: req.title,
-            status: req.status,
-            createdAt: req.createdAt,
-            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
-        }))
+        recentRequests: recentRequests.map(req => {
+            const money = req.budget ? parseMoney(req.budget) : null;
+            return {
+                id: req.id,
+                title: req.title,
+                status: req.status,
+                createdAt: req.createdAt,
+                budget: moneyToDecimal(money),
+                currency: money?.currencyCode || company?.currency || "USD"
+            };
+        })
     };
 }
 
@@ -111,14 +115,25 @@ export async function getEmployeeRequests({
         }),
     ]);
 
+    // Fetch user's company currency
+    const company = session.user.companyId ? await prisma.company.findUnique({
+        where: { id: session.user.companyId },
+        select: { currency: true }
+    }) : null;
+
     return {
-        requests: requests.map(req => ({
-            id: req.id,
-            title: req.title,
-            status: req.status,
-            createdAt: req.createdAt,
-            budget: req.budget ? moneyToDecimal(parseMoney(req.budget)) : 0
-        })),
+        requests: requests.map(req => {
+            const money = req.budget ? parseMoney(req.budget) : null;
+            return {
+                id: req.id,
+                title: req.title,
+                status: req.status,
+                createdAt: req.createdAt,
+                budget: moneyToDecimal(money),
+                currency: money?.currencyCode || company?.currency || "USD"
+            };
+        }),
+        currency: company?.currency || "USD",
         total,
         totalPages: Math.ceil(total / limit),
     };

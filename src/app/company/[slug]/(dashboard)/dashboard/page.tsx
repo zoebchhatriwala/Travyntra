@@ -114,7 +114,7 @@ export default async function EmployeeDashboardPage({
                                     <div className="flex items-center gap-6">
                                         {req.budget > 0 && (
                                             <div className="text-right hidden sm:block">
-                                                <p className="text-sm font-black text-gray-900">{stats?.currency || "USD"} {req.budget.toLocaleString()}</p>
+                                                <p className="text-sm font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
                                                 <p className="text-[10px] uppercase font-bold text-gray-400">Est. Budget</p>
                                             </div>
                                         )}

@@ -46,9 +46,9 @@ export function BidForm({ requestId, currency = "USD", existingBid }: BidFormPro
         try {
             let result;
             if (existingBid) {
-                result = await updateBid(existingBid.id, requestId, values.amount, values.message);
+                result = await updateBid(existingBid.id, requestId, values.amount, values.message, currency);
             } else {
-                result = await submitBid(requestId, values.amount, values.message);
+                result = await submitBid(requestId, values.amount, values.message, currency);
             }
 
             if (result.error) {

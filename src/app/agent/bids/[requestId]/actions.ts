@@ -2,20 +2,23 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
+import { createMoney, formatMoney, parseMoney } from "@/lib/types/money";
 
 // --- Agent Actions ---
 
-export async function submitBid(requestId: string, amount: number, message: string) {
+export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD") {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
         return { error: "Unauthorized" };
     }
 
     const agentId = session.user.companyId;
+    const bidAmount = createMoney(amount, currency);
 
     try {
         // Create the bid
@@ -23,7 +26,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
             data: {
                 requestId,
                 agentId,
-                amount,
+                amount: bidAmount as any,
                 message,
                 status: AgentBidStatus.PENDING
             }
@@ -34,7 +37,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**New Bid Submitted**: Proposed amount $${amount}.\n\n**Proposal Details**:\n${message}`
+                content: `**New Bid Submitted**: Proposed amount ${formatMoney(bidAmount)}.\n\n**Proposal Details**:\n${message}`
             }
         });
 
@@ -52,15 +55,17 @@ export async function submitBid(requestId: string, amount: number, message: stri
     }
 }
 
-export async function updateBid(bidId: string, requestId: string, amount: number, message: string) {
+export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD") {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return { error: "Unauthorized" };
+
+    const bidAmount = createMoney(amount, currency);
 
     try {
         await prisma.agentBid.update({
             where: { id: bidId },
             data: {
-                amount,
+                amount: bidAmount as any,
                 message,
                 updatedAt: new Date()
             }
@@ -71,7 +76,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Updated**: New amount $${amount}.\n\n**Updated Proposal**:\n${message}`
+                content: `**Bid Updated**: New amount ${formatMoney(bidAmount)}.\n\n**Updated Proposal**:\n${message}`
             }
         });
 
@@ -119,9 +124,11 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 assignedAgentId: bid.agentId,
                 status: "IN_PROGRESS", // Or BOOKED, depending on workflow. usually IN_PROGRESS means fulfillment started.
-                cost: bid.amount
+                cost: bid.amount as any
             }
         });
+
+        const formattedAmount = formatMoney(parseMoney(bid.amount));
 
         // 4. Log Activity
         await prisma.activityLog.create({
@@ -129,7 +136,7 @@ export async function approveBid(bidId: string, requestId: string) {
                 companyId: session.user.companyId!,
                 actorId: session.user.id,
                 action: ActivityLogAction.BID_APPROVED,
-                description: `Approved bid of $${bid.amount} from agent.`,
+                description: `Approved bid of ${formattedAmount} from agent.`,
                 metadata: { requestId, bidId }
             }
         });
@@ -139,7 +146,7 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Accepted**: $${bid.amount}. Agency has been assigned.`
+                content: `**Bid Accepted**: ${formattedAmount}. Agency has been assigned.`
             }
         });
 
@@ -170,7 +177,7 @@ export async function removeBid(bidId: string, requestId: string) {
                 data: {
                     assignedAgentId: null,
                     status: "APPROVED", // Back to approved/open for bidding
-                    cost: null
+                    cost: Prisma.JsonNull
                 }
             });
 

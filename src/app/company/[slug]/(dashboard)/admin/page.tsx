@@ -126,7 +126,7 @@ export default async function CompanyAdminPage({
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className="text-right hidden sm:block">
-                                                    <p className="text-xs font-black text-gray-900">{stats.currency} {req.budget.toLocaleString()}</p>
+                                                    <p className="text-xs font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
                                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Budget</p>
                                                 </div>
                                                 <Badge className={`rounded-lg px-2 py-0.5 font-bold text-[9px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :

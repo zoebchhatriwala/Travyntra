@@ -71,7 +71,6 @@ export default async function AdminRequestsPage({
                     initialRequests={requestsData.requests}
                     total={requestsData.total}
                     totalPages={requestsData.totalPages}
-                    currency={requestsData.currency}
                 />
             </section>
         </div>

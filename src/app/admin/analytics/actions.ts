@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
+import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
 export async function getAnalyticsData() {
     try {
@@ -11,7 +12,7 @@ export async function getAnalyticsData() {
             companyCount,
             agentCount,
             employeeCount,
-            totalBudgetResult,
+            allBudgets,
             monthlyRequests,
             categorySpending
         ] = await Promise.all([
@@ -30,8 +31,8 @@ export async function getAnalyticsData() {
             prisma.user.count({ where: { role: UserRole.EMPLOYEE, isActive: true } }),
 
             // Financials
-            prisma.tripRequest.aggregate({
-                _sum: { budget: true }
+            prisma.tripRequest.findMany({
+                select: { budget: true }
             }),
 
             // Monthly volume (simplified for now as prisma doesn't support grouping by date part easily without raw queries in some versions, but we'll use a mocked trend or raw if needed)
@@ -59,7 +60,10 @@ export async function getAnalyticsData() {
                 companies: companyCount,
                 agents: agentCount,
                 employees: employeeCount,
-                totalBudget: Number(totalBudgetResult._sum.budget || 0)
+                totalBudget: allBudgets.reduce((sum: number, req: { budget: any }) => {
+                    const money = parseMoney(req.budget);
+                    return sum + (money ? moneyToDecimal(money) : (typeof req.budget === 'number' ? req.budget : 0));
+                }, 0)
             },
             monthlyRequests: monthlyRequests.map(m => ({
                 month: m.month,
