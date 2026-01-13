@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
+import { UserRole, Prisma } from "@prisma/client";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
 export async function getAnalyticsData() {
@@ -60,7 +60,7 @@ export async function getAnalyticsData() {
                 companies: companyCount,
                 agents: agentCount,
                 employees: employeeCount,
-                totalBudget: allBudgets.reduce((sum: number, req: { budget: any }) => {
+                totalBudget: allBudgets.reduce((sum: number, req: { budget: Prisma.JsonValue }) => {
                     const money = parseMoney(req.budget);
                     return sum + (money ? moneyToDecimal(money) : (typeof req.budget === 'number' ? req.budget : 0));
                 }, 0)

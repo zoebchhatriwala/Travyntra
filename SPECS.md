@@ -222,9 +222,9 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Auto-Assignment**: Automatically assign requests to the Agency if only one is integrated with the company.
 - [ ] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
 
-### Phase 10: Financial Layer 📋 PLANNED
+### Phase 10: Financial Layer �️ ACTIVE
 - [ ] **Invoice Management**: Company view of all invoices.
-- [ ] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
+- [x] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
 - [ ] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
 - [ ] **Payment Tracking**: Mark invoices as paid/pending.
 - [ ] **Budget Analytics**: Spending trends and forecasts.
@@ -274,6 +274,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - Budget revision approval workflow
 3. **Financial Layer** (Phase 10)
    - Invoice generation for completed requests
+   - ✅ Multi-currency support (Request-level currency)
    - Multi-currency conversion & FX caching
    - Payment tracking
 
@@ -300,4 +301,5 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Continuous Documentation**: The AI assistant MUST revisit `SPECS.md` after completing any task to update task statuses (`[x]`), mark phases as completed, and refresh the "Current Sprint Focus" section. This ensures the roadmap is the single source of truth.
 - **Build Verification**: After completing a significant feature or set of changes, the AI assistant MUST run `npm run build` to ensure the integrity of the application and catch any type mismatches or build-time errors before handover.
 - **No Placeholders**: The AI assistant MUST NOT use stubs, placeholders, or "dummy" data for core features. All implemented logic must be fully functional, integrated with the Prisma database, and reflect actual system state.
+- **Money Object Protocol**: All monetary values (budgets, bids, costs) MUST be stored and handled using the structured `Money` type (`amount`, `currencyCode`, `multiplier`). Direct numeric summing on `JSONB` fields in SQL is discouraged; use structured extraction (e.g., `(budget->>'amount')::numeric`) or memory-based aggregation via `moneyToDecimal`.
 

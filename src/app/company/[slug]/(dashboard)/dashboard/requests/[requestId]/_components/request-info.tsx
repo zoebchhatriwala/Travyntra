@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plane, Calendar, MapPin, DollarSign, FileText, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
+import { Money } from "@/lib/types/money";
 import { Prisma } from "@prisma/client";
 
 interface RequestInfoProps {
     request: {
         title: string;
         destination: Prisma.JsonValue;
-        budget?: number | string | null | any;
+        budget?: Prisma.JsonValue;
         startDate: Date | string;
         endDate: Date | string;
         purpose?: string | null;
@@ -52,8 +53,8 @@ export function RequestInfo({ request, currency }: RequestInfoProps) {
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Est. Budget</p>
                                 <p className="text-base font-bold text-gray-900">
-                                    {typeof request.budget === 'object' && request.budget !== null
-                                        ? `${request.budget.currencyCode} ${Number(request.budget.amount / (request.budget.multiplier || 100)).toLocaleString()}`
+                                    {typeof request.budget === 'object' && request.budget !== null && !Array.isArray(request.budget)
+                                        ? `${(request.budget as unknown as Money).currencyCode} ${Number((request.budget as unknown as Money).amount / ((request.budget as unknown as Money).multiplier || 100)).toLocaleString()}`
                                         : `${currency} ${Number(request.budget || 0).toLocaleString()}`}
                                 </p>
                             </div>

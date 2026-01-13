@@ -26,7 +26,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
             data: {
                 requestId,
                 agentId,
-                amount: bidAmount as any,
+                amount: bidAmount as unknown as Prisma.InputJsonValue,
                 message,
                 status: AgentBidStatus.PENDING
             }
@@ -65,7 +65,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         await prisma.agentBid.update({
             where: { id: bidId },
             data: {
-                amount: bidAmount as any,
+                amount: bidAmount as unknown as Prisma.InputJsonValue,
                 message,
                 updatedAt: new Date()
             }
@@ -124,7 +124,7 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 assignedAgentId: bid.agentId,
                 status: "IN_PROGRESS", // Or BOOKED, depending on workflow. usually IN_PROGRESS means fulfillment started.
-                cost: bid.amount as any
+                cost: bid.amount as unknown as Prisma.InputJsonValue
             }
         });
 
