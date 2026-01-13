@@ -45,3 +45,32 @@ next-env.d.ts
 
 # public media
 /public/media/*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Optional: more strict generic temp files
+tmp/
+temp/
+
+# Agent
+.agent/
