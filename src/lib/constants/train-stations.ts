@@ -1,9 +1,20 @@
+
+/**
+ * Interface representing a train station with its unique code, name, and city.
+ */
 export interface TrainStation {
+    /** The unique identifier or code for the train station */
     code: string;
+    /** The full descriptive name of the station */
     name: string;
+    /** The city where the station is located */
     city: string;
 }
 
+/**
+ * A collection of major train stations, primarily focused on Indian Railway Stations.
+ * These records represent some of the busiest transportation hubs in India.
+ */
 export const TRAIN_STATIONS: TrainStation[] = [
     // Major Indian Railway Stations
     { code: "NDLS", name: "New Delhi Railway Station", city: "New Delhi" },

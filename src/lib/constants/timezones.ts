@@ -1,3 +1,9 @@
+
+/**
+ * A comprehensive list of IANA (Internet Assigned Numbers Authority) timezone identifiers.
+ * This constant collection includes UTC and regional timezones across all continents and oceans,
+ * formatted according to the "Area/Location" naming convention.
+ */
 export const TIMEZONES = [
     "UTC",
     "Africa/Abidjan",
