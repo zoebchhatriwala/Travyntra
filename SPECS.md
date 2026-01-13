@@ -225,7 +225,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 ### Phase 10: Financial Layer �️ ACTIVE
 - [ ] **Invoice Management**: Company view of all invoices.
 - [x] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
-- [ ] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
+- [x] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
 - [ ] **Payment Tracking**: Mark invoices as paid/pending.
 - [ ] **Budget Analytics**: Spending trends and forecasts.
 - [ ] **Expense Reports**: Per-request and per-employee breakdowns.

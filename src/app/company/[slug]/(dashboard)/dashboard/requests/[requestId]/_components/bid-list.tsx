@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { approveBid } from "@/app/agent/bids/[requestId]/actions";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { approveBid, unapproveBid } from "@/app/agent/bids/[requestId]/actions";
+import { Loader2, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { type Money, formatMoney } from "@/lib/types/money";
 
 interface Bid {
     id: string;
     amount: Money | null;
+    convertedAmount?: Money | null;
     status: string;
     message?: string | null;
     agent: {
@@ -40,6 +41,24 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
         }
     }
 
+    async function handleUnapprove(bidId: string) {
+        if (!confirm("Are you sure you want to undo the approval for this bid? This will reopen bidding for others.")) return;
+
+        setProcessingId(bidId);
+        try {
+            const res = await unapproveBid(bidId, requestId);
+            if (res.error) {
+                toast.error(res.error);
+            } else {
+                toast.success("Approval reversed successfully");
+            }
+        } catch {
+            toast.error("Failed to reverse approval");
+        } finally {
+            setProcessingId(null);
+        }
+    }
+
     if (!bids || bids.length === 0) return null;
 
     return (
@@ -55,6 +74,11 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                                 <span className="font-bold text-xl text-gray-900">
                                     {bid.amount ? formatMoney(bid.amount) : 'N/A'}
                                 </span>
+                                {bid.convertedAmount && (
+                                    <span className="text-sm font-bold text-gray-400">
+                                        ≈ {formatMoney(bid.convertedAmount)}
+                                    </span>
+                                )}
                                 <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${bid.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
                                     bid.status === 'REJECTED' ? 'bg-red-50 text-red-600' :
                                         'bg-indigo-50 text-indigo-700'
@@ -92,9 +116,23 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                             )}
 
                             {bid.status === 'ACCEPTED' && (
-                                <div className="flex items-center gap-2 text-sm font-bold text-green-600 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
-                                    <CheckCircle2 size={18} />
-                                    Approved
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-sm font-bold text-green-600 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+                                        <CheckCircle2 size={18} />
+                                        Approved
+                                    </div>
+                                    {isAuthorized && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleUnapprove(bid.id)}
+                                            disabled={!!processingId}
+                                            className="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg text-[10px] font-bold uppercase tracking-tight h-7"
+                                        >
+                                            {processingId === bid.id ? <Loader2 className="animate-spin mr-1" size={12} /> : <RotateCcw size={12} className="mr-1" />}
+                                            Undo Selection
+                                        </Button>
+                                    )}
                                 </div>
                             )}
 

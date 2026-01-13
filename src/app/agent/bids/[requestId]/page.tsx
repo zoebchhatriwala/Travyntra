@@ -53,9 +53,16 @@ export default async function RequestDetailsPage({
         notFound();
     }
 
+    // Get Agent's currency
+    const agentCompany = await prisma.company.findUnique({
+        where: { id: session.user.companyId },
+        select: { currency: true }
+    });
+
     const myBid = request.bids[0] || null;
     const budget = request.budget ? parseMoney(request.budget) : null;
-    const currency = budget?.currencyCode || request.company.currency || "USD";
+    const agentCurrency = agentCompany?.currency || "USD";
+    const requestCurrency = budget?.currencyCode || request.company.currency || "USD";
 
     interface Location {
         city?: string;
@@ -185,7 +192,9 @@ export default async function RequestDetailsPage({
             <div className="space-y-6">
                 <BidForm
                     requestId={request.id}
-                    currency={currency}
+                    requestStatus={request.status}
+                    currency={agentCurrency}
+                    requestCurrency={requestCurrency}
                     existingBid={myBid ? {
                         id: myBid.id,
                         amount: Number(myBid.amount),

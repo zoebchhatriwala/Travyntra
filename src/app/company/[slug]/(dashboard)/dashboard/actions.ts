@@ -7,6 +7,7 @@ import { Prisma, ApprovalStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { convertMoney } from "@/lib/services/currency";
 
 interface Location {
     city?: string;
@@ -378,6 +379,9 @@ export async function getTripRequest(requestId: string) {
                 user: {
                     select: { name: true, avatarUrl: true, email: true }
                 },
+                company: {
+                    select: { currency: true, name: true }
+                },
                 collaborators: {
                     select: { id: true }
                 },
@@ -432,12 +436,30 @@ export async function getTripRequest(requestId: string) {
             }
         }
 
+        // Enhance bids with conversion if necessary
+        const companyCurrency = request.company.currency || "USD";
+        const bidsWithConversion = await Promise.all(request.bids.map(async (bid) => {
+            const amount = bid.amount ? parseMoney(bid.amount) : null;
+            let convertedAmount = null;
+
+            if (amount && amount.currencyCode !== companyCurrency) {
+                convertedAmount = await convertMoney(amount, companyCurrency);
+            }
+
+            return {
+                ...bid,
+                amount,
+                convertedAmount
+            };
+        }));
+
         const destinationObj = request.destination as unknown as Location;
         const destinationString = destinationObj?.formatted || destinationObj?.city || (typeof request.destination === 'string' ? request.destination : "Unknown");
         const hasDetails = destinationObj && typeof destinationObj === 'object' && !Array.isArray(destinationObj);
 
         return {
             ...request,
+            companyCurrency, // Return company's base currency
             destination: destinationString,
             purpose: request.purpose || "",
             isGroup: request.isGroup || false,
@@ -445,10 +467,8 @@ export async function getTripRequest(requestId: string) {
             preferences: (request.preferences as unknown as TripPreferences) || undefined,
             destinationDetails: hasDetails ? destinationObj : undefined,
             budget: request.budget ? parseMoney(request.budget) : null,
-            bids: request.bids.map((bid) => ({
-                ...bid,
-                amount: bid.amount ? parseMoney(bid.amount) : null
-            })),
+            cost: request.cost ? parseMoney(request.cost) : null,
+            bids: bidsWithConversion,
             childTrips: request.childTrips.map((child) => ({
                 ...child,
                 budget: child.budget ? parseMoney(child.budget) : null,

@@ -8,8 +8,16 @@ import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
 import { createMoney, formatMoney, parseMoney } from "@/lib/types/money";
+import { convertMoney } from "@/lib/services/currency";
+import { createNotification } from "@/lib/notifications";
 
 // --- Agent Actions ---
+
+export async function getConversionPreview(amount: number, fromCurrency: string, toCurrency: string) {
+    const money = createMoney(amount, fromCurrency);
+    const converted = await convertMoney(money, toCurrency);
+    return formatMoney(converted);
+}
 
 export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD") {
     const session = await getServerSession(authOptions);
@@ -32,12 +40,25 @@ export async function submitBid(requestId: string, amount: number, message: stri
             }
         });
 
+        // Get converted value for the message if company currency is different
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            include: { company: true }
+        });
+        const companyCurrency = request?.company.currency || "USD";
+        let conversionText = "";
+
+        if (currency !== companyCurrency) {
+            const converted = await convertMoney(bidAmount, companyCurrency);
+            conversionText = ` (Approx. ${formatMoney(converted)})`;
+        }
+
         // 1. Link to Discussion: Post a system message in the request discussion
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**New Bid Submitted**: Proposed amount ${formatMoney(bidAmount)}.\n\n**Proposal Details**:\n${message}`
+                content: `**New Bid Submitted**: Proposed amount ${formatMoney(bidAmount)}${conversionText}.\n\n**Proposal Details**:\n${message}`
             }
         });
 
@@ -72,11 +93,23 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         });
 
         // Post update to discussion
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            include: { company: true }
+        });
+        const companyCurrency = request?.company.currency || "USD";
+        let conversionText = "";
+
+        if (currency !== companyCurrency) {
+            const converted = await convertMoney(bidAmount, companyCurrency);
+            conversionText = ` (Approx. ${formatMoney(converted)})`;
+        }
+
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Updated**: New amount ${formatMoney(bidAmount)}.\n\n**Updated Proposal**:\n${message}`
+                content: `**Bid Updated**: New amount ${formatMoney(bidAmount)}${conversionText}.\n\n**Updated Proposal**:\n${message}`
             }
         });
 
@@ -156,6 +189,79 @@ export async function approveBid(bidId: string, requestId: string) {
     } catch (e) {
         console.error("Failed to approve bid:", e);
         return { error: "Failed to approve bid" };
+    }
+}
+
+export async function unapproveBid(bidId: string, requestId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || (session.user.role !== 'COMPANY_ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        const bid = await prisma.agentBid.findUnique({
+            where: { id: bidId },
+            include: {
+                agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+                request: { include: { company: true } }
+            }
+        });
+        if (!bid) return { error: "Bid not found" };
+
+        // 1. Reset all bids for this request to PENDING
+        await prisma.agentBid.updateMany({
+            where: { requestId },
+            data: { status: AgentBidStatus.PENDING }
+        });
+
+        // 2. Clear Request assignment
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                assignedAgentId: null,
+                status: "APPROVED",
+                cost: Prisma.JsonNull
+            }
+        });
+
+        // 3. System Message
+        await prisma.message.create({
+            data: {
+                requestId,
+                senderId: session.user.id,
+                content: `**Bid Unapproved**: The previously accepted bid has been reversed. The request is now open for bidding again.`
+            }
+        });
+
+        // 4. Activity Log
+        await prisma.activityLog.create({
+            data: {
+                companyId: session.user.companyId!,
+                actorId: session.user.id,
+                action: ActivityLogAction.BID_REMOVED, // Using BID_REMOVED for unapproval
+                description: `Unapproved bid from agent. Request is open again.`,
+                metadata: { requestId, bidId }
+            }
+        });
+
+        // 5. Notify the Agent's users
+        const agentEmails = bid.agent.users.map(u => u.id);
+        await Promise.all(agentEmails.map(userId =>
+            createNotification({
+                userId,
+                title: "Bid Status Update",
+                message: `The approval of your bid for "${bid.request.title}" has been reversed by the company admin.`,
+                type: "WARNING",
+                link: `/agent/bids/${requestId}`,
+                sendEmail: true
+            })
+        ));
+
+        revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to unapprove bid:", e);
+        return { error: "Failed to unapprove bid" };
     }
 }
 

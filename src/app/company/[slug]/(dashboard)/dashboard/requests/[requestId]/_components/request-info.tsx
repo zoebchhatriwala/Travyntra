@@ -2,14 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plane, Calendar, MapPin, DollarSign, FileText, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
-import { Money } from "@/lib/types/money";
+import { Money, formatMoney } from "@/lib/types/money";
 import { Prisma } from "@prisma/client";
 
 interface RequestInfoProps {
     request: {
         title: string;
-        destination: Prisma.JsonValue;
-        budget?: Prisma.JsonValue;
+        destination: Prisma.JsonValue | string;
+        budget?: Money | null;
+        cost?: Money | null;
         startDate: Date | string;
         endDate: Date | string;
         purpose?: string | null;
@@ -18,7 +19,7 @@ interface RequestInfoProps {
     currency: string;
 }
 
-export function RequestInfo({ request, currency }: RequestInfoProps) {
+export function RequestInfo({ request }: { request: RequestInfoProps['request'] }) {
     const preferences: TripPreferences = request.preferences as TripPreferences;
 
     const destination = request.destination as { city?: string; formatted?: string } | null;
@@ -51,11 +52,11 @@ export function RequestInfo({ request, currency }: RequestInfoProps) {
                                 <DollarSign size={20} />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Est. Budget</p>
-                                <p className="text-base font-bold text-gray-900">
-                                    {typeof request.budget === 'object' && request.budget !== null && !Array.isArray(request.budget)
-                                        ? `${(request.budget as unknown as Money).currencyCode} ${Number((request.budget as unknown as Money).amount / ((request.budget as unknown as Money).multiplier || 100)).toLocaleString()}`
-                                        : `${currency} ${Number(request.budget || 0).toLocaleString()}`}
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                    {request.cost ? "Finalized Cost" : "Est. Budget"}
+                                </p>
+                                <p className={`text-base font-bold ${request.cost ? 'text-indigo-600 animate-in fade-in zoom-in-95 duration-500' : 'text-gray-900'}`}>
+                                    {request.cost ? formatMoney(request.cost) : (request.budget ? formatMoney(request.budget) : "N/A")}
                                 </p>
                             </div>
                         </div>

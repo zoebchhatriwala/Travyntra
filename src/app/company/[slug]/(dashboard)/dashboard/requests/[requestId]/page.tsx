@@ -3,7 +3,6 @@ import { getTripRequest } from "../../actions";
 import { RequestInfo } from "./_components/request-info";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { prisma } from "@/lib/prisma";
 import { getRequestApprovalProgress } from "@/lib/actions/approvals";
 import { WorkflowProgressTracker } from "@/components/workflow/workflow-progress-tracker";
 import { ApprovalActions } from "@/components/workflow/approval-actions";
@@ -25,13 +24,7 @@ export default async function RequestOverviewPage({
 
     if (!request) return notFound();
 
-    // Fetch company currency
-    const company = await prisma.company.findUnique({
-        where: { id: request.companyId },
-        select: { currency: true }
-    });
 
-    const currency = request.budget?.currencyCode || company?.currency || "USD";
 
     // Get approval workflow progress
     const approvalProgress = await getRequestApprovalProgress(requestId);
@@ -58,7 +51,7 @@ export default async function RequestOverviewPage({
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Request Details */}
                 <div className="lg:col-span-2 space-y-8">
-                    <RequestInfo request={request} currency={currency} />
+                    <RequestInfo request={request} />
 
                     {/* Agent Bids Section */}
                     {request.bids && request.bids.length > 0 && (
