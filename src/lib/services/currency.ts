@@ -16,7 +16,10 @@ let memoryCache: {
 } | null = null;
 
 /**
- * Fetch latest rates with 1-hour caching
+ * Fetches the latest exchange rates with a 1-hour in-memory cache.
+ * Uses USD as the base currency.
+ * 
+ * @returns {Promise<Record<string, number>>} A map of currency codes to their exchange rates relative to USD.
  */
 async function getRates(): Promise<Record<string, number>> {
     const now = Date.now();
@@ -45,7 +48,13 @@ async function getRates(): Promise<Record<string, number>> {
 }
 
 /**
- * Convert an amount between two currencies
+ * Converts a numeric amount from one currency to another using the latest cached rates.
+ * If a rate is missing, it falls back to a 1:1 conversion and logs a warning.
+ * 
+ * @param {number} amount - The numeric value to convert.
+ * @param {string} fromCurrency - The ISO 4217 code of the source currency.
+ * @param {string} toCurrency - The ISO 4217 code of the target currency.
+ * @returns {Promise<number>} The converted amount.
  */
 export async function convertCurrency(
     amount: number,
@@ -70,7 +79,11 @@ export async function convertCurrency(
 }
 
 /**
- * Convert a Money object to another currency
+ * Converts a Money object to a different target currency.
+ * 
+ * @param {Money} money - The source Money object containing amount and currency code.
+ * @param {string} toCurrency - The ISO 4217 code of the target currency.
+ * @returns {Promise<Money>} A new Money object in the target currency.
  */
 export async function convertMoney(
     money: Money,

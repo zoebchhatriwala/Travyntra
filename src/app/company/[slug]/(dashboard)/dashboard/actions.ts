@@ -368,6 +368,14 @@ export async function createTripRequest(data: {
     }
 }
 
+/**
+ * Fetches detailed information for a specific trip request.
+ * Includes security checks for multi-tenancy and role-based access.
+ * Automatically performs currency conversion for all associated agent bids based on the company's currency.
+ * 
+ * @param {string} requestId - The unique identifier of the trip request.
+ * @returns {Promise<Object|null>} The enhanced trip request object or null if not found/unauthorized.
+ */
 export async function getTripRequest(requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return null;

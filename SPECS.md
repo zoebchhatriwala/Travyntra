@@ -302,4 +302,6 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Build Verification**: After completing a significant feature or set of changes, the AI assistant MUST run `npm run build` to ensure the integrity of the application and catch any type mismatches or build-time errors before handover.
 - **No Placeholders**: The AI assistant MUST NOT use stubs, placeholders, or "dummy" data for core features. All implemented logic must be fully functional, integrated with the Prisma database, and reflect actual system state.
 - **Money Object Protocol**: All monetary values (budgets, bids, costs) MUST be stored and handled using the structured `Money` type (`amount`, `currencyCode`, `multiplier`). Direct numeric summing on `JSONB` fields in SQL is discouraged; use structured extraction (e.g., `(budget->>'amount')::numeric`) or memory-based aggregation via `moneyToDecimal`.
+- **Linting Standard**: Every build and development step MUST pass `yarn lint` (or `npm run lint`) with zero errors and zero warnings. Code quality is non-negotiable.
+- **Documentation Standard**: All functions, interfaces, and complex logic MUST be documented using proper **JSDoc** syntax to ensure long-term maintainability and clarity.
 

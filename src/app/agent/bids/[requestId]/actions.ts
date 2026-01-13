@@ -13,11 +13,31 @@ import { createNotification } from "@/lib/notifications";
 
 // --- Agent Actions ---
 
+/**
+ * Generates a formatted string representing the conversion from one currency to another.
+ * Used for live previews in the bidding form.
+ * 
+ * @param {number} amount - The numeric amount to convert.
+ * @param {string} fromCurrency - Source currency code.
+ * @param {string} toCurrency - Target currency code.
+ * @returns {Promise<string>} Formatted currency string (e.g., "$100.00").
+ */
+
 export async function getConversionPreview(amount: number, fromCurrency: string, toCurrency: string) {
     const money = createMoney(amount, fromCurrency);
     const converted = await convertMoney(money, toCurrency);
     return formatMoney(converted);
 }
+/**
+ * Submits a new bid for a trip request.
+ * Notifies the company via a system message in the discussion thread.
+ * 
+ * @param {string} requestId - The ID of the trip request.
+ * @param {number} amount - The numeric bid amount.
+ * @param {string} message - The proposal details/message.
+ * @param {string} currency - The ISO 4217 currency code of the bid.
+ * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+ */
 
 export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD") {
     const session = await getServerSession(authOptions);
@@ -75,6 +95,17 @@ export async function submitBid(requestId: string, amount: number, message: stri
         return { error: "Failed to submit bid" };
     }
 }
+/**
+ * Updates an existing bid.
+ * Reflects the change in the request's discussion thread.
+ * 
+ * @param {string} bidId - The ID of the bid to update.
+ * @param {string} requestId - The associated trip request ID.
+ * @param {number} amount - The new numeric bid amount.
+ * @param {string} message - The updated proposal message.
+ * @param {string} currency - The currency code of the bid.
+ * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+ */
 
 export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD") {
     const session = await getServerSession(authOptions);
@@ -122,6 +153,15 @@ export async function updateBid(bidId: string, requestId: string, amount: number
 }
 
 // --- Admin Actions (Company Side) ---
+
+/**
+ * Approves a specific bid, assigning the agent to the request and rejecting all other bids.
+ * Updates the trip request status to IN_PROGRESS and sets the finalized cost.
+ * 
+ * @param {string} bidId - The ID of the bid to approve.
+ * @param {string} requestId - The ID of the trip request.
+ * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+ */
 
 export async function approveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
@@ -191,6 +231,14 @@ export async function approveBid(bidId: string, requestId: string) {
         return { error: "Failed to approve bid" };
     }
 }
+/**
+ * Reverses a previously approved bid. 
+ * Reopens the request for bidding and notifies the agent of the change.
+ * 
+ * @param {string} bidId - The ID of the bid to unapprove.
+ * @param {string} requestId - The ID of the trip request.
+ * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+ */
 
 export async function unapproveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
@@ -264,6 +312,14 @@ export async function unapproveBid(bidId: string, requestId: string) {
         return { error: "Failed to unapprove bid" };
     }
 }
+/**
+ * Removes a bid from the system.
+ * If the bid was already accepted, it resets the request to an open/approved state.
+ * 
+ * @param {string} bidId - The ID of the bid to delete.
+ * @param {string} requestId - The ID of the trip request.
+ * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+ */
 
 export async function removeBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
