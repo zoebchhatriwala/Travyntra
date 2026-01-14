@@ -131,28 +131,29 @@ async function main() {
     const passwordHash = await hash(defaultPassword, saltRounds);
 
     // --- 1. CREATE AGENCY ---
-    const agencyCreationMsg = "Creating Agency...";
+    const agencyCreationMsg = "Creating Agency (UK Based)...";
     console.log(agencyCreationMsg);
 
-    // Seed the primary travel agency
+    // Seed the primary travel agency - UK Based
     const agency = await prisma.company.create({
         data: {
-            name: "Premium Travel Agency",
-            slug: "premium-travel",
-            domain: "premiumtravel.com",
+            name: "Global Voyage Partners",
+            slug: "global-voyage",
+            domain: "globalvoyage.com",
             type: CompanyType.AGENT,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
-            country: "USA",
-            currency: "USD",
-            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/svg?seed=premium-travel`,
+            country: "United Kingdom",
+            currency: "GBP",
+            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=global-voyage`,
         }
     });
 
     // Define the list of agents to create
     const agentsToCreate = [
-        { name: "John Agent", email: "john@premiumtravel.com" },
-        { name: "Sarah Agent", email: "sarah@premiumtravel.com" },
+        { name: "Emma Thompson", email: "emma@globalvoyage.com", role: UserRole.TRAVEL_AGENT }, // Owner/Admin
+        { name: "Liam Sterling", email: "liam@globalvoyage.com", role: UserRole.TRAVEL_AGENT }, // Admin
+        { name: "Sophie Staff", email: "sophie@globalvoyage.com", role: UserRole.AGENCY_EMPLOYEE }, // Staff member (new role)
     ];
 
     // Iterate through given agents to create user records
@@ -162,7 +163,7 @@ async function main() {
         const agentEmail = agentData.email;
 
         // Construct the avatar URL using DiceBear
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${agentName}`;
+        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${agentName}`;
 
         // Create the user record for the agent
         await prisma.user.create({
@@ -170,7 +171,7 @@ async function main() {
                 name: agentName,
                 email: agentEmail,
                 password: passwordHash,
-                role: UserRole.TRAVEL_AGENT,
+                role: agentData.role,
                 companyId: agency.id,
                 isActive: true,
                 avatarUrl: avatarUrl,
@@ -179,40 +180,36 @@ async function main() {
     }
 
     // --- 2. CREATE CLIENT COMPANY ---
-    const clientCreationMsg = "Creating Client Company...";
+    const clientCreationMsg = "Creating Client Company (USA Based)...";
     console.log(clientCreationMsg);
 
-    // Seed the enterprise client company
+    // Seed the enterprise client company - USA Based
     const clientCompany = await prisma.company.create({
         data: {
-            name: "Acme Corp",
-            slug: "acme",
-            domain: "acme.com",
+            name: "Nebula Innovations",
+            slug: "nebula",
+            domain: "nebula.tech",
             type: CompanyType.ENTERPRISE,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
             country: "USA",
             currency: "USD",
-            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/svg?seed=acme`,
+            logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=nebula`,
         }
     });
 
     // Define the list of company administrators
     const adminsToCreate = [
-        { name: "Alice Admin", email: "alice@acme.com" },
-        { name: "Bob Admin", email: "bob@acme.com" },
+        { name: "Marcus Chen", email: "marcus@nebula.tech" },
+        { name: "Sarah Connor", email: "sarah@nebula.tech" },
     ];
 
     // Iterate through admins list to create records
     for (const adminData of adminsToCreate) {
-        // Extract properties
         const adminName = adminData.name;
         const adminEmail = adminData.email;
+        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${adminName}`;
 
-        // Construct avatar URL
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${adminName}`;
-
-        // Create admin user record
         await prisma.user.create({
             data: {
                 name: adminName,
@@ -228,21 +225,17 @@ async function main() {
 
     // Define the list of company employees
     const employeesToCreate = [
-        { name: "Charlie Employee", email: "charlie@acme.com" },
-        { name: "David Employee", email: "david@acme.com" },
-        { name: "Eve Employee", email: "eve@acme.com" },
+        { name: "David Miller", email: "david@nebula.tech" },
+        { name: "Jessica Wu", email: "jessica@nebula.tech" },
+        { name: "Raj Patel", email: "raj@nebula.tech" },
     ];
 
     // Iterate through employees list to create records
     for (const employeeData of employeesToCreate) {
-        // Extract properties
         const empName = employeeData.name;
         const empEmail = employeeData.email;
+        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${empName}`;
 
-        // Construct avatar URL
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=${empName}`;
-
-        // Create employee user record
         await prisma.user.create({
             data: {
                 name: empName,
@@ -268,7 +261,7 @@ async function main() {
     // Create the primary approval workflow for the client company
     const workflow = await prisma.approvalWorkflow.create({
         data: {
-            name: "Standard Approval Workflow",
+            name: "Standard Travel Workflow",
             companyId: clientCompany.id,
             isActive: true
         }
@@ -320,18 +313,16 @@ async function main() {
     console.log(genericSeedMsg);
 
     // List of placeholder cities for trip requests
-    const CITIES = ["New York", "London", "Paris", "Tokyo", "Singapore", "Dubai", "Sydney", "Berlin"];
+    const CITIES = ["New York", "London", "Paris", "Tokyo", "Singapore", "Dublin", "Sydney", "Berlin", "Mumbai", "San Francisco"];
 
     // List of placeholder titles for trips
-    const TRIP_TITLES = ["Client Meeting", "Q3 Planning", "Tech Conference", "Partner Summit", "Sales Pitch"];
+    const TRIP_TITLES = ["Client QBR", "Tech Summit", "Product Launch", "Partner Negotiations", "Sales Roadshow"];
 
     /**
      * Selects a random item from an array.
      */
     const getRandomItem = <T>(arr: T[]): T => {
-        // Calculate a random index
         const index = Math.floor(Math.random() * arr.length);
-        // Return the item at the index
         return arr[index];
     };
 
@@ -339,13 +330,9 @@ async function main() {
      * Generates a random Date within a given range from a start date.
      */
     const getRandomDate = (start: Date, maxDays: number): Date => {
-        // Create a copy of the start date
         const date = new Date(start);
-        // Calculate a random number of days to add
         const randomDays = Math.floor(Math.random() * maxDays);
-        // Update the date object
         date.setDate(date.getDate() + randomDays);
-        // Return the resulting date
         return date;
     };
 
@@ -367,17 +354,13 @@ async function main() {
         for (let i = 0; i < numToGenerate; i++) {
             // Select a random destination city
             const destinationCity = getRandomItem(CITIES);
-            // Select a random title prefix
             const titlePrefix = getRandomItem(TRIP_TITLES);
-            // Construct the full trip title
             const fullTitle = `${titlePrefix} - ${destinationCity}`;
 
             // Get current date
             const nowTime = new Date();
-            // Generate a random start date within 30 days
-            const startDateResult = getRandomDate(nowTime, 30);
-            // Generate a random end date within 5 days of start
-            const endDateResult = getRandomDate(startDateResult, 5);
+            const startDateResult = getRandomDate(nowTime, 45);
+            const endDateResult = getRandomDate(startDateResult, 7);
 
             // determine a status for the request based on the loop index
             let status: RequestStatus = RequestStatus.DRAFT;
@@ -403,8 +386,8 @@ async function main() {
 
             // Define user preferences
             const tripPreferences = {
-                flight: "Economy",
-                hotel: "Central location"
+                flight: "Economy Plus",
+                hotel: "4-star minimum, near city center"
             };
 
             // Create the trip request record
@@ -448,7 +431,7 @@ async function main() {
 
                 // Define the bid amount
                 const bidVal = 2200;
-                const bidMoneyValue = createMoney(bidVal, "USD");
+                const bidMoneyValue = createMoney(bidVal, "GBP"); // Quote in GBP since agent is UK based
 
                 // Create a bid from the agency for the request
                 await prisma.agentBid.create({
@@ -456,7 +439,7 @@ async function main() {
                         requestId: tripRequest.id,
                         agentId: agency.id,
                         amount: bidMoneyValue,
-                        message: "We have found a great deal for your trip.",
+                        message: "We have composed an itinerary that matches your preferences perfectly.",
                         status: bidStatus
                     }
                 });
@@ -466,12 +449,12 @@ async function main() {
                     data: {
                         requestId: tripRequest.id,
                         senderId: employee.id,
-                        content: "I need to be close to the convention center."
+                        content: "Hi, prefer aisle seats if possible."
                     }
                 });
 
                 // identify which agent will respond
-                const respondersEmailAddr = "john@premiumtravel.com";
+                const respondersEmailAddr = "emma@globalvoyage.com";
                 const responderUserRecord = await prisma.user.findUnique({
                     where: {
                         email: respondersEmailAddr
@@ -487,7 +470,7 @@ async function main() {
                         data: {
                             requestId: tripRequest.id,
                             senderId: responderAgentId,
-                            content: "We've selected a hotel just 2 blocks away."
+                            content: "Noted regarding the aisle seat. We found a great hotel 10 mins from the venue."
                         }
                     });
                 }
@@ -496,9 +479,9 @@ async function main() {
                 if (isBookedRequest) {
                     // Define the set of fulfillment items to create
                     const fulfillmentItemsData = [
-                        { requestId: tripRequest.id, title: "Flight Tickets", isCompleted: true, order: 1 },
-                        { requestId: tripRequest.id, title: "Hotel Voucher", isCompleted: true, order: 2 },
-                        { requestId: tripRequest.id, title: "Travel Insurance", isCompleted: true, order: 3 }
+                        { requestId: tripRequest.id, title: "British Airways Confirmation.pdf", isCompleted: true, order: 1 },
+                        { requestId: tripRequest.id, title: "Hilton Hotel Voucher.pdf", isCompleted: true, order: 2 },
+                        { requestId: tripRequest.id, title: "Travel Insurance Policy.pdf", isCompleted: true, order: 3 }
                     ];
 
                     // Batch create the fulfillment items
@@ -514,7 +497,6 @@ async function main() {
     const testRequestCreationLogMsg = "Creating test request with pending approval...";
     console.log(testRequestCreationLogMsg);
 
-    // Select the first employee as the author of the test request
     const testEmployeeUser = employeeRecords[0];
 
     // calculate dates for the test request (14 days from now)
@@ -524,27 +506,24 @@ async function main() {
     const testStartDateObj = new Date(testStartTime);
     const testEndDateObj = new Date(testEndTime);
 
-    // Define the budget for the test request
     const testBudgetRawValue = 3500;
     const testBudgetMoneyObj = createMoney(testBudgetRawValue, "USD");
 
-    // Create the test trip request record
     const testTripRequest = await prisma.tripRequest.create({
         data: {
             userId: testEmployeeUser.id,
             companyId: clientCompany.id,
-            title: "Annual Conference - San Francisco",
-            destination: { city: "San Francisco", country: "USA", formatted: "San Francisco, CA, USA" },
+            title: "CES 2026 - Las Vegas",
+            destination: { city: "Las Vegas", country: "USA", formatted: "Las Vegas, NV, USA" },
             startDate: testStartDateObj,
             endDate: testEndDateObj,
             status: RequestStatus.PENDING_COMPANY_APPROVAL,
-            purpose: "Attend annual tech conference and meet with west coast clients",
+            purpose: "Exhibiting our new product line at CES.",
             budget: testBudgetMoneyObj,
-            preferences: { flight: "Business", hotel: "Downtown area" }
+            preferences: { flight: "Business Class", hotel: "The Venetian or nearby" }
         }
     });
 
-    // Fetch all active workflow steps for the company
     const relevantWorkflowSteps = await prisma.workflowStep.findMany({
         where: {
             workflowId: workflow.id,
@@ -555,19 +534,14 @@ async function main() {
         }
     });
 
-    // Initialize request-specific approval steps for the test request
     for (let stepIdx = 0; stepIdx < relevantWorkflowSteps.length; stepIdx++) {
-        // Retrieve the workflow step definition
         const stepDefObj = relevantWorkflowSteps[stepIdx];
-
-        // determine the initial status: the first step is active (PENDING), others are WAITING
         let startingStatus: ApprovalStatus = ApprovalStatus.WAITING;
         const isTheFirstStep = stepIdx === 0;
         if (isTheFirstStep) {
             startingStatus = ApprovalStatus.PENDING;
         }
 
-        // Create the request-specific approval step record
         await prisma.requestApprovalStep.create({
             data: {
                 requestId: testTripRequest.id,
@@ -577,18 +551,15 @@ async function main() {
         });
     }
 
-    // Log the successful creation of the test request
     const testWorkflowStepCount = relevantWorkflowSteps.length;
     const testSummaryConclusionMsg = `✓ Created test request "${testTripRequest.title}" with ${testWorkflowStepCount} approval steps`;
     console.log(testSummaryConclusionMsg);
 
     // --- 4. SUPER ADMIN ---
-    // define parameters for super admin creation
     const superAdminEmail = "admin@travyntra.com";
     const superAdminName = "Zoeb Chhatriwala";
-    const superAdminAvatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/svg?seed=Zoeb`;
+    const superAdminAvatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=Zoeb`;
 
-    // Create the super administrator record
     await prisma.user.create({
         data: {
             email: superAdminEmail,
@@ -600,19 +571,20 @@ async function main() {
         }
     });
 
-    // Log completion message and summary information
     console.log("");
     console.log("✅ Seed Completed!");
     console.log("------------------------------------------------");
-    console.log("Created 1 Agency (2 Agents)");
-    console.log("Created 1 Client Company (2 Admins, 3 Employees)");
-    console.log("Generated Sample Requests, Bids, and Messages");
+    console.log("1. AGENCY: Global Voyage Partners (UK, GBP)");
+    console.log("   - Admins: emma@globalvoyage.com, liam@globalvoyage.com");
+    console.log("   - Staff:  sophie@globalvoyage.com (Role: AGENCY_EMPLOYEE)");
+    console.log("");
+    console.log("2. COMPANY: Nebula Innovations (USA, USD)");
+    console.log("   - Admins: marcus@nebula.tech, sarah@nebula.tech");
+    console.log("   - Staff:  david@nebula.tech, jessica@nebula.tech, raj@nebula.tech");
+    console.log("");
+    console.log("3. SUPER ADMIN: admin@travyntra.com");
     console.log("------------------------------------------------");
-    console.log("Login with password: 'password'");
-    console.log("- Super Admin: admin@travyntra.com");
-    console.log("- Agency Admin/Agent: john@premiumtravel.com, sarah@premiumtravel.com");
-    console.log("- Company Admin: alice@acme.com, bob@acme.com");
-    console.log("- Employee: charlie@acme.com, david@acme.com, eve@acme.com");
+    console.log("Password for all users: 'password'");
     console.log("------------------------------------------------");
 }
 
