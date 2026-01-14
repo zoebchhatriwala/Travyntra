@@ -230,3 +230,33 @@ export function getDigestEmailTemplate(userName: string, pendingCount: number, a
   // Return the complete template
   return resultTemplate;
 }
+
+/**
+ * Generates an HTML template for a new staff welcome email.
+ * 
+ * @param {string} userName - The name of the new staff member.
+ * @param {string} email - The email address of the new staff member.
+ * @param {string} password - The temporary password for the account.
+ * @param {string} loginUrl - URL for the login page.
+ * @returns {string} The complete HTML email template for the welcome email.
+ */
+export function getStaffWelcomeTemplate(userName: string, email: string, password: string, loginUrl: string): string {
+  const buttonStyle = EMAIL_STYLES.button;
+
+  const bodyContent = `
+    <p>Hello ${userName},</p>
+    <p>You have been added as a staff member to the agency portal on Travyntra.</p>
+    <p>Here are your temporary login credentials:</p>
+    
+    <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 16px 0;">
+      <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${email}</p>
+      <p style="margin: 0;"><strong>Password:</strong> ${password}</p>
+    </div>
+
+    <p>Please log in and change your password immediately.</p>
+
+    <a href="${loginUrl}" style="${buttonStyle}">Login to Portal</a>
+  `;
+
+  return wrapEmailTemplate("Welcome to the Team", bodyContent);
+}

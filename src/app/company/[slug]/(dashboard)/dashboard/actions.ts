@@ -226,6 +226,7 @@ export async function getEmployeeAssets({
             userId: userId
         },
         // Filter by type if provided and not "ALL"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(type && type !== "ALL" ? { type: type as any } : {}),
         // Search by name or trip title
         ...(query ? {

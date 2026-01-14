@@ -271,6 +271,7 @@ enum UserRole {
   TRAVEL_AGENT
   COMPANY_ADMIN
   EMPLOYEE
+  AGENCY_EMPLOYEE
 }
 
 enum RequestStatus {

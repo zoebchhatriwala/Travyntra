@@ -44,8 +44,9 @@ function middlewareHandler(req: any) {
         return NextResponse.redirect(homeUrl);
     }
 
-    // Check if the user is attempting to access an agent page without TRAVEL_AGENT role
-    const isInvalidAgentAccess = isAgentPage && token?.role !== UserRole.TRAVEL_AGENT;
+    // Check if the user is attempting to access an agent page without TRAVEL_AGENT or AGENCY_EMPLOYEE role
+    const allowedAgentRoles = [UserRole.TRAVEL_AGENT, UserRole.AGENCY_EMPLOYEE];
+    const isInvalidAgentAccess = isAgentPage && !allowedAgentRoles.includes(token?.role as UserRole);
 
     // If the access to agent page is invalid
     if (isInvalidAgentAccess) {

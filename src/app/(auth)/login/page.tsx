@@ -2,15 +2,15 @@
 
 import * as React from "react";
 import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UserRole } from "@/lib/constants/roles";
+
 
 export default function LoginPage() {
-    const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [showPassword, setShowPassword] = React.useState(false);
@@ -37,21 +37,24 @@ export default function LoginPage() {
         }
 
         const session = await getSession();
+        console.log("DEBUG: Login successful. Session:", session);
+        console.log("DEBUG: User Role:", session?.user?.role);
+
         setIsLoading(false);
 
-        if (session?.user?.role === "SUPER_ADMIN") {
-            router.push("/admin/dashboard");
-        } else if (session?.user?.role === "TRAVEL_AGENT") {
-            router.push("/agent/dashboard");
-        } else if (session?.user?.role === "COMPANY_ADMIN" && session.user.companySlug) {
-            router.push(`/company/${session.user.companySlug}/admin`);
-        } else if (session?.user?.role === "EMPLOYEE" && session.user.companySlug) {
-            router.push(`/company/${session.user.companySlug}/dashboard`);
+        if (session?.user?.role === UserRole.SUPER_ADMIN) {
+            window.location.href = "/admin/dashboard";
+        } else if (session?.user?.role === UserRole.TRAVEL_AGENT) {
+            window.location.href = "/agent/dashboard";
+        } else if (session?.user?.role === UserRole.COMPANY_ADMIN && session.user.companySlug) {
+            window.location.href = `/company/${session.user.companySlug}/admin`;
+        } else if (session?.user?.role === UserRole.EMPLOYEE && session.user.companySlug) {
+            window.location.href = `/company/${session.user.companySlug}/dashboard`;
+        } else if (session?.user?.role === UserRole.AGENCY_EMPLOYEE) {
+            window.location.href = "/agent/dashboard";
         } else {
-            router.push("/");
+            window.location.href = "/";
         }
-
-        router.refresh();
     }
 
     return (

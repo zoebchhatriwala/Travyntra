@@ -133,7 +133,7 @@ export function DevLoginSwitcher() {
         filteredUsers.forEach(u => {
             if (u.role === 'SUPER_ADMIN') {
                 groups["Super Admin"].push(u);
-            } else if (u.role === 'TRAVEL_AGENT') {
+            } else if (u.role === 'TRAVEL_AGENT' || u.role === 'AGENCY_EMPLOYEE') {
                 const key = u.companyName ? `Agency: ${u.companyName}` : "Agencies";
                 if (!groups[key]) groups[key] = [];
                 groups[key].push(u);
@@ -160,7 +160,7 @@ export function DevLoginSwitcher() {
 
         let targetUrl = "/";
         if (role === 'SUPER_ADMIN') targetUrl = "/admin/dashboard";
-        else if (role === 'TRAVEL_AGENT') targetUrl = "/agent/dashboard";
+        else if (role === 'TRAVEL_AGENT' || role === 'AGENCY_EMPLOYEE') targetUrl = "/agent/dashboard";
         else if (companySlug) targetUrl = role === 'COMPANY_ADMIN' || role === 'ADMIN' ? `/company/${companySlug}/admin` : `/company/${companySlug}/dashboard`;
 
         await signIn("dev-login", { email, callbackUrl: targetUrl });

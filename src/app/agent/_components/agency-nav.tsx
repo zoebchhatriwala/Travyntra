@@ -3,47 +3,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Gavel, Plane, FileText, Settings } from "lucide-react";
+import { Gauge, Gavel, Plane, FileText, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
-const NAV_ITEMS = [
-    {
-        name: "Dashboard",
-        href: "/agent/dashboard",
-        icon: Gauge,
-        exact: true
-    },
-    {
-        name: "Bid Management",
-        href: "/agent/bids",
-        icon: Gavel
-    },
-    {
-        name: "Fulfillment Console",
-        href: "/agent/fulfillment",
-        icon: Plane
-    },
-    {
-        name: "Invoices",
-        href: "/agent/invoices",
-        icon: FileText
-    },
-    {
-        name: "Settings",
-        href: "/agent/settings",
-        icon: Settings
-    }
-];
+
 
 export function AgencyNav() {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    const userRole = session?.user?.role;
+
+    const navItems = [
+        {
+            name: "Dashboard",
+            href: "/agent/dashboard",
+            icon: Gauge,
+            exact: true
+        },
+        {
+            name: "Bid Management",
+            href: "/agent/bids",
+            icon: Gavel
+        },
+        {
+            name: "Fulfillment Console",
+            href: "/agent/fulfillment",
+            icon: Plane
+        },
+        {
+            name: "Invoices",
+            href: "/agent/invoices",
+            icon: FileText
+        }
+    ];
+
+    if (userRole === "TRAVEL_AGENT") {
+        navItems.push({
+            name: "Staff",
+            href: "/agent/staff",
+            icon: Users
+        });
+        navItems.push({
+            name: "Settings",
+            href: "/agent/settings",
+            icon: Settings
+        });
+    }
 
     return (
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-4">
                 Agency Workspace
             </div>
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
                 const isActive = item.exact
                     ? pathname === item.href
                     : pathname.startsWith(item.href);

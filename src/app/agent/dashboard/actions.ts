@@ -8,7 +8,7 @@ import { RequestStatus, IntegrationStatus } from "@prisma/client";
 
 export async function getAgencyStats() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || !["TRAVEL_AGENT", "AGENCY_EMPLOYEE"].includes(session.user.role)) {
         return {
             openOpportunities: 0,
             activeBids: 0,
@@ -83,7 +83,7 @@ export async function getAgencyStats() {
 
 export async function getRecentOpportunities() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") return [];
+    if (!session?.user?.companyId || !["TRAVEL_AGENT", "AGENCY_EMPLOYEE"].includes(session.user.role)) return [];
 
     const agencyId = session.user.companyId;
 

@@ -19,7 +19,8 @@ export default async function AgentLayout({
         redirect("/login");
     }
 
-    if (session.user.role !== "TRAVEL_AGENT") {
+    const allowedRoles = ["TRAVEL_AGENT", "AGENCY_EMPLOYEE"];
+    if (!allowedRoles.includes(session.user.role)) {
         redirect("/");
     }
 
