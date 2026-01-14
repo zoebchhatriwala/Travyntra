@@ -59,7 +59,7 @@ const pool = new Pool(poolConfig);
 const adapter = new PrismaPg(pool);
 
 // Specify the query log level
-const logLevel: 'query' = 'query';
+const logLevel = 'query' as const;
 
 // Array of log configurations
 const logConfig = [logLevel];

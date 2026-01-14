@@ -214,7 +214,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
     - Flights: Airport selection (via `openaip.net` / major list).
     - Trains: Railway station selection (Domestic) with **Custom Option** for manual entry.
     - Car/Others: Google Address integration (Mock/Input).
-- [ ] **Searchable Selectors**: Add search functionality to Country and Timezone selectors.
+- [x] **Searchable Selectors**: Add search functionality to Country and Timezone selectors.
 - [ ] **Asset Vault Enhancements**: Add search bar, filters, and paginationUrl to the Asset Vault.
 - [ ] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
 
@@ -265,12 +265,15 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Progress tracking sidebar with visual indicator
    - ✅ Recent Messages with markdown support
 
+4. **UX & Request Refinements** (Phase 8)
+   - ✅ Searchable Country & Timezone Selectors (Combobox implementation)
+
 ### Immediate Priorities
 1. **UX & Request Refinements** (Phases 8)
    - ✅ Real country selector in settings
    - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
    - ✅ Custom Train Option (Manual Entry)
-   - [ ] Searchable Country & Timezone Selectors
+   - [x] Searchable Country & Timezone Selectors
    - [ ] Asset Vault: Search, Filters, Pagination
    - Manual collaborator management UI
 2. **Smart Logic & Automation** (Phase 9)

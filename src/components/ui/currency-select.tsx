@@ -1,9 +1,9 @@
 "use client"
 
 import { Combobox } from "@/components/ui/combobox"
-import { COUNTRIES } from "@/lib/constants/countries"
+import { CURRENCIES } from "@/lib/constants/currencies"
 
-interface CountrySelectProps {
+interface CurrencySelectProps {
     value: string
     onChange: (value: string) => void
     className?: string
@@ -11,20 +11,17 @@ interface CountrySelectProps {
     icon?: React.ReactNode
 }
 
-export function CountrySelect({
+export function CurrencySelect({
     value,
     onChange,
     className,
-    placeholder = "Select a country",
+    placeholder = "Select currency",
     icon,
-}: CountrySelectProps) {
-    const options = [
-        { value: "", label: "No country selected" },
-        ...COUNTRIES.map((country) => ({
-            value: country.name,
-            label: `${country.emoji} ${country.name}`,
-        })),
-    ]
+}: CurrencySelectProps) {
+    const options = CURRENCIES.map((c) => ({
+        value: c.code,
+        label: `${c.code} - ${c.name}`,
+    }))
 
     return (
         <Combobox
@@ -32,7 +29,7 @@ export function CountrySelect({
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            searchPlaceholder="Search country..."
+            searchPlaceholder="Search currency..."
             className={className}
             startIcon={icon}
         />

@@ -158,7 +158,7 @@ export function AsyncCombobox({
                                     className="cursor-pointer font-medium text-indigo-600 data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto"
                                 >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Use "{query}"
+                                    Use &quot;{query}&quot;
                                 </CommandItem>
                             </CommandGroup>
                         )}

@@ -68,7 +68,7 @@ export async function getDevUsers(): Promise<DevUser[]> {
          * @param {any} u - The database user record.
          * @returns {DevUser} The simplified developer user structure.
          */
-        const transformToDevUser = (u: any) => {
+        const transformToDevUser = (u: (typeof userRecordsFromDb)[number]) => {
             // Retrieve associated company details
             const userCompanyInfo = u.company;
             // Get the name of the company

@@ -158,7 +158,7 @@ export async function updateLocationData(): Promise<string[]> {
         /**
          * Filter to remove airports without a valid code.
          */
-        const airportFilter = (a: any) => {
+        const airportFilter = (a: { code: string }) => {
             const codeExists = !!a.code;
             return codeExists;
         };

@@ -131,7 +131,7 @@ export async function getMyPendingApprovals(): Promise<PendingApprovalResult[]> 
          * @param {any} approval - The raw database record.
          * @returns {PendingApprovalResult} The transformed result object.
          */
-        const mapToPendingApproval = (approval: any): PendingApprovalResult => {
+        const mapToPendingApproval = (approval: (typeof pendingStepRecords)[number]): PendingApprovalResult => {
             // Retrieve the request object from the approval record
             const tripRequestObj = approval.request;
             // Retrieve the requester (user) details
@@ -375,8 +375,8 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
             /** 
              * logic for ALL type: every assigned approver must provide an APPROVED signal.
              */
-            const checkIfApproved = (approver: any) => {
-                const searchPredicate = (a: any) => {
+            const checkIfApproved = (approver: { id: string }) => {
+                const searchPredicate = (a: { userId: string, status: ApprovalStatus }) => {
                     const idMatches = a.userId === approver.id;
                     const statusIsApproved = a.status === ApprovalStatus.APPROVED;
                     return idMatches && statusIsApproved;
@@ -389,7 +389,7 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
             /** 
              * identify if any individual has submitted a REJECTED signal.
              */
-            const rejectionPredicate = (a: any) => a.status === ApprovalStatus.REJECTED;
+            const rejectionPredicate = (a: { status: ApprovalStatus }) => a.status === ApprovalStatus.REJECTED;
             const hasAnyMemberRejected = allMemberApprovals.some(rejectionPredicate);
 
             // update status accordingly
@@ -402,14 +402,14 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
             /** 
              * logic for ANY type: a single APPROVED signal is sufficient.
              */
-            const approvalPredicate = (a: any) => a.status === ApprovalStatus.APPROVED;
+            const approvalPredicate = (a: { status: ApprovalStatus }) => a.status === ApprovalStatus.APPROVED;
             const anyMemberHasApproved = allMemberApprovals.some(approvalPredicate);
 
             /** 
              * logic for rejection: if ALL assigned approvers reject, the step is rejected.
              */
-            const checkIfRejected = (approver: any) => {
-                const searchPredicate = (a: any) => {
+            const checkIfRejected = (approver: { id: string }) => {
+                const searchPredicate = (a: { userId: string, status: ApprovalStatus }) => {
                     const idMatches = a.userId === approver.id;
                     const statusIsRejected = a.status === ApprovalStatus.REJECTED;
                     return idMatches && statusIsRejected;
@@ -498,7 +498,7 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
             // identify the numerical order of the recently completed step
             const currentStepOrderValue = approvalStepRecord.step.order;
             // determine the next step in the workflow by finding the one with the next sequential order
-            const findNextStepPredicate = (s: any) => s.step.order === currentStepOrderValue + 1;
+            const findNextStepPredicate = (s: { step: { order: number } }) => s.step.order === currentStepOrderValue + 1;
             const nextWorkflowStepRecord = approvalStepRecord.request.approvalSteps.find(findNextStepPredicate);
 
             // identify if this was the final step
@@ -639,7 +639,7 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
         if (isGroupMaster && hasChildren) {
             // retrieve IDs of all child trips
             const childTripsList = groupRequestDetails!.childTrips;
-            const childTripIdsArr = childTripsList.map((c: any) => c.id);
+            const childTripIdsArr = childTripsList.map((c: { id: string }) => c.id);
 
             // Fetch matching pending steps for the children that correspond to the same workflow definition
             const childStepsQuery = {
@@ -706,9 +706,9 @@ export interface ApprovalProgressStep {
     /** Current aggregate status of the step */
     status: ApprovalStatus;
     /** List of assigned approvers for this step */
-    approvers: any[];
+    approvers: { id: string; name: string | null; avatarUrl: string | null; role: string }[];
     /** List of individual decisions submitted for this step */
-    approvals: any[];
+    approvals: { userId: string; userName: string | null; userAvatar: string | null; status: ApprovalStatus; comment: string | null; updatedAt: Date }[];
     /** Creation timestamp */
     createdAt: Date;
     /** Last update timestamp */
@@ -775,13 +775,13 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
         /**
          * Maps a raw database step record to the standardized progress structure.
          */
-        const mapToProgressStep = (step: any): ApprovalProgressStep => {
+        const mapToProgressStep = (step: (typeof rawStepsCollection)[number]): ApprovalProgressStep => {
             // retrieve definition properties
             const stepDefinition = step.step;
             const definitionApprovers = stepDefinition.approvers;
 
             // map raw individual approval records to simplified structures
-            const individualDecisions = step.approvals.map((a: any) => {
+            const individualDecisions = step.approvals.map((a) => {
                 const decUser = a.user;
                 return {
                     userId: a.userId,
@@ -833,7 +833,7 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
  * @param {string} editorId - The ID of the user who initiated the workflow change.
  * @returns {Promise<Object>} A summary of the reset operation.
  */
-export async function resetPendingApprovalSteps(companyId: string, editorId: string): Promise<any> {
+export async function resetPendingApprovalSteps(companyId: string, editorId: string): Promise<unknown> {
     try {
         // Retrieve the current active workflow definition for the specified company
         const workflowQuery = {
@@ -930,6 +930,7 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
             const reqTitleText = targetRequestItem.title;
 
             // define transaction logic
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const executionTransaction = async (tx: any) => {
                 // 1. CLEAR EXISTING APPROVAL DATA FOR THE REQUEST
 
@@ -947,7 +948,7 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
                 // If steps exist
                 if (existingStepsToDelete.length > 0) {
                     // Extract IDs for bulk deletion of specific user decisions
-                    const existingStepIdsArr = existingStepsToDelete.map((s: any) => s.id);
+                    const existingStepIdsArr = existingStepsToDelete.map((s: { id: string }) => s.id);
                     const decisionCleanupQuery = {
                         where: {
                             requestApprovalStepId: {
@@ -1063,7 +1064,7 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
         // If approvers exist for the first stage
         if (hasStartApprovers) {
             // construct a comma-separated list of all reset request titles for the alert message
-            const mapTitleToString = (r: any) => r.title;
+            const mapTitleToString = (r: { title: string }) => r.title;
             const titlesStringsArray = targetRequestsToReset.map(mapTitleToString);
             const concatenatedTitles = titlesStringsArray.join('", "');
 

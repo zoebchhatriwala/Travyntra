@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
  * @param {NextRequestWithAuth} req - The incoming request object augmented with NextAuth data.
  * @returns {NextResponse} The resulting response after authorization checks.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function middlewareHandler(req: any) {
     // Retrieve the authorization token from the request
     const token = req.nextauth.token;
@@ -153,6 +154,7 @@ const authMiddlewareOptions = {
          * @param {Object} params - The authorization parameters.
          * @returns {boolean} True if authorized, false otherwise.
          */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         authorized: (params: { token: any, req: any }) => {
             // Extract the token and request from parameters
             const token = params.token;

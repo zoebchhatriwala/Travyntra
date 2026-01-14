@@ -132,7 +132,7 @@ export async function uploadFile(file: File, folder: string = "profiles"): Promi
         try {
             // Check if the directory already exists
             await fs.access(uploadsDir);
-        } catch (error) {
+        } catch {
             // Config for directory creation
             const mkdirOptions = { recursive: true };
             // Create the directory recursively if it does not exist

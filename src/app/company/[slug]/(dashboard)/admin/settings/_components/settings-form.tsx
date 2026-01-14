@@ -27,16 +27,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { updateCompanySettings } from "../actions";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
-import { TIMEZONES } from "@/lib/constants/timezones";
 import { CountrySelect } from "@/components/ui/country-select";
+import { TimezoneSelect } from "@/components/ui/timezone-select";
+import { CurrencySelect } from "@/components/ui/currency-select";
 
 interface SettingsFormProps {
     company: {
@@ -192,53 +185,35 @@ export function SettingsForm({ company }: SettingsFormProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 <div className="space-y-2">
                                     <Label htmlFor="currency" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Currency</Label>
-                                    <div className="relative group">
-                                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                                        <Select value={currency} onValueChange={setCurrency}>
-                                            <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
-                                                <SelectValue placeholder="Select Currency" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="USD">USD ($)</SelectItem>
-                                                <SelectItem value="EUR">EUR (€)</SelectItem>
-                                                <SelectItem value="GBP">GBP (£)</SelectItem>
-                                                <SelectItem value="JPY">JPY (¥)</SelectItem>
-                                                <SelectItem value="INR">INR (₹)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                    <CurrencySelect
+                                        value={currency}
+                                        onChange={setCurrency}
+                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        placeholder="Select Currency"
+                                        icon={<Coins className="h-4 w-4" />}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="timezone" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Timezone</Label>
-                                    <div className="relative group">
-                                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
-                                        <Select value={timezone} onValueChange={setTimezone}>
-                                            <SelectTrigger className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 font-bold">
-                                                <SelectValue placeholder="Select Timezone" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {TIMEZONES.map((tz) => (
-                                                    <SelectItem key={tz} value={tz}>
-                                                        {tz.replace(/_/g, " ")}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                    <TimezoneSelect
+                                        value={timezone}
+                                        onChange={setTimezone}
+                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        placeholder="Select Timezone"
+                                        icon={<Clock className="h-4 w-4" />}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="country" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</Label>
-                                    <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors z-10 pointer-events-none" />
-                                        <CountrySelect
-                                            value={country}
-                                            onChange={setCountry}
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
-                                            placeholder="Select Country"
-                                        />
-                                    </div>
+                                    <CountrySelect
+                                        value={country}
+                                        onChange={setCountry}
+                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        placeholder="Select Country"
+                                        icon={<MapPin className="h-4 w-4" />}
+                                    />
                                 </div>
                             </div>
                         </CardContent>

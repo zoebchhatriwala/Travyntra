@@ -190,7 +190,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
                 // Check if this specific approver has already provided a decision for this step
                 const currentApprovalsList = currentStep.approvals;
-                const approverActionFilter = (act: any) => act.userId === approverIdValue;
+                const approverActionFilter = (act: { userId: string }) => act.userId === approverIdValue;
                 const hasApproverActed = currentApprovalsList.some(approverActionFilter);
 
                 // Skip if the approver has already acted

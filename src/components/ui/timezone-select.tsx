@@ -1,9 +1,9 @@
 "use client"
 
 import { Combobox } from "@/components/ui/combobox"
-import { COUNTRIES } from "@/lib/constants/countries"
+import { TIMEZONES } from "@/lib/constants/timezones"
 
-interface CountrySelectProps {
+interface TimezoneSelectProps {
     value: string
     onChange: (value: string) => void
     className?: string
@@ -11,18 +11,18 @@ interface CountrySelectProps {
     icon?: React.ReactNode
 }
 
-export function CountrySelect({
+export function TimezoneSelect({
     value,
     onChange,
     className,
-    placeholder = "Select a country",
+    placeholder = "Select timezone",
     icon,
-}: CountrySelectProps) {
+}: TimezoneSelectProps) {
     const options = [
-        { value: "", label: "No country selected" },
-        ...COUNTRIES.map((country) => ({
-            value: country.name,
-            label: `${country.emoji} ${country.name}`,
+        { value: "UTC", label: "UTC" },
+        ...TIMEZONES.filter((t) => t !== "UTC").map((tz) => ({
+            value: tz,
+            label: tz.replace(/_/g, " "),
         })),
     ]
 
@@ -32,7 +32,7 @@ export function CountrySelect({
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            searchPlaceholder="Search country..."
+            searchPlaceholder="Search timezone..."
             className={className}
             startIcon={icon}
         />

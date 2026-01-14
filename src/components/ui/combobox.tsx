@@ -22,6 +22,7 @@ import {
 export interface ComboboxOption {
     value: string
     label: string
+    disabled?: boolean
 }
 
 interface ComboboxProps {
@@ -32,6 +33,7 @@ interface ComboboxProps {
     searchPlaceholder?: string
     emptyText?: string
     className?: string
+    startIcon?: React.ReactNode
 }
 
 export function Combobox({
@@ -41,7 +43,8 @@ export function Combobox({
     placeholder = "Select option...",
     searchPlaceholder = "Search...",
     emptyText = "No option found.",
-    className
+    className,
+    startIcon
 }: ComboboxProps) {
     const [open, setOpen] = React.useState(false)
 
@@ -57,9 +60,12 @@ export function Combobox({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("w-full justify-between font-normal bg-white", !value && "text-muted-foreground", className)}
+                    className={cn("w-full justify-between font-normal bg-white hover:bg-white", !value && "text-muted-foreground", className)}
                 >
-                    <span className="truncate">{selectedLabel}</span>
+                    <div className="flex items-center gap-2 truncate pointer-events-none">
+                        {startIcon && <span className="text-gray-400 shrink-0">{startIcon}</span>}
+                        <span className="truncate">{selectedLabel}</span>
+                    </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -72,11 +78,13 @@ export function Combobox({
                             {options.map((option) => (
                                 <CommandItem
                                     key={option.value}
-                                    value={option.label}
+                                    value={option.value}
                                     onSelect={() => {
                                         onChange(option.value)
                                         setOpen(false)
                                     }}
+                                    disabled={option.disabled ?? false}
+                                    className="text-gray-900 data-[disabled]:opacity-100 cursor-pointer data-[disabled]:pointer-events-auto"
                                 >
                                     <Check
                                         className={cn(

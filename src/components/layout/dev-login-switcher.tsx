@@ -68,6 +68,7 @@ export function DevLoginSwitcher() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setSelectedCompanies(JSON.parse(saved));
                 } catch (e) {
                     console.error("Failed to parse dev filter", e);

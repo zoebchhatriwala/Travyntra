@@ -28,7 +28,7 @@ function initializeCountriesList(): Country[] {
      * @param {[string, any]} entry - The raw country tuple [code, data].
      * @returns {Country} The standardized Country object.
      */
-    const mapEntryToCountry = (entry: [string, any]): Country => {
+    const mapEntryToCountry = (entry: [string, { name: string }]): Country => {
         // Extract the country code from the entry
         const isoCode = entry[0];
         // Extract the country data from the entry
@@ -37,9 +37,11 @@ function initializeCountriesList(): Country[] {
         const countryName = countryData.name;
 
         // identify the code as any to satisfy the emoji flag function requirements
-        const flagCodeTarget = isoCode as any;
+        const flagCodeTarget = isoCode;
+
         // Generate the emoji flag representation for the country code
-        const countryFlagEmoji = getEmojiFlag(flagCodeTarget);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const countryFlagEmoji = getEmojiFlag(flagCodeTarget as any);
 
         // Combine fields into the final Country object
         const resultObject = {
