@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
  * @param {number} [limit] - The maximum number of notifications to retrieve.
  * @returns {Promise<any[]>} A collection of notification objects or an empty array if not authenticated.
  */
-export async function getNotifications(limit?: number): Promise<unknown[]> {
+export async function getNotifications(limit?: number): Promise<any[]> {
     // Retrieve the current user's authentication session
     const authSession = await getServerSession(authOptions);
 
@@ -76,7 +76,7 @@ interface PagedParams {
  * @param {PagedParams} params - The pagination and search configuration parameters.
  * @returns {Promise<Object>} A paginated result object containing notifications and metadata.
  */
-export async function getNotificationsPaged(params: PagedParams): Promise<unknown> {
+export async function getNotificationsPaged(params: PagedParams): Promise<{ notifications: any[]; total: number; pages: number; }> {
     // Retrieve the current user's authentication session
     const authSession = await getServerSession(authOptions);
 

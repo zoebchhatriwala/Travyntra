@@ -12,9 +12,10 @@ function initializeCurrenciesList(): Currency[] {
     // Extract all currencies from countries
     Object.values(countries).forEach((country) => {
         if (country.currency) {
-            const currencyList = Array.isArray(country.currency)
-                ? country.currency
-                : country.currency.split(",");
+            const rawCurrency = country.currency as unknown;
+            const currencyList = Array.isArray(rawCurrency)
+                ? (rawCurrency as string[])
+                : (rawCurrency as string).split(",");
 
             currencyList.forEach((c: string) => {
                 const code = c.trim();

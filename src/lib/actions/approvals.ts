@@ -833,7 +833,7 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
  * @param {string} editorId - The ID of the user who initiated the workflow change.
  * @returns {Promise<Object>} A summary of the reset operation.
  */
-export async function resetPendingApprovalSteps(companyId: string, editorId: string): Promise<unknown> {
+export async function resetPendingApprovalSteps(companyId: string, editorId: string): Promise<{ success?: boolean; error?: string; message?: string; requestsReset?: number; notifiedUsers?: number; }> {
     try {
         // Retrieve the current active workflow definition for the specified company
         const workflowQuery = {

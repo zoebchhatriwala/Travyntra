@@ -204,50 +204,82 @@ export async function getCompanyGroupTrips() {
  * 
  * @returns {Promise<Array>} List of employee assets/documents.
  */
-export async function getEmployeeAssets() {
+export async function getEmployeeAssets({
+    page = 1,
+    limit = 12,
+    query = "",
+    type = "ALL"
+}: {
+    page?: number;
+    limit?: number;
+    query?: string;
+    type?: string;
+} = {}) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return [];
+    if (!session?.user?.id) return { documents: [], total: 0, totalPages: 0 };
 
     const userId = session.user.id;
+    const skip = (page - 1) * limit;
 
-    // Fetch documents linked to the user's trip requests
-    const documents = await prisma.document.findMany({
-        where: {
-            request: {
-                userId: userId
-            }
+    const where: Prisma.DocumentWhereInput = {
+        request: {
+            userId: userId
         },
-        include: {
-            request: {
-                select: {
-                    title: true,
-                    destination: true,
-                    startDate: true,
+        // Filter by type if provided and not "ALL"
+        ...(type && type !== "ALL" ? { type: type as any } : {}),
+        // Search by name or trip title
+        ...(query ? {
+            OR: [
+                { name: { contains: query, mode: Prisma.QueryMode.insensitive } },
+                { request: { title: { contains: query, mode: Prisma.QueryMode.insensitive } } }
+            ]
+        } : {})
+    };
+
+    // Transaction to get count and documents
+    const [total, documents] = await prisma.$transaction([
+        prisma.document.count({ where }),
+        prisma.document.findMany({
+            where,
+            skip,
+            take: limit,
+            include: {
+                request: {
+                    select: {
+                        title: true,
+                        destination: true,
+                        startDate: true,
+                    }
+                },
+                uploader: {
+                    select: {
+                        name: true,
+                        role: true
+                    }
                 }
             },
-            uploader: {
-                select: {
-                    name: true,
-                    role: true
-                }
+            orderBy: {
+                createdAt: 'desc'
             }
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    });
+        })
+    ]);
 
-    return documents.map(doc => ({
-        id: doc.id,
-        name: doc.name,
-        type: doc.type,
-        url: doc.url,
-        createdAt: doc.createdAt,
-        tripTitle: doc.request?.title || "Unknown Trip",
-        tripDestination: (doc.request?.destination as unknown as Location)?.city || (doc.request?.destination as unknown as Location)?.formatted || "Unknown",
-        uploadedBy: doc.uploader.name || "Unknown",
-        uploaderRole: doc.uploader.role
-    }));
+    return {
+        documents: documents.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: doc.type,
+            url: doc.url,
+            createdAt: doc.createdAt,
+            tripTitle: doc.request?.title || "Unknown Trip",
+            tripDestination: (doc.request?.destination as unknown as Location)?.city || (doc.request?.destination as unknown as Location)?.formatted || "Unknown",
+            uploadedBy: doc.uploader.name || "Unknown",
+            uploaderRole: doc.uploader.role
+        })),
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page
+    };
 }
 
 /**
