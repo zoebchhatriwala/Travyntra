@@ -66,5 +66,9 @@
     "prisma": "^7.2.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5"
+  },
+  "//": "Forced upgrade of hono to fix security vulnerabilities in Prisma 7.2.0 internal dependencies (pinned to 4.10.6)",
+  "overrides": {
+    "hono": "^4.11.4"
   }
 }
