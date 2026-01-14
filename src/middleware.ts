@@ -1,4 +1,4 @@
-
+import { UserRole } from "@/lib/constants/roles";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
@@ -33,7 +33,7 @@ function middlewareHandler(req: any) {
     const isCompanyPage = pathname.startsWith("/company/");
 
     // Check if the user is attempting to access an admin page without SUPER_ADMIN role
-    const isInvalidAdminAccess = isAdminPage && token?.role !== "SUPER_ADMIN";
+    const isInvalidAdminAccess = isAdminPage && token?.role !== UserRole.SUPER_ADMIN;
 
     // If the access to admin page is invalid
     if (isInvalidAdminAccess) {
@@ -45,7 +45,7 @@ function middlewareHandler(req: any) {
     }
 
     // Check if the user is attempting to access an agent page without TRAVEL_AGENT role
-    const isInvalidAgentAccess = isAgentPage && token?.role !== "TRAVEL_AGENT";
+    const isInvalidAgentAccess = isAgentPage && token?.role !== UserRole.TRAVEL_AGENT;
 
     // If the access to agent page is invalid
     if (isInvalidAgentAccess) {
@@ -68,16 +68,16 @@ function middlewareHandler(req: any) {
         const userRole = token?.role as string;
 
         // Define the list of roles allowed to access company routes
-        const allowedCompanyRoles = ["COMPANY_ADMIN", "EMPLOYEE", "SUPER_ADMIN"];
+        const allowedCompanyRoles = [UserRole.COMPANY_ADMIN, UserRole.EMPLOYEE, UserRole.SUPER_ADMIN];
 
         // Check if the user's role is in the allowed list
-        const isAllowedRole = allowedCompanyRoles.includes(userRole);
+        const isAllowedRole = allowedCompanyRoles.includes(userRole as UserRole);
 
         // Retrieve the user's assigned company slug from the token
         const userCompanySlug = token?.companySlug;
 
         // Determine if the user belongs to the company specified in the URL or is a SUPER_ADMIN
-        const isAuthorizedForCompany = userCompanySlug === slugFromUrl || userRole === "SUPER_ADMIN";
+        const isAuthorizedForCompany = userCompanySlug === slugFromUrl || userRole === UserRole.SUPER_ADMIN;
 
         // Check for invalid company access (wrong role or wrong company)
         const isInvalidCompanyAccess = !isAllowedRole || !isAuthorizedForCompany;
@@ -97,11 +97,9 @@ function middlewareHandler(req: any) {
         // Determine if the user is accessing an admin-only path within the company route
         const isAdminPath = section === "admin";
 
-        // Determine if the user is accessing a dashboard path within the company route
-        const isDashboardPath = section === "dashboard";
 
         // Check if a non-admin is trying to access a company admin path
-        const isUnauthorizedAdminPath = isAdminPath && userRole !== "COMPANY_ADMIN" && userRole !== "SUPER_ADMIN";
+        const isUnauthorizedAdminPath = isAdminPath && userRole !== UserRole.COMPANY_ADMIN && userRole !== UserRole.SUPER_ADMIN;
 
         // If an unauthorized user attempts to access the company admin section
         if (isUnauthorizedAdminPath) {
@@ -111,31 +109,6 @@ function middlewareHandler(req: any) {
 
             // Redirect the user to the company dashboard
             return NextResponse.redirect(dashboardUrl);
-        }
-
-        // Check if a company admin is accessing the general employee dashboard
-        const isAdminInDashboard = isDashboardPath && userRole === "COMPANY_ADMIN";
-
-        // If a company admin is in the dashboard, restrict access to specific relevant sub-paths
-        if (isAdminInDashboard) {
-            // Retrieve the specific sub-path within the dashboard
-            const dashboardSubPath = pathSegments[4];
-
-            // Define the list of dashboard sub-paths accessible to admins
-            const allowedAdminSubPaths = ["requests", "discussion", "activity"];
-
-            // Check if the sub-path is allowed for admins
-            const isForbiddenSubPath = !allowedAdminSubPaths.includes(dashboardSubPath);
-
-            // If the sub-path is not explicitly allowed for admins
-            if (isForbiddenSubPath) {
-                // Construct the redirection URL for the company admin home page
-                const adminHomePathSegment = `/company/${slugFromUrl}/admin`;
-                const adminHomeUrl = new URL(adminHomePathSegment, appBaseUrl);
-
-                // Redirect the user to the company admin section
-                return NextResponse.redirect(adminHomeUrl);
-            }
         }
     }
 
