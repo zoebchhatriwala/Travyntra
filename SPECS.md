@@ -221,7 +221,6 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 ### Phase 9: Smart Logic & Automation 📋 PLANNED
 - [ ] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < ₹50k.
 - [ ] **International/Domestic Detection**: Auto-tag requests based on company country vs destination.
-- [ ] **Auto-Assignment**: Automatically assign requests to the Agency if only one is integrated with the company.
 - [ ] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
 
 ### Phase 10: Financial Layer �️ ACTIVE
