@@ -13,7 +13,8 @@ import {
     Check,
     Briefcase,
     Globe,
-    Filter
+    Filter,
+    Copy
 } from "lucide-react";
 import { getDevUsers } from "@/app/actions/dev";
 import {
@@ -355,6 +356,17 @@ interface UserItemProps {
 
 function UserItem({ user, session, onClick, colorClass, textClass, minimal = false }: UserItemProps) {
     const isActive = session?.user?.email === user.email;
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (user.email) {
+            navigator.clipboard.writeText(user.email);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     return (
         <DropdownMenuItem
@@ -379,11 +391,32 @@ function UserItem({ user, session, onClick, colorClass, textClass, minimal = fal
                     <p className={cn("text-sm font-bold truncate leading-none", isActive ? "text-black" : "text-gray-700")}>{user.name}</p>
                     {isActive && <Check size={14} className="text-green-500" />}
                 </div>
-                <p className={cn("text-[10px] font-medium uppercase tracking-tight mt-0.5 truncate", textClass || "text-gray-400")}>
-                    {user.role.replace("_", " ")}
-                </p>
+                <div className="flex items-center justify-between mt-1">
+                    <div className="flex flex-col">
+                        <p className={cn("text-[10px] font-medium uppercase tracking-tight truncate", textClass || "text-gray-400")}>
+                            {user.role.replace("_", " ")}
+                        </p>
+                        {user.email && (
+                            <p className="text-[10px] text-gray-400/70 truncate font-normal">
+                                {user.email}
+                            </p>
+                        )}
+                    </div>
+                    {user.email && (
+                        <button
+                            onClick={handleCopy}
+                            className={cn(
+                                "p-1.5 rounded-full hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100",
+                                copied ? "text-green-500 bg-green-50" : "text-gray-400 hover:text-indigo-600"
+                            )}
+                            title="Copy email"
+                        >
+                            {copied ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                    )}
+                </div>
             </div>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity self-center">
                 <ChevronDown className="-rotate-90 text-gray-300" size={14} />
             </div>
         </DropdownMenuItem>

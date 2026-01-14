@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { convertMoney } from "@/lib/services/currency";
 
 export async function getCompanyDashboardStats(slug: string, userId?: string) {
     const session = await getServerSession(authOptions);
@@ -74,13 +75,18 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
         }
     });
 
-    const totalSpend = completedRequests.reduce((sum, req) => {
+    const targetCurrency = company.currency || "USD";
+    const spendResults = await Promise.all(completedRequests.map(async (req) => {
         if (req.budget) {
             const money = parseMoney(req.budget);
-            return sum + (money ? moneyToDecimal(money) : 0);
+            if (money) {
+                const converted = await convertMoney(money, targetCurrency);
+                return moneyToDecimal(converted);
+            }
         }
-        return sum;
-    }, 0);
+        return 0;
+    }));
+    const totalSpend = spendResults.reduce((sum, val) => sum + val, 0);
 
     const recentRequests = await prisma.tripRequest.findMany({
         where: { companyId: company.id },
@@ -299,7 +305,7 @@ export async function getCompanyAnalytics(slug: string) {
 
     const company = await prisma.company.findUnique({
         where: { slug },
-        select: { id: true, currency: true }
+        select: { id: true, currency: true, policyThreshold: true }
     });
 
     if (!company) return null;
@@ -340,44 +346,75 @@ export async function getCompanyAnalytics(slug: string) {
         }
     });
 
-    const mtdBudget = mtdRequests.reduce((sum, req) => {
+    const targetCurrency = company.currency || "USD";
+    const mtdResults = await Promise.all(mtdRequests.map(async (req) => {
         if (req.budget) {
             const money = parseMoney(req.budget);
-            return sum + (money ? moneyToDecimal(money) : 0);
+            if (money) {
+                const converted = await convertMoney(money, targetCurrency);
+                return moneyToDecimal(converted);
+            }
         }
-        return sum;
-    }, 0);
+        return 0;
+    }));
+    const mtdBudget = mtdResults.reduce((sum, val) => sum + val, 0);
 
-    // 3. Policy Violations (Placeholder: requests where budget > 5000)
-    const allRequests = await prisma.tripRequest.findMany({
+    // 3. Policy Violations (based on company threshold)
+    const thresholdMoney = parseMoney(company.policyThreshold);
+    const thresholdUSD = thresholdMoney ? moneyToDecimal(await convertMoney(thresholdMoney, "USD")) : 5000;
+
+    const allRequestsSummary = await prisma.tripRequest.findMany({
         where: { companyId: company.id },
         select: { budget: true }
     });
 
-    const violations = allRequests.filter(req => {
+    const violationsResults = await Promise.all(allRequestsSummary.map(async (req) => {
         if (!req.budget) return false;
         const money = parseMoney(req.budget);
-        const amount = money ? moneyToDecimal(money) : (typeof req.budget === 'number' ? req.budget : 0);
-        return amount > 5000;
-    }).length;
+        if (!money) return (typeof req.budget === 'number' ? req.budget : 0) > thresholdUSD;
 
-    // 4. Budget trends (by month)
-    const budgetByMonth: { month: string; total: number | bigint }[] = await prisma.$queryRaw`
-        SELECT 
-            TO_CHAR("createdAt", 'Mon YYYY') as month,
-            SUM(
-                CASE 
-                    WHEN jsonb_typeof(budget) = 'object' THEN (budget->>'amount')::numeric / NULLIF((budget->>'multiplier')::numeric, 0)
-                    WHEN jsonb_typeof(budget) = 'number' THEN budget::text::numeric
-                    ELSE 0
-                END
-            ) as total
-        FROM "TripRequest"
-        WHERE "companyId" = ${company.id} AND status = 'COMPLETED'
-        GROUP BY TO_CHAR("createdAt", 'Mon YYYY'), DATE_TRUNC('month', "createdAt")
-        ORDER BY DATE_TRUNC('month', "createdAt") ASC
-        LIMIT 6
-    `;
+        // Always check normalization against USD for consistent policy enforcement
+        const converted = await convertMoney(money, "USD");
+        return moneyToDecimal(converted) > thresholdUSD;
+    }));
+    const violations = violationsResults.filter(Boolean).length;
+
+    // 4. Budget trends (by month) with currency conversion
+    const requestsForTrends = await prisma.tripRequest.findMany({
+        where: {
+            companyId: company.id,
+            status: 'COMPLETED',
+            createdAt: { gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) }
+        },
+        select: {
+            budget: true,
+            createdAt: true
+        }
+    });
+
+    const monthlyGroups: Record<string, number> = {};
+    const trendResults = await Promise.all(requestsForTrends.map(async (req) => {
+        const money = parseMoney(req.budget);
+        if (money) {
+            const converted = await convertMoney(money, targetCurrency);
+            return {
+                monthYear: new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                amount: moneyToDecimal(converted)
+            };
+        }
+        return null;
+    }));
+
+    trendResults.forEach(res => {
+        if (res) {
+            monthlyGroups[res.monthYear] = (monthlyGroups[res.monthYear] || 0) + res.amount;
+        }
+    });
+
+    const budgetByMonth = Object.entries(monthlyGroups)
+        .map(([month, total]) => ({ month, total }))
+        .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
+        .slice(-6);
 
     // 5. Top destinations
     const topDestinationsRaw: { name: string; count: bigint }[] = await prisma.$queryRaw`

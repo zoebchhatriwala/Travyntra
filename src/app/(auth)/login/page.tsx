@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, getSession, useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,32 @@ import { UserRole } from "@/lib/constants/roles";
 
 
 export default function LoginPage() {
+    const { data: session, status } = useSession();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [showPassword, setShowPassword] = React.useState(false);
+
+    const navigateUser = (user: Session["user"]) => {
+        if (user?.role === UserRole.SUPER_ADMIN) {
+            window.location.href = "/admin/dashboard";
+        } else if (user?.role === UserRole.TRAVEL_AGENT) {
+            window.location.href = "/agent/dashboard";
+        } else if (user?.role === UserRole.COMPANY_ADMIN && user.companySlug) {
+            window.location.href = `/company/${user.companySlug}/admin`;
+        } else if (user?.role === UserRole.EMPLOYEE && user.companySlug) {
+            window.location.href = `/company/${user.companySlug}/dashboard`;
+        } else if (user?.role === UserRole.AGENCY_EMPLOYEE) {
+            window.location.href = "/agent/dashboard";
+        } else {
+            window.location.href = "/";
+        }
+    };
+
+    React.useEffect(() => {
+        if (status === "authenticated" && session?.user) {
+            navigateUser(session.user);
+        }
+    }, [status, session]);
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -36,24 +60,14 @@ export default function LoginPage() {
             return;
         }
 
-        const session = await getSession();
-        console.log("DEBUG: Login successful. Session:", session);
-        console.log("DEBUG: User Role:", session?.user?.role);
+        const newSession = await getSession();
+        console.log("DEBUG: Login successful. Session:", newSession);
+        console.log("DEBUG: User Role:", newSession?.user?.role);
 
         setIsLoading(false);
 
-        if (session?.user?.role === UserRole.SUPER_ADMIN) {
-            window.location.href = "/admin/dashboard";
-        } else if (session?.user?.role === UserRole.TRAVEL_AGENT) {
-            window.location.href = "/agent/dashboard";
-        } else if (session?.user?.role === UserRole.COMPANY_ADMIN && session.user.companySlug) {
-            window.location.href = `/company/${session.user.companySlug}/admin`;
-        } else if (session?.user?.role === UserRole.EMPLOYEE && session.user.companySlug) {
-            window.location.href = `/company/${session.user.companySlug}/dashboard`;
-        } else if (session?.user?.role === UserRole.AGENCY_EMPLOYEE) {
-            window.location.href = "/agent/dashboard";
-        } else {
-            window.location.href = "/";
+        if (newSession?.user) {
+            navigateUser(newSession.user);
         }
     }
 

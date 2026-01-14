@@ -21,7 +21,8 @@ export async function getCompanySettings(slug: string) {
                 currency: true,
                 timezone: true,
                 country: true,
-                createdAt: true
+                createdAt: true,
+                policyThreshold: true
             }
         });
         return company;
@@ -39,7 +40,8 @@ export async function updateCompanySettings(
         domain?: string,
         currency?: string,
         timezone?: string,
-        country?: string
+        country?: string,
+        policyThreshold?: any
     }
 ) {
     try {
@@ -54,7 +56,8 @@ export async function updateCompanySettings(
                 domain: data.domain,
                 currency: data.currency,
                 timezone: data.timezone,
-                country: data.country
+                country: data.country,
+                policyThreshold: data.policyThreshold
             }
         });
 

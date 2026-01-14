@@ -1,8 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { UserRole, Prisma } from "@prisma/client";
-import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { UserRole } from "@prisma/client";
+import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
+import { convertMoney } from "@/lib/services/currency";
 
 export async function getAnalyticsData() {
     try {
@@ -14,7 +15,7 @@ export async function getAnalyticsData() {
             employeeCount,
             allBudgets,
             monthlyRequests,
-            categorySpending
+            allExpenses
         ] = await Promise.all([
             // Total volume
             prisma.tripRequest.count(),
@@ -30,12 +31,12 @@ export async function getAnalyticsData() {
             prisma.user.count({ where: { role: UserRole.TRAVEL_AGENT, isActive: true } }),
             prisma.user.count({ where: { role: UserRole.EMPLOYEE, isActive: true } }),
 
-            // Financials
+            // Financials (Trip Budgets)
             prisma.tripRequest.findMany({
                 select: { budget: true }
             }),
 
-            // Monthly volume (simplified for now as prisma doesn't support grouping by date part easily without raw queries in some versions, but we'll use a mocked trend or raw if needed)
+            // Monthly volume
             prisma.$queryRaw<{ month: string, count: bigint }[]>`
                 SELECT TO_CHAR("createdAt", 'Mon') as month, COUNT(*) as count 
                 FROM "TripRequest" 
@@ -43,12 +44,32 @@ export async function getAnalyticsData() {
                 ORDER BY MIN("createdAt")
             `,
 
-            // Spending by category
-            prisma.expense.groupBy({
-                by: ['category'],
-                _sum: { amount: true }
+            // All Expenses for category breakdown
+            prisma.expense.findMany({
+                select: { amount: true, currency: true, category: true }
             })
         ]);
+
+        // Aggregate category spending with currency conversion
+        const categoryGroups: Record<string, number> = {};
+        for (const exp of allExpenses) {
+            // Expenses are Decimals, but we need Money for convertMoney
+            const expenseMoney = createMoney(Number(exp.amount), exp.currency);
+            const converted = await convertMoney(expenseMoney, "USD");
+            const decimal = moneyToDecimal(converted);
+            categoryGroups[exp.category] = (categoryGroups[exp.category] || 0) + decimal;
+        }
+
+        let totalBudgetUSD = 0;
+        for (const req of allBudgets) {
+            const money = parseMoney(req.budget);
+            if (money) {
+                const converted = await convertMoney(money, "USD");
+                totalBudgetUSD += moneyToDecimal(converted);
+            } else if (typeof req.budget === 'number') {
+                totalBudgetUSD += req.budget;
+            }
+        }
 
         return {
             totalRequests,
@@ -60,18 +81,15 @@ export async function getAnalyticsData() {
                 companies: companyCount,
                 agents: agentCount,
                 employees: employeeCount,
-                totalBudget: allBudgets.reduce((sum: number, req: { budget: Prisma.JsonValue }) => {
-                    const money = parseMoney(req.budget);
-                    return sum + (money ? moneyToDecimal(money) : (typeof req.budget === 'number' ? req.budget : 0));
-                }, 0)
+                totalBudget: totalBudgetUSD
             },
             monthlyRequests: monthlyRequests.map(m => ({
                 month: m.month,
                 count: Number(m.count)
             })),
-            categorySpending: categorySpending.map(s => ({
-                category: s.category,
-                amount: Number(s._sum.amount || 0)
+            categorySpending: Object.entries(categoryGroups).map(([category, amount]) => ({
+                category,
+                amount
             }))
         };
     } catch (error) {

@@ -27,6 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests } from "../../actions";
 
 interface Request {
@@ -146,14 +147,15 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
         }
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusStyles = (status: string) => {
         switch (status) {
-            case 'COMPLETED': return 'bg-emerald-100 text-emerald-700';
-            case 'REJECTED': return 'bg-rose-100 text-rose-700';
-            case 'CANCELLED': return 'bg-gray-100 text-gray-700';
-            case 'PENDING_COMPANY_APPROVAL': return 'bg-amber-100 text-amber-700';
-            case 'APPROVED': return 'bg-indigo-100 text-indigo-700';
-            default: return 'bg-blue-100 text-blue-700';
+            case 'COMPLETED': return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
+            case 'REJECTED': return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
+            case 'CANCELLED': return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
+            case 'PENDING_COMPANY_APPROVAL': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100';
+            case 'APPROVED': return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
+            case 'PENDING_AGENT_ACTION': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle';
+            default: return 'bg-blue-50 text-blue-700 ring-1 ring-blue-100';
         }
     };
 
@@ -283,7 +285,10 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             </div>
                                         </td>
                                         <td className="p-6 text-center">
-                                            <Badge className={`rounded-xl px-3 py-1 font-bold text-[10px] border-none shadow-sm ${getStatusColor(req.status)}`}>
+                                            <Badge className={cn(
+                                                "rounded-full px-3 py-1 font-black text-[9px] border-none shadow-sm uppercase tracking-widest",
+                                                getStatusStyles(req.status)
+                                            )}>
                                                 {req.status.replace(/_/g, ' ')}
                                             </Badge>
                                         </td>

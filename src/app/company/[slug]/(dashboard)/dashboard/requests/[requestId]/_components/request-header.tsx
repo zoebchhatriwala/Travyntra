@@ -14,6 +14,7 @@ import { cancelTripRequest } from "../../../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface RequestHeaderProps {
     request: {
@@ -57,14 +58,16 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
         }
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusStyles = (status: string) => {
         switch (status) {
-            case 'APPROVED': return 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100';
-            case 'REJECTED': return 'bg-rose-100 text-rose-700 hover:bg-rose-100';
-            case 'COMPLETED': return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
-            case 'CANCELLED': return 'bg-gray-100 text-gray-700 hover:bg-gray-100';
-            case 'BOOKED': return 'bg-purple-100 text-purple-700 hover:bg-purple-100';
-            default: return 'bg-amber-100 text-amber-700 hover:bg-amber-100';
+            case 'APPROVED': return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
+            case 'REJECTED': return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
+            case 'COMPLETED': return 'bg-blue-50 text-blue-700 ring-1 ring-blue-100';
+            case 'CANCELLED': return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
+            case 'BOOKED': return 'bg-violet-50 text-violet-700 ring-1 ring-violet-100';
+            case 'PENDING_AGENT_ACTION': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle';
+            case 'PENDING_COMPANY_APPROVAL': return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
+            default: return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
         }
     };
 
@@ -81,28 +84,49 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
             </div>
 
             <div className="flex items-center gap-3">
-                <Badge className={`px-3 py-1.5 text-xs font-bold rounded-xl border-none ${getStatusColor(request.status)}`}>
+                <Badge className={cn(
+                    "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500",
+                    getStatusStyles(request.status)
+                )}>
                     {request.status.replace(/_/g, " ")}
                 </Badge>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-600">
-                            <MoreHorizontal size={20} />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all duration-300"
+                        >
+                            <MoreHorizontal size={22} />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                    <DropdownMenuContent
+                        align="end"
+                        className="w-56 rounded-[28px] p-2 border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
+                    >
                         {canEdit && (
                             <DropdownMenuItem asChild>
-                                <Link href={`/company/${slug}/dashboard/requests/${request.id}/edit`} className="cursor-pointer font-medium">
-                                    <Edit size={16} className="mr-2" />
+                                <Link
+                                    href={`/company/${slug}/dashboard/requests/${request.id}/edit`}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-gray-700 focus:bg-indigo-50 focus:text-indigo-600 transition-colors"
+                                >
+                                    <div className="p-2 bg-indigo-50 rounded-xl group-focus:bg-indigo-100">
+                                        <Edit size={16} />
+                                    </div>
                                     Edit Request
                                 </Link>
                             </DropdownMenuItem>
                         )}
                         {canCancel && request.status !== 'CANCELLED' && request.status !== 'COMPLETED' && request.status !== 'REJECTED' && (
-                            <DropdownMenuItem onClick={handleCancel} className="text-rose-600 focus:text-rose-700 focus:bg-rose-50 cursor-pointer font-medium" disabled={isCancelling}>
-                                <Ban size={16} className="mr-2" />
+                            <DropdownMenuItem
+                                onClick={handleCancel}
+                                className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-700 transition-colors mt-1"
+                                disabled={isCancelling}
+                            >
+                                <div className="p-2 bg-rose-50 rounded-xl group-focus:bg-rose-100">
+                                    <Ban size={16} />
+                                </div>
                                 Cancel Request
                             </DropdownMenuItem>
                         )}

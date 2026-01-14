@@ -14,8 +14,10 @@ import {
     Clock,
     MapPin,
     Activity,
-    CreditCard
+    CreditCard,
+    AlertTriangle
 } from "lucide-react";
+import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
 import {
     Card,
     CardContent,
@@ -42,6 +44,7 @@ interface SettingsFormProps {
         currency: string;
         timezone: string;
         country: string | null;
+        policyThreshold: any | null;
     };
 }
 
@@ -55,6 +58,9 @@ export function SettingsForm({ company }: SettingsFormProps) {
     const [timezone, setTimezone] = useState(company.timezone || "UTC");
     const [country, setCountry] = useState(company.country || "");
 
+    const initialThreshold = parseMoney(company.policyThreshold);
+    const [thresholdAmount, setThresholdAmount] = useState(initialThreshold ? moneyToDecimal(initialThreshold).toString() : "5000");
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -65,7 +71,8 @@ export function SettingsForm({ company }: SettingsFormProps) {
             domain,
             currency,
             timezone,
-            country
+            country,
+            policyThreshold: createMoney(parseFloat(thresholdAmount) || 0, currency)
         });
         setIsLoading(false);
         if (res.success) {
@@ -80,6 +87,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
         { id: "organization", label: "Organization", icon: Building2 },
         { id: "regional", label: "Regional", icon: Globe },
         { id: "security", label: "Security & ID", icon: Lock },
+        { id: "compliance", label: "Compliance", icon: ShieldCheck },
         { id: "billing", label: "Deployment", icon: Activity },
     ];
 
@@ -250,6 +258,42 @@ export function SettingsForm({ company }: SettingsFormProps) {
                     </Card>
                 )}
 
+                {activeTab === "compliance" && (
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                                <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                                    <ShieldCheck size={20} />
+                                </div>
+                                Policy & Compliance
+                            </CardTitle>
+                            <CardDescription className="text-gray-500 font-medium">Define thresholds and rules for automated policy enforcement.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-4 space-y-6">
+                            <div className="space-y-4 max-w-md">
+                                <div className="space-y-2">
+                                    <Label htmlFor="threshold" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Policy Violation Threshold</Label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                            <AlertTriangle size={16} className="text-rose-500" />
+                                            <span className="text-sm font-bold text-gray-400">{currency}</span>
+                                        </div>
+                                        <Input
+                                            id="threshold"
+                                            type="number"
+                                            value={thresholdAmount}
+                                            onChange={(e) => setThresholdAmount(e.target.value)}
+                                            className="h-14 pl-20 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-black text-xl transition-all"
+                                            placeholder="5000"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 font-bold px-1">Any trip request with a budget exceeding this amount will be flagged as a policy violation.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {activeTab === "billing" && (
                     <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white opacity-90 animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
@@ -300,6 +344,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                             setCurrency(company.currency || "USD");
                             setTimezone(company.timezone || "UTC");
                             setCountry(company.country || "");
+                            setThresholdAmount(initialThreshold ? moneyToDecimal(initialThreshold).toString() : "5000");
                         }}
                         className="font-bold text-gray-500 hover:text-gray-900"
                     >

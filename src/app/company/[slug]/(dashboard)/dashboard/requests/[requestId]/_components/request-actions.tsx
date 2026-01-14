@@ -77,37 +77,50 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900 rounded-full">
-                        <MoreHorizontal size={20} />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all duration-300"
+                    >
+                        <MoreHorizontal size={22} />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
+                <DropdownMenuContent
+                    align="end"
+                    className="w-56 rounded-[28px] p-2 border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
+                >
                     <DropdownMenuItem
                         onClick={() => router.push(`/company/${slug}/dashboard/requests/${requestId}/edit`)}
-                        className="rounded-lg cursor-pointer flex items-center gap-2"
+                        className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-gray-700 focus:bg-indigo-50 focus:text-indigo-600 transition-colors"
                     >
-                        <Edit size={16} />
+                        <div className="p-2 bg-indigo-50 rounded-xl group-focus:bg-indigo-100">
+                            <Edit size={16} />
+                        </div>
                         <span>Edit Request</span>
                     </DropdownMenuItem>
 
                     {canCancel && (
                         <DropdownMenuItem
                             onClick={() => setShowCancelDialog(true)}
-                            className="text-amber-600 focus:text-amber-600 rounded-lg cursor-pointer flex items-center gap-2"
+                            className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-amber-600 focus:bg-amber-50 focus:text-amber-700 transition-colors mt-1"
                         >
-                            <Ban size={16} />
+                            <div className="p-2 bg-amber-50 rounded-xl group-focus:bg-amber-100">
+                                <Ban size={16} />
+                            </div>
                             <span>Cancel Request</span>
                         </DropdownMenuItem>
                     )}
 
                     {canDelete && (
                         <>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator className="my-2 bg-slate-50" />
                             <DropdownMenuItem
                                 onClick={() => setShowDeleteDialog(true)}
-                                className="text-rose-600 focus:text-rose-600 rounded-lg cursor-pointer flex items-center gap-2"
+                                className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-700 transition-colors"
                             >
-                                <Trash2 size={16} />
+                                <div className="p-2 bg-rose-50 rounded-xl group-focus:bg-rose-100">
+                                    <Trash2 size={16} />
+                                </div>
                                 <span>Delete Request</span>
                             </DropdownMenuItem>
                         </>

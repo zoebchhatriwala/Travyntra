@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
 import { RequestActions } from "./_components/request-actions";
+import { cn } from "@/lib/utils";
 
 
 export default async function RequestLayout({
@@ -71,13 +72,19 @@ export default async function RequestLayout({
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Badge className={`px-3 py-1.5 text-xs font-bold rounded-lg border-none ${request.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                                request.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                    'bg-amber-100 text-amber-700'
-                                }`}>
-                                {request.status === 'APPROVED' && <CheckCircle2 size={12} className="mr-1.5" />}
-                                {request.status === 'REJECTED' && <AlertCircle size={12} className="mr-1.5" />}
-                                {request.status}
+                            <Badge className={cn(
+                                "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500 flex items-center gap-1.5",
+                                request.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
+                                    request.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-100' :
+                                        request.status === 'CANCELLED' ? 'bg-slate-50 text-slate-700 ring-1 ring-slate-100' :
+                                            request.status === 'BOOKED' ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-100' :
+                                                request.status === 'PENDING_AGENT_ACTION' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle' :
+                                                    'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100'
+                            )}>
+                                {request.status === 'APPROVED' && <CheckCircle2 size={12} />}
+                                {request.status === 'REJECTED' && <AlertCircle size={12} />}
+                                {request.status === 'PENDING_AGENT_ACTION' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
+                                {request.status.replace(/_/g, " ")}
                             </Badge>
 
                             <RequestActions
