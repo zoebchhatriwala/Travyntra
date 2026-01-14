@@ -12,6 +12,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 import { Prisma, RequestStatus } from "@prisma/client";
+import { parseMoney, formatMoney } from "@/lib/types/money";
 
 interface Location {
     city?: string;
@@ -192,7 +193,6 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                         const myBid = req.bids[0];
                         const hasTicket = req.documents.some(d => d.type === 'TICKET');
                         const hasVisa = req.documents.some(d => d.type === 'VISA');
-                        const currency = req.company.currency || "USD";
 
                         return (
                             <Link key={req.id} href={`/agent/fulfillment/${req.id}`} className="block group">
@@ -255,7 +255,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                                     <div className="text-right">
                                                         <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mb-1">Won Bid</span>
                                                         <span className="text-xl font-black text-emerald-600 flex items-center justify-end gap-1">
-                                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(myBid.amount))}
+                                                            {formatMoney(parseMoney(myBid.amount))}
                                                         </span>
                                                     </div>
                                                 )}

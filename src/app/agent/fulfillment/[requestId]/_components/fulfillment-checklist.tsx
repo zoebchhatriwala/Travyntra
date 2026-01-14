@@ -23,6 +23,7 @@ import {
     Download
 } from "lucide-react";
 import { format } from "date-fns";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 interface FulfillmentItem {
     id: string;
@@ -55,6 +56,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
     const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
     const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { confirm, ConfirmDialog } = useConfirm();
 
     async function handleAddItem() {
         if (!newTitle.trim()) {
@@ -97,7 +99,14 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
     }
 
     async function handleDeleteItem(itemId: string) {
-        if (!confirm("Delete this item and all its documents?")) return;
+        const ok = await confirm({
+            title: "Delete Item",
+            description: "Are you sure you want to delete this item and all its documents? This action cannot be undone.",
+            confirmText: "Delete",
+            variant: "destructive",
+        });
+
+        if (!ok) return;
 
         setLoadingItemId(itemId);
 
@@ -383,6 +392,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                     })
                 )}
             </div>
+            <ConfirmDialog />
         </div>
     );
 }

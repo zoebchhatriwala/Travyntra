@@ -7,6 +7,7 @@ import { approveBid, unapproveBid } from "@/app/agent/bids/[requestId]/actions";
 import { Loader2, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { type Money, formatMoney } from "@/lib/types/money";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 interface Bid {
     id: string;
@@ -22,9 +23,16 @@ interface Bid {
 
 export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], requestId: string, isAuthorized: boolean }) {
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const { confirm, ConfirmDialog } = useConfirm();
 
     async function handleApprove(bidId: string) {
-        if (!confirm("Are you sure you want to approve this bid? This will reject all other bids.")) return;
+        const ok = await confirm({
+            title: "Approve Proposal",
+            description: "Are you sure you want to approve this bid? This will reject all other bids.",
+            confirmText: "Approve",
+        });
+
+        if (!ok) return;
 
         setProcessingId(bidId);
         try {
@@ -42,7 +50,14 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
     }
 
     async function handleUnapprove(bidId: string) {
-        if (!confirm("Are you sure you want to undo the approval for this bid? This will reopen bidding for others.")) return;
+        const ok = await confirm({
+            title: "Undo Approval",
+            description: "Are you sure you want to undo the approval for this bid? This will reopen bidding for others.",
+            confirmText: "Undo Approval",
+            variant: "destructive",
+        });
+
+        if (!ok) return;
 
         setProcessingId(bidId);
         try {
@@ -146,6 +161,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                     </div>
                 ))}
             </div>
+            <ConfirmDialog />
         </div>
     );
 }

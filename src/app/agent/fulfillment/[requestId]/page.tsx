@@ -9,6 +9,7 @@ import Link from "next/link";
 import { FulfillmentChecklist } from "./_components/fulfillment-checklist";
 import { StatusActions } from "./_components/status-actions";
 import { RecentMessages } from "./_components/recent-messages";
+import { parseMoney, formatMoney } from "@/lib/types/money";
 
 interface Location {
     city?: string;
@@ -27,7 +28,6 @@ export default async function FulfillmentDetailPage({
     if (!request) return notFound();
 
     const myBid = request.bids[0];
-    const currency = request.company.currency || "USD";
 
     // Check if all fulfillment items are completed
     const totalItems = request.fulfillmentItems.length;
@@ -58,7 +58,7 @@ export default async function FulfillmentDetailPage({
                             </Badge>
                             {myBid && (
                                 <span className="text-sm font-bold text-emerald-600">
-                                    Won: {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(myBid.amount))}
+                                    Won: {formatMoney(parseMoney(myBid.amount))}
                                 </span>
                             )}
                         </div>

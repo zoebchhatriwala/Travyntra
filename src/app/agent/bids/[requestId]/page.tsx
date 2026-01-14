@@ -9,7 +9,7 @@ import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/
 import { Calendar, MapPin, Building2, User } from "lucide-react";
 import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
-import { parseMoney } from "@/lib/types/money";
+import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
 export default async function RequestDetailsPage({
     params
@@ -197,7 +197,7 @@ export default async function RequestDetailsPage({
                     requestCurrency={requestCurrency}
                     existingBid={myBid ? {
                         id: myBid.id,
-                        amount: Number(myBid.amount),
+                        amount: moneyToDecimal(parseMoney(myBid.amount)),
                         message: myBid.message
                     } : null}
                 />

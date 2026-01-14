@@ -40,7 +40,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
     const form = useForm<z.infer<typeof bidSchema>>({
         resolver: zodResolver(bidSchema),
         defaultValues: {
-            amount: existingBid?.amount ? Number(existingBid.amount) : undefined,
+            amount: existingBid?.amount || undefined,
             message: existingBid?.message || ""
         }
     });
@@ -48,7 +48,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
     // Handle initial conversion preview for existing bids
     useEffect(() => {
         if (existingBid?.amount && currency !== requestCurrency) {
-            getConversionPreview(Number(existingBid.amount), currency, requestCurrency)
+            getConversionPreview(existingBid.amount, currency, requestCurrency)
                 .then(setConversionPreview)
                 .catch(() => setConversionPreview(null));
         }

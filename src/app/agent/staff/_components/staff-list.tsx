@@ -25,6 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { createAgencyStaff, updateStaffStatus, deleteAgencyStaff, updateStaffRole } from "../actions";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 // Since I am not sure if 'sonner' is installed, I will try to use a basic error handling or see if there is a 'useToast' hook.
 // I saw 'components/ui/use-toast.ts' in some projects, but here I only saw components/ui listing.
@@ -36,6 +38,8 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    const { confirm, ConfirmDialog } = useConfirm();
 
     const filteredStaff = initialStaff.filter(
         (staff) =>
@@ -55,44 +59,69 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
 
         if (result.success) {
             setIsAddOpen(false);
+            toast.success("Staff member added successfully");
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error);
         }
         setIsLoading(false);
     }
 
     async function handleToggleStatus(id: string, isBlocked: boolean) {
-        if (!confirm(`Are you sure you want to ${isBlocked ? "block" : "unblock"} this user?`)) return;
+        const ok = await confirm({
+            title: isBlocked ? "Block Account" : "Unblock Account",
+            description: `Are you sure you want to ${isBlocked ? "block" : "unblock"} this user?`,
+            confirmText: isBlocked ? "Block" : "Unblock",
+            variant: isBlocked ? "destructive" : "default",
+        });
+
+        if (!ok) return;
 
         const result = await updateStaffStatus(id, isBlocked);
         if (result.success) {
+            toast.success(`Account ${isBlocked ? "blocked" : "unblocked"} successfully`);
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error);
         }
     }
 
     async function handleDeleteStaff(id: string) {
-        if (!confirm("Are you sure you want to delete this staff member? This action cannot be undone.")) return;
+        const ok = await confirm({
+            title: "Delete Account",
+            description: "Are you sure you want to delete this staff member? This action cannot be undone.",
+            confirmText: "Delete",
+            variant: "destructive",
+        });
+
+        if (!ok) return;
 
         const result = await deleteAgencyStaff(id);
         if (result.success) {
+            toast.success("Staff member deleted successfully");
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error);
         }
     }
 
     async function handleUpdateRole(id: string, newRole: UserRole) {
         const action = newRole === UserRole.TRAVEL_AGENT ? "promote this user to Admin" : "demote this user to Staff";
-        if (!confirm(`Are you sure you want to ${action}?`)) return;
+
+        const ok = await confirm({
+            title: "Update Role",
+            description: `Are you sure you want to ${action}?`,
+            confirmText: "Update",
+        });
+
+        if (!ok) return;
 
         const result = await updateStaffRole(id, newRole);
         if (result.success) {
+            toast.success("Role updated successfully");
             router.refresh();
         } else {
-            alert(result.error);
+            toast.error(result.error);
         }
     }
 
@@ -266,6 +295,7 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
                     </tbody>
                 </table>
             </div>
+            <ConfirmDialog />
         </div>
     );
 }

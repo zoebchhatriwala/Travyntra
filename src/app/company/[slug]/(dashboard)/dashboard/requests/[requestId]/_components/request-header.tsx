@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 interface RequestHeaderProps {
     request: {
@@ -33,6 +34,7 @@ interface RequestHeaderProps {
 export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps) {
     const router = useRouter();
     const [isCancelling, setIsCancelling] = useState(false);
+    const { confirm, ConfirmDialog } = useConfirm();
 
     const isOwner = currentUser.id === request.userId;
     const isAdmin = currentUser.role === 'COMPANY_ADMIN' || currentUser.role === 'SUPER_ADMIN';
@@ -40,8 +42,14 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
     const canCancel = isOwner; // Currently action restricts to owner only
 
     const handleCancel = async () => {
-        if (!confirm("Are you sure you want to cancel this request?")) return;
+        const ok = await confirm({
+            title: "Cancel Request",
+            description: "Are you sure you want to cancel this request? This action cannot be undone.",
+            confirmText: "Cancel Request",
+            variant: "destructive",
+        });
 
+        if (!ok) return;
         setIsCancelling(true);
         try {
             const result = await cancelTripRequest(request.id);
@@ -133,6 +141,7 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+            <ConfirmDialog />
         </div>
     );
 }

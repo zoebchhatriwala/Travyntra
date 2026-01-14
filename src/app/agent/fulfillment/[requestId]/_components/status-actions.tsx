@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { markAsBooked, markAsCompleted } from "../../actions";
 import { Loader2, CheckCircle, Plane } from "lucide-react";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 interface StatusActionsProps {
     requestId: string;
@@ -15,6 +16,7 @@ interface StatusActionsProps {
 
 export function StatusActions({ requestId, currentStatus, allItemsCompleted, hasItems }: StatusActionsProps) {
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const { confirm, ConfirmDialog } = useConfirm();
 
     async function handleMarkBooked() {
         setIsLoading('booked');
@@ -43,7 +45,13 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
             return;
         }
 
-        if (!confirm("Are you sure you want to mark this request as completed? This action cannot be undone.")) {
+        const ok = await confirm({
+            title: "Complete Request",
+            description: "Are you sure you want to mark this request as completed? This action cannot be undone.",
+            confirmText: "Complete",
+        });
+
+        if (!ok) {
             return;
         }
 
@@ -107,6 +115,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
                 )}
                 Mark as Complete
             </Button>
+            <ConfirmDialog />
         </div>
     );
 }

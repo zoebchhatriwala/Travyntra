@@ -8,6 +8,8 @@ import { UserRole } from "@prisma/client";
 import { useState } from "react";
 import { Mail, CalendarDays, Building, Check, X } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { useConfirm } from "@/lib/hooks/use-confirm";
 
 type UserWithCompany = {
     id: string;
@@ -48,22 +50,33 @@ const colorMap = {
 export function PendingList({ title, users, type, accentColor }: PendingListProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const colors = colorMap[accentColor];
+    const { confirm, ConfirmDialog } = useConfirm();
 
     const handleApprove = async (id: string) => {
         setLoadingId(id);
         const res = await approveUser(id);
-        if (!res.success) {
-            alert(res.error);
+        if (res.success) {
+            toast.success("User approved successfully");
+        } else {
+            toast.error(res.error);
         }
         setLoadingId(null);
     };
 
     const handleReject = async (id: string) => {
-        if (!confirm("Are you sure you want to reject and remove this user?")) return;
+        const ok = await confirm({
+            title: "Reject User",
+            description: "Are you sure you want to reject and remove this user? This action cannot be undone.",
+            confirmText: "Reject",
+            variant: "destructive",
+        });
+        if (!ok) return;
         setLoadingId(id);
         const res = await rejectUser(id);
-        if (!res.success) {
-            alert(res.error);
+        if (res.success) {
+            toast.success("User rejected successfully");
+        } else {
+            toast.error(res.error);
         }
         setLoadingId(null);
     };
@@ -140,6 +153,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                     </CardContent>
                 </Card>
             ))}
+            <ConfirmDialog />
         </div>
     );
 }
