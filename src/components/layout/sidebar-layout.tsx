@@ -175,7 +175,7 @@ export function SidebarLayout({
                     </header>
 
                     {/* Page Content */}
-                    <main className="p-4 sm:p-8 flex-1">
+                    <main className="flex-1">
                         {children}
                     </main>
                 </div>

@@ -10,7 +10,7 @@ import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
 import { RequestActions } from "./_components/request-actions";
 import { CopyButton } from "./_components/copy-button";
-import { cn } from "@/lib/utils";
+import { cn, getStatusColor } from "@/lib/utils";
 
 
 export default async function RequestLayout({
@@ -54,7 +54,7 @@ export default async function RequestLayout({
                         <div className="min-w-0 flex-1 mr-4">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <h1 className="text-2xl font-display font-bold text-gray-900 flex items-center gap-3 truncate">
+                                    <h1 className="text-2xl font-display font-bold text-gray-900 break-all">
                                         {request.title}
                                     </h1>
                                 </TooltipTrigger>
@@ -83,12 +83,7 @@ export default async function RequestLayout({
                         <div className="flex items-center gap-3 shrink-0">
                             <Badge className={cn(
                                 "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500 flex items-center gap-1.5",
-                                request.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
-                                    request.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-100' :
-                                        request.status === 'CANCELLED' ? 'bg-slate-50 text-slate-700 ring-1 ring-slate-100' :
-                                            request.status === 'BOOKED' ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-100' :
-                                                request.status === 'PENDING_AGENT_ACTION' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle' :
-                                                    'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100'
+                                getStatusColor(request.status)
                             )}>
                                 {request.status === 'APPROVED' && <CheckCircle2 size={12} />}
                                 {request.status === 'REJECTED' && <AlertCircle size={12} />}

@@ -30,3 +30,29 @@ export function formatStatus(status: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
+
+/**
+ * Returns the Tailwind CSS classes for a given status.
+ * Ensures consistent coloring across the application.
+ */
+export function getStatusColor(status: string): string {
+  switch (status) {
+    case 'COMPLETED':
+    case 'APPROVED':
+      return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
+    case 'REJECTED':
+      return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
+    case 'CANCELLED':
+      return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
+    case 'BOOKED':
+      return 'bg-violet-50 text-violet-700 ring-1 ring-violet-100';
+    case 'PENDING_COMPANY_APPROVAL':
+    case 'PENDING_AGENT_ACTION':
+    case 'PENDING':
+      return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100';
+    case 'DRAFT':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-gray-100';
+    default:
+      return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
+  }
+}

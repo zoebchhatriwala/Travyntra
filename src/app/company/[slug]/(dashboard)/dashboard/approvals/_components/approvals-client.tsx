@@ -123,7 +123,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                         )}
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="text-xl font-black text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                        <h3 className="text-xl font-black text-gray-900 group-hover:text-indigo-600 transition-colors break-all">
                                             {approval.requestTitle}
                                         </h3>
                                         <p className="text-sm text-gray-600 mt-1">

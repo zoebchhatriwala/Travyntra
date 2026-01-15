@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Plus, Plane, Clock, ArrowRight, FileText, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn, getStatusColor } from "@/lib/utils";
 
 export default async function EmployeeDashboardPage({
     params
@@ -106,7 +107,7 @@ export default async function EmployeeDashboardPage({
                                         <div className="min-w-0 flex-1">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors text-wrap">{req.title}</h4>
+                                                    <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors break-all">{req.title}</h4>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>{req.title}</p>
@@ -131,10 +132,7 @@ export default async function EmployeeDashboardPage({
                                                 <p className="text-[10px] uppercase font-bold text-gray-400">Est. Budget</p>
                                             </div>
                                         )}
-                                        <Badge className={`rounded-xl px-3 py-1 font-bold text-[10px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                                            req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                                'bg-amber-100 text-amber-700'
-                                            }`}>
+                                        <Badge className={cn("rounded-xl px-3 py-1 font-bold text-[10px] border-none", getStatusColor(req.status))}>
                                             {req.status}
                                         </Badge>
                                         <ArrowRight size={16} className="text-gray-300 group-hover:text-indigo-600 transition-colors" />

@@ -89,7 +89,7 @@ export default async function RequestDetailsPage({
     ];
 
     return (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="p-8 grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
                     <div className="flex items-start justify-between mb-6 gap-4">

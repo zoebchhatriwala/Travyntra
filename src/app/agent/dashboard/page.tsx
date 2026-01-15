@@ -22,7 +22,7 @@ export default async function AgencyDashboard() {
     const isEmployee = session?.user?.role === UserRole.AGENCY_EMPLOYEE;
 
     return (
-        <div className="space-y-8">
+        <div className="p-8 space-y-8">
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
 
             {/* Stats Grid */}

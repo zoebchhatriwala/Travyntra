@@ -25,7 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { cn, formatStatus } from "@/lib/utils";
+import { cn, formatStatus, getStatusColor } from "@/lib/utils";
 import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests, getExportData } from "../../actions";
 import { generatePDF } from "@/lib/utils/export";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -163,17 +163,8 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
         }
     };
 
-    const getStatusStyles = (status: string) => {
-        switch (status) {
-            case 'COMPLETED': return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
-            case 'REJECTED': return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
-            case 'CANCELLED': return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
-            case 'PENDING_COMPANY_APPROVAL': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100';
-            case 'APPROVED': return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
-            case 'PENDING_AGENT_ACTION': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle';
-            default: return 'bg-blue-50 text-blue-700 ring-1 ring-blue-100';
-        }
-    };
+
+
 
     return (
         <div className="space-y-6">
@@ -254,7 +245,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             {/* Table */}
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-xl shadow-gray-100/50 overflow-hidden ring-1 ring-gray-100/50">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse table-fixed">
                         <thead>
                             <tr className="bg-gray-50/50">
                                 <th className="p-6 w-14">
@@ -264,10 +255,10 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                         className="rounded-md border-gray-300"
                                     />
                                 </th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Request Details</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Budget</th>
-                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest w-auto">Request Details</th>
+                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center w-[200px]">Status</th>
+                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right w-[140px]">Budget</th>
+                                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right w-[80px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -331,7 +322,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                         <td className="p-6 text-center">
                                             <Badge className={cn(
                                                 "rounded-full px-3 py-1 font-black text-[9px] border-none shadow-sm uppercase tracking-widest",
-                                                getStatusStyles(req.status)
+                                                getStatusColor(req.status)
                                             )}>
                                                 {formatStatus(req.status)}
                                             </Badge>

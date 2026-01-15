@@ -46,7 +46,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destination</p>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <p className="text-base font-bold text-gray-900 truncate">
+                                        <p className="text-base font-bold text-gray-900 break-all">
                                             {destinationDisplay}
                                         </p>
                                     </TooltipTrigger>
@@ -94,7 +94,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-gray-600 leading-relaxed text-sm break-words whitespace-pre-wrap">
+                    <p className="text-gray-600 leading-relaxed text-sm break-all whitespace-pre-wrap">
                         {request.purpose || "No details provided."}
                     </p>
                 </CardContent>

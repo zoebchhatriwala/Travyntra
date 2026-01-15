@@ -98,7 +98,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
     const completedCount = stats.find(s => s.status === 'COMPLETED')?._count || 0;
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="p-8 space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>

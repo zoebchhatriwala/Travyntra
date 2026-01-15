@@ -42,7 +42,7 @@ export default async function FulfillmentDetailPage({
     const canRegenerate = !!(request.invoice && myBid && new Date(myBid.updatedAt) > new Date(request.invoice.updatedAt));
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">

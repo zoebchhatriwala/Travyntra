@@ -40,7 +40,7 @@ export default async function AdminRequestsPage({
                     <h1 className="text-5xl font-black text-gray-900 tracking-tight leading-none mb-4">
                         Trip <span className="text-indigo-600">Requests</span>
                     </h1>
-                    <p className="text-gray-500 font-medium max-w-xl text-lg flex items-center gap-2 italic">
+                    <p className="text-gray-500 font-medium max-w-xl text-lg italic">
                         Oversee global travel operations, analyze budget trends, and manage fulfillment workflows.
                     </p>
                 </div>

@@ -17,7 +17,7 @@ export default async function AgencyStaffPage() {
     const staff = await getAgencyStaff();
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="p-8 space-y-8 animate-in fade-in duration-500">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
