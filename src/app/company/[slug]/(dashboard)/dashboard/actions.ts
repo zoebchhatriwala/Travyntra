@@ -1066,8 +1066,47 @@ export async function deleteTripRequest(requestId: string) {
             return { error: "Only draft or cancelled requests can be deleted" };
         }
 
-        await prisma.tripRequest.delete({
-            where: { id: requestId }
+        // Use a transaction to delete all related data to avoid foreign key constraint errors
+        await prisma.$transaction(async (tx) => {
+            // 1. Unlink child trips if this is a group trip
+            await tx.tripRequest.updateMany({
+                where: { parentTripId: requestId },
+                data: { parentTripId: null }
+            });
+
+            // 2. Delete approvals hierarchy
+            await tx.userApproval.deleteMany({
+                where: { requestApprovalStep: { requestId } }
+            });
+            await tx.requestApprovalStep.deleteMany({
+                where: { requestId }
+            });
+
+            // 3. Delete communication and activity
+            await tx.message.deleteMany({ where: { requestId } });
+            await tx.workflowAction.deleteMany({ where: { requestId } });
+
+            // 4. Delete fulfillment items and associated documents
+            // We delete documents first because they reference fulfillment items
+            await tx.document.deleteMany({
+                where: {
+                    OR: [
+                        { requestId },
+                        { fulfillmentItem: { requestId } }
+                    ]
+                }
+            });
+            await tx.fulfillmentItem.deleteMany({ where: { requestId } });
+
+            // 5. Delete commercial records
+            await tx.agentBid.deleteMany({ where: { requestId } });
+            await tx.expense.deleteMany({ where: { requestId } });
+            await tx.invoice.deleteMany({ where: { requestId } });
+
+            // 6. Finally delete the request itself
+            await tx.tripRequest.delete({
+                where: { id: requestId }
+            });
         });
 
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests`);

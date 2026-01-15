@@ -116,7 +116,7 @@ export function CollaboratorManager({
                             <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 text-gray-300">
                                 <Users size={20} />
                             </div>
-                            <p className="text-xs text-gray-400 font-medium">No manual collaborators yet.</p>
+                            <p className="text-xs text-gray-400 font-medium">No collaborators yet.</p>
                         </div>
                     ) : (
                         <div className="space-y-1">

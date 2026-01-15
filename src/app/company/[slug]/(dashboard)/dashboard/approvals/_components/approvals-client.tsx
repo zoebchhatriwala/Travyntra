@@ -247,7 +247,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                         </div>
                     )}
 
-                    <DialogFooter className="gap-2">
+                    <DialogFooter>
                         <Button
                             variant="outline"
                             onClick={handleCloseDialog}

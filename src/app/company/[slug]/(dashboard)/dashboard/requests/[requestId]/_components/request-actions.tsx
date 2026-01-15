@@ -137,7 +137,7 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
                             Are you sure you want to cancel this travel request? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
+                    <DialogFooter>
                         <Button variant="ghost" onClick={() => setShowCancelDialog(false)} className="rounded-xl font-bold">
                             Keep Request
                         </Button>
@@ -163,7 +163,7 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
                             This will permanently delete the travel request. This action cannot be rolled back.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
+                    <DialogFooter>
                         <Button variant="ghost" onClick={() => setShowDeleteDialog(false)} className="rounded-xl font-bold">
                             Cancel
                         </Button>

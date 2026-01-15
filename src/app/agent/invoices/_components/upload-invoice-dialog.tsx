@@ -89,7 +89,7 @@ export function UploadInvoiceDialog({ invoiceId, open, onOpenChange, currentPdfU
                     </div>
                 </div>
 
-                <DialogFooter className="sm:justify-end gap-2">
+                <DialogFooter className="sm:justify-end">
                     <Button
                         type="button"
                         variant="secondary"
