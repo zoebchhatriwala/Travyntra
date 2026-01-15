@@ -8,6 +8,7 @@ import { createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
+import { formatStatus } from "@/lib/utils";
 
 export async function getCompanyDashboardStats(slug: string, userId?: string) {
     const session = await getServerSession(authOptions);
@@ -490,15 +491,16 @@ export async function exportCompanyRequests(slug: string) {
     });
 
     // Generate CSV
-    const headers = ["ID", "Title", "Requester", "Email", "Destination", "Status", "Budget", "Created At"];
+    const headers = ["ID", "Title", "Requester", "Email", "Destination", "Status", "Budget", "Cost", "Created At"];
     const rows = requests.map(req => [
         req.id,
         req.title,
         req.user.name || "Unknown",
         req.user.email,
         (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
-        req.status,
-        req.budget?.toString() || "0",
+        formatStatus(req.status),
+        req.budget ? moneyToDecimal(parseMoney(req.budget)) : "0",
+        req.cost ? moneyToDecimal(parseMoney(req.cost)) : "0",
         req.createdAt.toISOString()
     ]);
 
@@ -511,4 +513,44 @@ export async function exportCompanyRequests(slug: string) {
         csv: csvContent,
         filename: `requests_export_${slug}_${new Date().toISOString().split('T')[0]}.csv`
     };
+}
+
+export async function getExportData(slug: string) {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.companySlug !== slug)) {
+        throw new Error("Unauthorized");
+    }
+
+    if (session.user.role === 'EMPLOYEE') {
+        throw new Error("Unauthorized");
+    }
+
+    const company = await prisma.company.findUnique({
+        where: { slug },
+        select: { id: true, currency: true }
+    });
+
+    if (!company) throw new Error("Company not found");
+
+    const requests = await prisma.tripRequest.findMany({
+        where: { companyId: company.id },
+        include: {
+            user: {
+                select: { name: true, email: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    return requests.map(req => [
+        req.id,
+        req.title,
+        req.user.name || "Unknown",
+        req.user.email,
+        (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
+        formatStatus(req.status),
+        req.budget ? moneyToDecimal(parseMoney(req.budget)) : "0",
+        req.cost ? moneyToDecimal(parseMoney(req.cost)) : "0",
+        req.createdAt.toLocaleDateString()
+    ]);
 }

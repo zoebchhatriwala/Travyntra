@@ -46,6 +46,7 @@ interface Invoice {
     description: string;
     recipient: string;
     requestId: string;
+    pdfUrl?: string | null;
 }
 
 interface BillingListProps {
@@ -311,6 +312,15 @@ export function BillingList({ invoices, currency, companySlug }: BillingListProp
                                                                 <Ban size={16} />
                                                                 Void Invoice
                                                             </DropdownMenuItem>
+                                                        )}
+
+                                                        {invoice.pdfUrl && (
+                                                            <a href={invoice.pdfUrl} target="_blank" rel="noopener noreferrer" className="contents">
+                                                                <DropdownMenuItem className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-xl p-3 hover:bg-indigo-50 transition-colors">
+                                                                    <Download size={16} />
+                                                                    Download Invoice
+                                                                </DropdownMenuItem>
+                                                            </a>
                                                         )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

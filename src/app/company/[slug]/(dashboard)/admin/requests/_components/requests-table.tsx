@@ -2,16 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-
 import {
     Search,
     MoreHorizontal,
     Ship,
     Download,
-    Eye,
     ChevronLeft,
     ChevronRight,
-    Loader2
+    Loader2,
+    FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,12 +22,12 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests } from "../../actions";
+import { cn, formatStatus } from "@/lib/utils";
+import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests, getExportData } from "../../actions";
+import { generatePDF } from "@/lib/utils/export";
 
 interface Request {
     id: string;
@@ -131,8 +130,8 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
         });
     };
 
-    const handleExport = async () => {
-        const toastId = toast.loading("Generating export...");
+    const handleExportCSV = async () => {
+        const toastId = toast.loading("Generating CSV...");
         try {
             const result = await exportCompanyRequests(slug);
             const blob = new Blob([result.csv], { type: 'text/csv' });
@@ -144,6 +143,21 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             window.URL.revokeObjectURL(url);
             toast.success("Download started", { id: toastId });
         } catch {
+            toast.error("Export failed", { id: toastId });
+        }
+    };
+
+    const handleExportPDF = async () => {
+        const toastId = toast.loading("Generating PDF...");
+        try {
+            const data = await getExportData(slug);
+            const headers = ["ID", "Title", "Requester", "Email", "Destination", "Status", "Budget", "Cost", "Created"];
+            // Data is already an array of arrays from getExportData
+
+            generatePDF(headers, data, `requests_export_${slug}`, "Trip Requests Export", "landscape");
+            toast.success("Download started", { id: toastId });
+        } catch (e) {
+            console.error(e);
             toast.error("Export failed", { id: toastId });
         }
     };
@@ -205,13 +219,34 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                             </Button>
                         </div>
                     )}
-                    <Button
-                        onClick={handleExport}
-                        variant="outline"
-                        className="h-12 w-12 rounded-2xl border-gray-100 p-0 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-                    >
-                        <Download size={18} />
-                    </Button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="h-12 w-12 rounded-2xl border-gray-100 p-0 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                            >
+                                <Download size={18} />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-2xl p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
+                            <DropdownMenuLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 py-2">Export Data</DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={handleExportCSV}
+                                className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
+                            >
+                                <Download size={16} />
+                                Export as CSV
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={handleExportPDF}
+                                className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
+                            >
+                                <FileText size={16} />
+                                Export as PDF
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -290,7 +325,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                                 "rounded-full px-3 py-1 font-black text-[9px] border-none shadow-sm uppercase tracking-widest",
                                                 getStatusStyles(req.status)
                                             )}>
-                                                {req.status.replace(/_/g, ' ')}
+                                                {formatStatus(req.status)}
                                             </Badge>
                                         </td>
                                         <td className="p-6 text-right">
@@ -308,11 +343,6 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                         </td>
                                         <td className="p-6 text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-2">
-                                                <Button size="icon" variant="ghost" asChild className="rounded-xl hover:bg-indigo-50 hover:text-indigo-600">
-                                                    <Link href={`/company/${slug}/dashboard/requests/${req.id}`}>
-                                                        <Eye size={18} />
-                                                    </Link>
-                                                </Button>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button size="icon" variant="ghost" className="rounded-xl">
@@ -386,6 +416,6 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

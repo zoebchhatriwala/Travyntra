@@ -9,9 +9,11 @@ import {
     Settings,
     ShieldAlert,
     Clock,
-    Search
+    Search,
+    Download
 } from "lucide-react";
 import { format } from "date-fns";
+import { exportToCSV } from "@/lib/utils/export";
 import {
     Card,
     CardContent,
@@ -90,6 +92,21 @@ export default function ActivityLogPage() {
         return () => clearTimeout(timer);
     }, [fetchActivities]);
 
+    const handleExport = () => {
+        if (!activities.length) return;
+
+        const exportData = activities.map(act => ({
+            'Date': format(new Date(act.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+            'Action': act.action,
+            'Description': act.description,
+            'Actor': act.actor?.name || act.actor?.email || 'System',
+            'Target': act.target?.name || act.target?.email || '-',
+            'Metadata': act.metadata ? JSON.stringify(act.metadata) : ''
+        }));
+
+        exportToCSV(exportData, `audit_log_${slug}_${format(new Date(), 'yyyy-MM-dd')}`);
+    };
+
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -112,6 +129,16 @@ export default function ActivityLogPage() {
                             className="pl-9 h-10 w-64 rounded-xl border-gray-200"
                         />
                     </div>
+
+                    <Button
+                        variant="outline"
+                        className="h-10 w-10 p-0 rounded-xl border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50"
+                        onClick={handleExport}
+                        title="Export CSV"
+                        disabled={loading || activities.length === 0}
+                    >
+                        <Download size={16} />
+                    </Button>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

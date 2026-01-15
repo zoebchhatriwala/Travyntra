@@ -9,6 +9,7 @@ import { ActivityLogAction } from "@/lib/enums";
 import { createNotification } from "@/lib/notifications";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 import { convertCurrency } from "@/lib/services/currency";
+import { uploadFile } from "@/lib/storage";
 
 interface BidTax {
     label: string;
@@ -193,7 +194,14 @@ export async function generateInvoice(requestId: string) {
         revalidatePath(`/agent/invoices`);
         revalidatePath(`/company/${request.company.slug}/admin/billing`);
 
-        return { success: true, invoice };
+        return {
+            success: true,
+            invoice: {
+                ...invoice,
+                amount: Number(invoice.amount),
+                subtotal: Number(invoice.subtotal)
+            }
+        };
     } catch (e) {
         console.error("Generate invoice error:", e);
         return { error: "Failed to generate invoice" };
@@ -240,7 +248,8 @@ export async function getAgencyInvoices() {
                 createdAt: inv.createdAt,
                 companyName: inv.company.name,
                 requestTitle: inv.request.title,
-                requestId: inv.requestId
+                requestId: inv.requestId,
+                pdfUrl: inv.pdfUrl
             })))
         };
     } catch (e) {
@@ -299,5 +308,40 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
     } catch (e) {
         console.error("Update invoice status error:", e);
         return { error: "Failed to update status" };
+    }
+}
+
+
+export async function uploadInvoicePdf(formData: FormData) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.companyId || (session.user.role !== "TRAVEL_AGENT" && session.user.role !== "AGENCY_EMPLOYEE")) {
+        return { error: "Unauthorized" };
+    }
+
+    const file = formData.get("file") as File;
+    const invoiceId = formData.get("invoiceId") as string;
+
+    if (!file || !invoiceId) {
+        return { error: "Missing file or invoice ID" };
+    }
+
+    try {
+        const url = await uploadFile(file, "invoices");
+
+        await prisma.invoice.update({
+            where: {
+                id: invoiceId,
+                agencyId: session.user.companyId
+            },
+            data: {
+                pdfUrl: url
+            }
+        });
+
+        revalidatePath("/agent/invoices");
+        return { success: true, url };
+    } catch (e) {
+        console.error("Upload invoice PDF error:", e);
+        return { error: "Failed to upload invoice PDF" };
     }
 }

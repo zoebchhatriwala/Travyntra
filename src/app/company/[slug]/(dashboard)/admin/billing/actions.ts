@@ -45,7 +45,8 @@ export async function getCompanyInvoices(slug: string) {
                 status: inv.status,
                 description: `Trip: ${inv.request.title}`,
                 recipient: inv.agency.name,
-                requestId: inv.requestId
+                requestId: inv.requestId,
+                pdfUrl: inv.pdfUrl
             })),
             currency: company.currency
         };

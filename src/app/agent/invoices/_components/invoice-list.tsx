@@ -9,8 +9,10 @@ import {
     Building2,
     Calendar,
     FileText,
-    Download
+    Download,
+    Upload
 } from "lucide-react";
+import { UploadInvoiceDialog } from "./upload-invoice-dialog";
 import { format } from "date-fns";
 import {
     Card,
@@ -45,6 +47,7 @@ interface Invoice {
     companyName: string;
     requestTitle: string;
     requestId: string;
+    pdfUrl?: string | null;
 }
 
 interface InvoiceListProps {
@@ -69,6 +72,8 @@ const getStatusStyles = (status: InvoiceStatus) => {
 
 export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
     const [isMounted, setIsMounted] = useState(false);
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [selectedInvoiceForUpload, setSelectedInvoiceForUpload] = useState<Invoice | null>(null);
 
     useEffect(() => {
         setIsMounted(true);
@@ -308,6 +313,16 @@ export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
                                                                 View Request
                                                             </DropdownMenuItem>
                                                         </Link>
+                                                        <DropdownMenuItem
+                                                            onClick={() => {
+                                                                setSelectedInvoiceForUpload(invoice);
+                                                                setUploadDialogOpen(true);
+                                                            }}
+                                                            className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-xl p-3"
+                                                        >
+                                                            <Upload size={16} />
+                                                            Upload PDF
+                                                        </DropdownMenuItem>
                                                         {invoice.status !== InvoiceStatus.PAID && (
                                                             <DropdownMenuItem
                                                                 onClick={() => handleUpdateStatus(invoice.id, InvoiceStatus.VOID)}
@@ -328,6 +343,17 @@ export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
                     </table>
                 </div>
             </Card>
-        </div>
+
+            {
+                selectedInvoiceForUpload && (
+                    <UploadInvoiceDialog
+                        invoiceId={selectedInvoiceForUpload.id}
+                        open={uploadDialogOpen}
+                        onOpenChange={setUploadDialogOpen}
+                        currentPdfUrl={selectedInvoiceForUpload.pdfUrl}
+                    />
+                )
+            }
+        </div >
     );
 }

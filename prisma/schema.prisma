@@ -253,6 +253,7 @@ model Invoice {
   agency    Company       @relation("AgencyInvoices", fields: [agencyId], references: [id])
   company   Company       @relation("CompanyInvoices", fields: [companyId], references: [id])
   request   TripRequest   @relation(fields: [requestId], references: [id])
+  pdfUrl    String?
 }
 
 model ActivityLog {

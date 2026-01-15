@@ -18,3 +18,15 @@ export function cn(...inputs: ClassValue[]): string {
   // Return the final merged class string
   return mergedClasses;
 }
+
+/**
+ * Formats a status string into a human-readable label.
+ * Example: "PENDING_AGENT_ACTION" -> "Pending Agent Action"
+ */
+export function formatStatus(status: string): string {
+  if (!status) return "";
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}

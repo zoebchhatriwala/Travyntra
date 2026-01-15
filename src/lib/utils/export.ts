@@ -27,9 +27,10 @@ export const generatePDF = (
     headers: string[],
     data: any[][],
     filename: string,
-    title: string
+    title: string,
+    orientation: 'portrait' | 'landscape' = 'portrait'
 ) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation });
 
     // Add title
     doc.setFontSize(18);
