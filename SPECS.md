@@ -205,8 +205,8 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Bid Management**: Submit bids on company requests
 - [x] **Integration Registry**: Company admin interface to connect agencies
 - [x] **Fulfillment Console**: Upload tickets/visas
-- [ ] **Invoice Generation**: Create invoices for completed requests
-- [ ] **Financial Tracking**: Revenue and receivables dashboard
+- [x] **Invoice Generation**: Create invoices for completed requests
+- [x] **Financial Tracking**: Revenue and receivables dashboard
 
 ### Phase 8: UX & Advanced Request Logic �️ ACTIVE
 - [x] **Global Country Selector**: Implement real country selector in Company/Agency settings.
@@ -227,7 +227,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Invoice Management**: Company view of all invoices.
 - [x] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
 - [x] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
-- [ ] **Payment Tracking**: Mark invoices as paid/pending.
+- [x] **Payment Tracking**: Mark invoices as paid/pending.
 - [ ] **Budget Analytics**: Spending trends and forecasts.
 - [ ] **Expense Reports**: Per-request and per-employee breakdowns.
 
@@ -280,10 +280,10 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - Auto-assignment for single-agency integrations
    - Budget revision approval workflow
 3. **Financial Layer** (Phase 10)
-   - Invoice generation for completed requests
+   - ✅ Invoice generation for completed requests
    - ✅ Multi-currency support (Request-level currency)
    - Multi-currency conversion & FX caching
-   - Payment tracking
+   - ✅ Payment tracking
 
 ---
 ---

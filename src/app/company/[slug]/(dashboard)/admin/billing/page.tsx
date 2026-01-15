@@ -20,7 +20,7 @@ export default async function BillingPage({
                 </p>
             </div>
 
-            <BillingList invoices={invoices} currency={currency} />
+            <BillingList invoices={invoices} currency={currency} companySlug={slug} />
         </div>
     );
 }

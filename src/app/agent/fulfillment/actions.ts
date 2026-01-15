@@ -60,11 +60,30 @@ export async function getFulfillmentRequest(requestId: string) {
                     createdAt: true,
                     sender: { select: { name: true } }
                 }
+            },
+            invoice: {
+                select: {
+                    id: true,
+                    status: true,
+                    amount: true,
+                    createdAt: true
+                }
             }
         }
     });
 
-    return request;
+    if (!request) return null;
+
+    // Convert decimal values to numbers for Client Component compatibility
+    return {
+        ...request,
+        invoice: request.invoice
+            ? {
+                ...request.invoice,
+                amount: Number(request.invoice.amount),
+            }
+            : null,
+    };
 }
 
 // ============ FULFILLMENT CHECKLIST ACTIONS ============

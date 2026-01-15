@@ -198,7 +198,8 @@ export default async function RequestDetailsPage({
                     existingBid={myBid ? {
                         id: myBid.id,
                         amount: moneyToDecimal(parseMoney(myBid.amount)),
-                        message: myBid.message
+                        message: myBid.message,
+                        taxes: (myBid as any).taxes as any[]
                     } : null}
                 />
             </div>

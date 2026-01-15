@@ -70,6 +70,7 @@ export default async function FulfillmentDetailPage({
                     currentStatus={request.status}
                     allItemsCompleted={allCompleted}
                     hasItems={totalItems > 0}
+                    invoice={request.invoice}
                 />
             </div>
 
@@ -179,7 +180,6 @@ export default async function FulfillmentDetailPage({
                     {/* Recent Messages with Markdown */}
                     <RecentMessages
                         messages={request.messages}
-                        companySlug={request.company.slug}
                         requestId={requestId}
                     />
                 </div>

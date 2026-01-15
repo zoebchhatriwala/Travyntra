@@ -111,6 +111,7 @@ model AgentBid {
   requestId String
   agentId   String
   amount    Json?
+  taxes     Json?
   message   String?
   status    String      @default("PENDING")
   createdAt DateTime    @default(now())
@@ -239,7 +240,10 @@ model UserApproval {
 model Invoice {
   id        String        @id @default(uuid())
   amount    Decimal
+  subtotal  Decimal       @default(0)
+  currency  String        @default("USD")
   status    InvoiceStatus @default(PENDING)
+  taxes     Json?
   dueDate   DateTime?
   requestId String        @unique
   companyId String

@@ -15,11 +15,10 @@ interface Message {
 
 interface RecentMessagesProps {
     messages: Message[];
-    companySlug: string;
     requestId: string;
 }
 
-export function RecentMessages({ messages, companySlug, requestId }: RecentMessagesProps) {
+export function RecentMessages({ messages, requestId }: RecentMessagesProps) {
     // Parse message content to extract text without attachments
     function parseContent(content: string): string {
         const attachmentMarker = '__ATTACHMENTS__';
@@ -90,7 +89,7 @@ export function RecentMessages({ messages, companySlug, requestId }: RecentMessa
                 )}
 
                 <Link
-                    href={`/company/${companySlug}/dashboard/requests/${requestId}/discussion`}
+                    href={`/agent/bids/${requestId}`}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
                     View Full Discussion

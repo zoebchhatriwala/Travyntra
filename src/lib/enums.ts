@@ -36,5 +36,9 @@ export enum ActivityLogAction {
     /** A document was uploaded to a request or bid */
     DOCUMENT_UPLOADED = "DOCUMENT_UPLOADED",
     /** The status of a request or fulfillment changed */
-    STATUS_CHANGED = "STATUS_CHANGED"
+    STATUS_CHANGED = "STATUS_CHANGED",
+    /** An invoice was generated for a completed request */
+    INVOICE_GENERATED = "INVOICE_GENERATED",
+    /** An invoice was marked as paid */
+    INVOICE_PAID = "INVOICE_PAID"
 }

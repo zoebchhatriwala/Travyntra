@@ -36,10 +36,11 @@ export async function getConversionPreview(amount: number, fromCurrency: string,
  * @param {number} amount - The numeric bid amount.
  * @param {string} message - The proposal details/message.
  * @param {string} currency - The ISO 4217 currency code of the bid.
+ * @param {any[]} taxes - Optional taxes to include in the bid.
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
 
-export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD") {
+export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
         return { error: "Unauthorized" };
@@ -55,9 +56,10 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 requestId,
                 agentId,
                 amount: bidAmount as unknown as Prisma.InputJsonValue,
+                taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
                 status: AgentBidStatus.PENDING
-            }
+            } as any
         });
 
         // Get converted value for the message if company currency is different
@@ -74,11 +76,16 @@ export async function submitBid(requestId: string, amount: number, message: stri
         }
 
         // 1. Link to Discussion: Post a system message in the request discussion
+        let taxDetails = "";
+        if (taxes && taxes.length > 0) {
+            taxDetails = "\n**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
+        }
+
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**New Bid Submitted**: Proposed amount ${formatMoney(bidAmount)}${conversionText}.\n\n**Proposal Details**:\n${message}`
+                content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}${conversionText}.${taxDetails}\n\n**Proposal Details**:\n${message}`
             }
         });
 
@@ -104,10 +111,11 @@ export async function submitBid(requestId: string, amount: number, message: stri
  * @param {number} amount - The new numeric bid amount.
  * @param {string} message - The updated proposal message.
  * @param {string} currency - The currency code of the bid.
+ * @param {any[]} taxes - Optional taxes to include in the bid.
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
 
-export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD") {
+export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return { error: "Unauthorized" };
 
@@ -118,9 +126,10 @@ export async function updateBid(bidId: string, requestId: string, amount: number
             where: { id: bidId },
             data: {
                 amount: bidAmount as unknown as Prisma.InputJsonValue,
+                taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
                 updatedAt: new Date()
-            }
+            } as any
         });
 
         // Post update to discussion
@@ -136,11 +145,16 @@ export async function updateBid(bidId: string, requestId: string, amount: number
             conversionText = ` (Approx. ${formatMoney(converted)})`;
         }
 
+        let taxDetails = "";
+        if (taxes && taxes.length > 0) {
+            taxDetails = "\n**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
+        }
+
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Updated**: New amount ${formatMoney(bidAmount)}${conversionText}.\n\n**Updated Proposal**:\n${message}`
+                content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}${conversionText}.${taxDetails}\n\n**Updated Proposal**:\n${message}`
             }
         });
 
