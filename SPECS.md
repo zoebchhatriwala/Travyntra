@@ -331,6 +331,37 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
     - **Caching**: Exchange rates MUST be cached for 1 hour to optimize performance and ensure billing consistency.
     - **Base Reference**: Use USD as the pivot base for all cross-currency calculations where direct pairs are unavailable.
 
+- **TypeScript Strict Typing**:
+    - **No `any` Type**: The use of `any` type is STRICTLY PROHIBITED except for:
+        - Third-party library compatibility issues (must be documented with a comment explaining why)
+        - Temporary type assertions that will be replaced (must have a TODO comment)
+    - **JSON Data Interfaces**: All JSON/JSONB fields in Prisma MUST have corresponding TypeScript interfaces defined:
+        - Example: `taxes` field → `TaxItem[]` interface
+        - Example: `metadata` field → `ActivityMetadata` interface
+        - Example: `amount` field → `Money` interface
+    - **Type Casting**: When casting JSON data, use proper type assertions with interfaces:
+        - ✅ Correct: `(data.taxes as TaxItem[])`
+        - ❌ Wrong: `(data.taxes as any)`
+        - ✅ Correct: `(data as unknown as TaxItem[])` (when necessary)
+    - **Prisma JSON Handling**: When working with Prisma JSON fields:
+        - Define the interface first
+        - Cast to `Prisma.InputJsonValue` or `Prisma.InputJsonArray` for writes
+        - Cast from JSON to the interface type for reads
+        - Example:
+          ```typescript
+          interface TaxItem {
+              label: string;
+              type: "PERCENTAGE" | "FIXED";
+              value: number;
+          }
+          
+          // Writing
+          taxes: taxItems as unknown as Prisma.InputJsonArray
+          
+          // Reading
+          const taxes = (record.taxes as unknown as TaxItem[])
+          ```
+
 **AI Assistant Protocol**:
 - **Continuous Documentation**: The AI assistant MUST revisit `SPECS.md` after completing any task to update task statuses (`[x]`), mark phases as completed, and refresh the "Current Sprint Focus" section. This ensures the roadmap is the single source of truth.
 - **Build Verification**: After completing a significant feature or set of changes, the AI assistant MUST run `npm run build` to ensure the integrity of the application and catch any type mismatches or build-time errors before handover.
@@ -338,4 +369,5 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Money Object Protocol**: All monetary values (budgets, bids, costs) MUST be stored and handled using the structured `Money` type (`amount`, `currencyCode`, `multiplier`). Direct numeric summing on `JSONB` fields in SQL is discouraged; use structured extraction (e.g., `(budget->>'amount')::numeric`) or memory-based aggregation via `moneyToDecimal`.
 - **Linting Standard**: Every build and development step MUST pass `yarn lint` (or `npm run lint`) with zero errors and zero warnings. Code quality is non-negotiable.
 - **Documentation Standard**: All functions, interfaces, and complex logic MUST be documented using proper **JSDoc** syntax to ensure long-term maintainability and clarity.
+- **Type Safety Standard**: Follow the TypeScript Strict Typing rules above. All code MUST be strongly typed with proper interfaces. The use of `any` type requires explicit justification in code comments.
 
