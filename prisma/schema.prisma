@@ -32,6 +32,7 @@ model Company {
   integrationsAsClient  AgencyIntegration[] @relation("CompanyIntegrations")
   integrationsAsAgency  AgencyIntegration[] @relation("AgencyIntegrations")
   policyThreshold       Json?
+  taxTemplates          TaxTemplate[]       @relation("AgencyTaxTemplates")
 }
 
 model User {
@@ -353,4 +354,19 @@ model AgencyIntegration {
 enum IntegrationStatus {
   ACTIVE
   INACTIVE
+}
+
+model TaxTemplate {
+  id          String   @id @default(uuid())
+  agencyId    String
+  name        String
+  description String?
+  taxes       Json     // Array of {label: string, value: number, type: "PERCENTAGE" | "FIXED"}
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agency Company @relation("AgencyTaxTemplates", fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId])
 }

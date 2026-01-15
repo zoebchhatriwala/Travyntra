@@ -68,7 +68,7 @@ export default async function CompanyAdminPage({
                     icon={<CheckCircle2 className="text-indigo-600" />}
                     color="bg-indigo-50"
                     isAlert={stats.pendingApprovalsCount > 0}
-                    href={`/company/${slug}/admin/approvals`}
+                    href={`/company/${slug}/dashboard/approvals`}
                 />
                 <StatCard
                     title="Live Requests"

@@ -8,6 +8,7 @@ import { authOptions } from "@/lib/auth-options";
 import { hash } from "bcryptjs";
 import { sendEmail } from "@/lib/email";
 import { getStaffWelcomeTemplate } from "@/lib/email-templates";
+import { createNotification } from "@/lib/notifications";
 
 async function getCurrentUser() {
     const session = await getServerSession(authOptions);
@@ -150,6 +151,17 @@ export async function updateStaffStatus(staffId: string, isBlocked: boolean) {
             data: { isBlocked }
         });
 
+        // Send notification to the staff member
+        await createNotification({
+            userId: staffId,
+            title: isBlocked ? "Account Blocked" : "Account Unblocked",
+            message: isBlocked
+                ? `Your account has been blocked by ${currentUser.name}. Please contact your agency administrator for more information.`
+                : `Your account has been unblocked by ${currentUser.name}. You can now access the system again.`,
+            type: isBlocked ? "WARNING" : "SUCCESS",
+            sendEmail: true
+        });
+
         revalidatePath("/agent/staff");
         return { success: true };
     } catch (error) {
@@ -183,10 +195,34 @@ export async function updateStaffRole(staffId: string, newRole: UserRole) {
             return { success: false, error: "Invalid role" };
         }
 
+        const oldRole = targetUser.role;
+
         await prisma.user.update({
             where: { id: staffId },
             data: { role: newRole }
         });
+
+        // Send notification to the staff member
+        const isPromotion = newRole === UserRole.TRAVEL_AGENT && oldRole === UserRole.AGENCY_EMPLOYEE;
+        const isDemotion = newRole === UserRole.AGENCY_EMPLOYEE && oldRole === UserRole.TRAVEL_AGENT;
+
+        if (isPromotion) {
+            await createNotification({
+                userId: staffId,
+                title: "Role Updated - Promoted to Travel Agent",
+                message: `Congratulations! You have been promoted to Travel Agent by ${currentUser.name}. You now have full access to all agency features including bidding and invoice management.`,
+                type: "SUCCESS",
+                sendEmail: true
+            });
+        } else if (isDemotion) {
+            await createNotification({
+                userId: staffId,
+                title: "Role Updated - Changed to Agency Employee",
+                message: `Your role has been updated to Agency Employee by ${currentUser.name}. Your access is now limited to the fulfillment center.`,
+                type: "INFO",
+                sendEmail: true
+            });
+        }
 
         revalidatePath("/agent/staff");
         return { success: true };

@@ -581,6 +581,27 @@ export async function markAsCompleted(requestId: string) {
             sendEmail: true
         });
 
+        // Notify company admins
+        const companyAdmins = await prisma.user.findMany({
+            where: {
+                companyId: request.companyId,
+                role: UserRole.COMPANY_ADMIN,
+                isActive: true
+            },
+            select: { id: true }
+        });
+
+        await Promise.all(companyAdmins.map(admin =>
+            createNotification({
+                userId: admin.id,
+                title: "Trip Completed",
+                message: `The trip "${request.title}" has been marked as completed by ${session.user.name}. All fulfillment items are done.`,
+                type: "SUCCESS",
+                link: `/company/${request.company.slug}/dashboard/requests/${requestId}`,
+                sendEmail: true
+            })
+        ));
+
         revalidatePath(`/agent/fulfillment/${requestId}`);
         revalidatePath(`/agent/fulfillment`);
         revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);

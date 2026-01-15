@@ -144,12 +144,20 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
             });
         }
 
+        // Build tax details string
+        let taxDetails = "";
+        if (invoiceTaxes.length > 0) {
+            taxDetails = "\n**Tax Breakdown:**\n" + invoiceTaxes.map(tax =>
+                `- ${tax.label}: ${tax.type === "PERCENTAGE" ? `${tax.value}%` : `${tax.value} ${bidCurrency}`} = ${tax.calculatedAmount.toFixed(2)} ${invoiceCurrency}`
+            ).join('\n');
+        }
+
         // Add a system message
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Invoice ${request.invoice ? 'Updated' : 'Generated'}**: An invoice for ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${invoiceCurrency} has been ${request.invoice ? 'updated' : 'generated'} (based on ${bidSubtotal.toLocaleString()} ${bidCurrency}).`
+                content: `**Invoice ${request.invoice ? 'Updated' : 'Generated'}**: An invoice for ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${invoiceCurrency} has been ${request.invoice ? 'updated' : 'generated'} (based on ${bidSubtotal.toLocaleString()} ${bidCurrency}).\n\n${taxDetails}`
             }
         });
 
@@ -181,11 +189,16 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
             }
         });
 
+        // Build notification message with tax info
+        const taxSummary = invoiceTaxes.length > 0
+            ? ` (Subtotal: ${subtotal.toFixed(2)} ${invoiceCurrency} + Taxes: ${(totalAmount - subtotal).toFixed(2)} ${invoiceCurrency})`
+            : "";
+
         for (const admin of admins) {
             await createNotification({
                 userId: admin.id,
                 title: "New Invoice Received",
-                message: `A new invoice has been generated for trip "${request.title}" by ${session.user.name}.`,
+                message: `A new invoice for ${totalAmount.toFixed(2)} ${invoiceCurrency} has been generated for trip "${request.title}" by ${session.user.name}.${taxSummary}`,
                 type: "INFO",
                 link: `/company/${request.company.slug}/admin/billing#invoice_${invoice.id}`,
                 sendEmail: true
@@ -388,7 +401,7 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
                 title: messageHeader,
                 message: `Invoice for trip "${invoice.request.title}" has been marked as ${statusLabel.toLowerCase()} by ${session.user.name}.`,
                 type: status === InvoiceStatus.PAID ? "SUCCESS" : "INFO",
-                link: `/company/${invoice.company.slug}/admin/billing`,
+                link: `/company/${invoice.company.slug}/admin/billing#invoice_${invoice.id}`,
                 sendEmail: true
             });
         }

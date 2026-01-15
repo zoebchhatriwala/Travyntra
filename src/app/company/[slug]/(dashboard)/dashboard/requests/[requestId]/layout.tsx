@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
 import { RequestActions } from "./_components/request-actions";
+import { CopyButton } from "./_components/copy-button";
 import { cn } from "@/lib/utils";
 
 
@@ -44,7 +45,7 @@ export default async function RequestLayout({
                         <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
                             <span>Requests</span>
                             <span>/</span>
-                            <span className="text-gray-900">{request.id.slice(0, 8)}...</span>
+                            <CopyButton text={request.id} displayText={`${request.id.slice(0, 8)}...`} />
                         </div>
                     </div>
 

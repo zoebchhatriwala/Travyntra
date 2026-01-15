@@ -7,13 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { submitBid, updateBid, getConversionPreview } from "../actions";
+import { getTaxTemplates } from "@/app/agent/settings/tax-templates/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Lock, Plus, Trash2, Info } from "lucide-react";
+import { Lock, Plus, Trash2, FileText } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import {
     Select,
@@ -31,9 +32,17 @@ const taxSchema = z.object({
 
 const bidSchema = z.object({
     amount: z.number().min(0.01, "Amount must be positive"),
-    taxes: z.array(taxSchema).default([]),
+    taxes: z.array(taxSchema),
     message: z.string().min(10, "Please provide some details about your offer")
 });
+
+interface TaxTemplate {
+    id: string;
+    name: string;
+    description: string | null;
+    taxes: { label: string; type: "PERCENTAGE" | "FIXED"; value: number; }[];
+    isDefault: boolean;
+}
 
 type BidFormProps = {
     requestId: string;
@@ -44,7 +53,7 @@ type BidFormProps = {
         id: string;
         amount: number | null;
         message: string | null;
-        taxes?: any[] | null;
+        taxes: { label: string; type: "PERCENTAGE" | "FIXED"; value: number; }[];
     } | null;
 };
 
@@ -52,23 +61,43 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [conversionPreview, setConversionPreview] = useState<string | null>(null);
+    const [taxTemplates, setTaxTemplates] = useState<TaxTemplate[]>([]);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
     const form = useForm<z.infer<typeof bidSchema>>({
         resolver: zodResolver(bidSchema),
         defaultValues: {
             amount: existingBid?.amount || undefined,
-            taxes: (existingBid?.taxes as any[]) || [],
+            taxes: Array.isArray(existingBid?.taxes) ? existingBid.taxes : [],
             message: existingBid?.message || ""
         }
     });
 
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove, replace } = useFieldArray({
         control: form.control,
         name: "taxes"
     });
 
     const watchedTaxes = form.watch("taxes") || [];
     const watchedAmount = form.watch("amount") || 0;
+
+    // Load tax templates and auto-apply default
+    useEffect(() => {
+        async function loadTemplates() {
+            const templates = await getTaxTemplates();
+            setTaxTemplates(templates);
+
+            // Auto-apply default template only for new bids (not editing)
+            if (!existingBid && templates.length > 0) {
+                const defaultTemplate = templates.find(t => t.isDefault);
+                if (defaultTemplate) {
+                    replace(defaultTemplate.taxes);
+                    setSelectedTemplateId(defaultTemplate.id);
+                }
+            }
+        }
+        loadTemplates();
+    }, [existingBid, replace]);
 
     const calculateTotal = () => {
         let total = watchedAmount;
@@ -92,6 +121,15 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                 .catch(() => setConversionPreview(null));
         }
     }, [existingBid?.amount, currency, requestCurrency]);
+
+    const handleApplyTemplate = (templateId: string) => {
+        const template = taxTemplates.find(t => t.id === templateId);
+        if (template) {
+            replace(template.taxes);
+            setSelectedTemplateId(templateId);
+            toast.success(`Applied template: ${template.name}`);
+        }
+    };
 
     async function onSubmit(values: z.infer<typeof bidSchema>) {
         setIsSubmitting(true);
@@ -188,55 +226,81 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                             </Button>
                         </div>
 
-                        {fields.map((field, index) => (
-                            <div key={field.id} className="grid grid-cols-12 gap-2 items-start bg-gray-50/50 p-3 rounded-xl border border-gray-100">
-                                <div className="col-span-12 md:col-span-5 space-y-1">
-                                    <Input
-                                        placeholder="Label (e.g. VAT)"
+                        {taxTemplates.length > 0 && (
+                            <div className="flex items-center gap-2 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                <FileText size={16} className="text-indigo-600 shrink-0" />
+                                <div className="flex-1 flex items-center gap-2">
+                                    <span className="text-xs font-medium text-gray-700">Quick Apply:</span>
+                                    <Select
+                                        value={selectedTemplateId}
+                                        onValueChange={handleApplyTemplate}
                                         disabled={isClosed}
-                                        {...form.register(`taxes.${index}.label`)}
-                                        className="h-9 text-xs"
-                                    />
-                                    {form.formState.errors.taxes?.[index]?.label && (
-                                        <p className="text-[10px] text-red-500">{form.formState.errors.taxes[index]?.label?.message}</p>
-                                    )}
+                                    >
+                                        <SelectTrigger className="h-8 text-xs bg-white flex-1">
+                                            <SelectValue placeholder="Select a tax template..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {taxTemplates.map((template) => (
+                                                <SelectItem key={template.id} value={template.id}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{template.name}</span>
+                                                        {template.isDefault && (
+                                                            <span className="text-[10px] text-indigo-600 font-bold">(Default)</span>
+                                                        )}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                <div className="col-span-12 md:col-span-3">
+                            </div>
+                        )}
+
+                        {fields.map((field, index) => (
+                            <div key={field.id} className="space-y-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                                <Input
+                                    placeholder="Label (e.g. VAT, GST, Service Tax)"
+                                    disabled={isClosed}
+                                    {...form.register(`taxes.${index}.label`)}
+                                    className="h-9 text-xs"
+                                />
+                                {form.formState.errors.taxes?.[index]?.label && (
+                                    <p className="text-[10px] text-red-500">{form.formState.errors.taxes[index]?.label?.message}</p>
+                                )}
+                                <div className="flex gap-2 items-start">
                                     <Select
                                         disabled={isClosed}
                                         defaultValue={field.type}
                                         onValueChange={(val) => form.setValue(`taxes.${index}.type`, val as "PERCENTAGE" | "FIXED")}
                                     >
-                                        <SelectTrigger className="h-9 text-xs">
+                                        <SelectTrigger className="h-9 text-xs w-32">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="PERCENTAGE">%</SelectItem>
+                                            <SelectItem value="PERCENTAGE">Percentage</SelectItem>
                                             <SelectItem value="FIXED">{currency}</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                </div>
-                                <div className="col-span-10 md:col-span-3 space-y-1">
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="0"
-                                        disabled={isClosed}
-                                        {...form.register(`taxes.${index}.value`, { valueAsNumber: true })}
-                                        className="h-9 text-xs"
-                                    />
-                                    {form.formState.errors.taxes?.[index]?.value && (
-                                        <p className="text-[10px] text-red-500">{form.formState.errors.taxes[index]?.value?.message}</p>
-                                    )}
-                                </div>
-                                <div className="col-span-2 md:col-span-1">
+                                    <div className="flex-1">
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            disabled={isClosed}
+                                            {...form.register(`taxes.${index}.value`, { valueAsNumber: true })}
+                                            className="h-9 text-xs"
+                                        />
+                                        {form.formState.errors.taxes?.[index]?.value && (
+                                            <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.taxes[index]?.value?.message}</p>
+                                        )}
+                                    </div>
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
                                         disabled={isClosed}
                                         onClick={() => remove(index)}
-                                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg shrink-0"
                                     >
                                         <Trash2 size={16} />
                                     </Button>

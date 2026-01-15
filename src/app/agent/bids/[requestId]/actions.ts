@@ -101,9 +101,30 @@ export async function submitBid(requestId: string, amount: number, message: stri
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n${taxDetails}\n\n**Proposal Details**:\n${message}`
+                content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Proposal Details**:\n${message}`
             }
         });
+
+        // Notify company admins about the new bid
+        const companyAdmins = await prisma.user.findMany({
+            where: {
+                companyId: request?.company.id,
+                role: UserRole.COMPANY_ADMIN,
+                isActive: true
+            },
+            select: { id: true }
+        });
+
+        await Promise.all(companyAdmins.map(admin =>
+            createNotification({
+                userId: admin.id,
+                title: "New Bid Received",
+                message: `A new bid of ${formatMoney(totalMoney)} has been submitted for "${request?.title}".`,
+                type: "INFO",
+                link: `/company/${request?.company.slug}/dashboard/requests/${requestId}`,
+                sendEmail: true
+            })
+        ));
 
         revalidatePath(`/agent/bids/${requestId}`);
         revalidatePath(`/agent/bids`);
@@ -183,9 +204,30 @@ export async function updateBid(bidId: string, requestId: string, amount: number
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n${taxDetails}\n\n**Updated Proposal**:\n${message}`
+                content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Updated Proposal**:\n${message}`
             }
         });
+
+        // Notify company admins about the bid update
+        const companyAdmins = await prisma.user.findMany({
+            where: {
+                companyId: request?.company.id,
+                role: UserRole.COMPANY_ADMIN,
+                isActive: true
+            },
+            select: { id: true }
+        });
+
+        await Promise.all(companyAdmins.map(admin =>
+            createNotification({
+                userId: admin.id,
+                title: "Bid Updated",
+                message: `A bid for "${request?.title}" has been updated to ${formatMoney(totalMoney)}.`,
+                type: "INFO",
+                link: `/company/${request?.company.slug}/dashboard/requests/${requestId}`,
+                sendEmail: true
+            })
+        ));
 
         revalidatePath(`/agent/bids/${requestId}`);
         revalidatePath(`/agent/bids`);
