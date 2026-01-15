@@ -82,6 +82,11 @@ export default async function RequestsPage({
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6">
+                                    {req.isCollaborator && (
+                                        <Badge variant="outline" className="rounded-xl px-3 py-1 font-bold text-[10px] border-indigo-100 bg-indigo-50/50 text-indigo-600">
+                                            Shared with me
+                                        </Badge>
+                                    )}
                                     {req.budget > 0 && (
                                         <div className="text-right hidden sm:block">
                                             <p className="text-sm font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>

@@ -30,9 +30,16 @@ export async function getEmployeeDashboardStats() {
 
     const userId = session.user.id;
 
+    const whereClause: Prisma.TripRequestWhereInput = {
+        OR: [
+            { userId },
+            { collaborators: { some: { id: userId } } }
+        ]
+    };
+
     const activeRequests = await prisma.tripRequest.count({
         where: {
-            userId,
+            ...whereClause,
             status: {
                 notIn: ['COMPLETED', 'REJECTED', 'CANCELLED', 'DRAFT']
             }
@@ -41,13 +48,13 @@ export async function getEmployeeDashboardStats() {
 
     const completedTrips = await prisma.tripRequest.count({
         where: {
-            userId,
+            ...whereClause,
             status: 'COMPLETED'
         }
     });
 
     const recentRequests = await prisma.tripRequest.findMany({
-        where: { userId },
+        where: whereClause,
         take: 5,
         orderBy: { createdAt: 'desc' },
         select: {
@@ -56,6 +63,7 @@ export async function getEmployeeDashboardStats() {
             status: true,
             createdAt: true,
             budget: true,
+            userId: true,
         }
     });
 
@@ -78,7 +86,8 @@ export async function getEmployeeDashboardStats() {
                 status: req.status,
                 createdAt: req.createdAt,
                 budget: moneyToDecimal(money),
-                currency: money?.currencyCode || company?.currency || "USD"
+                currency: money?.currencyCode || company?.currency || "USD",
+                isCollaborator: req.userId !== userId
             };
         })
     };
@@ -110,12 +119,17 @@ export async function getEmployeeRequests({
     const skip = (page - 1) * limit;
 
     const where: Prisma.TripRequestWhereInput = {
-        userId,
-        OR: query ? [
-            { title: { contains: query, mode: Prisma.QueryMode.insensitive } },
-            // Can add more fields if needed, e.g. location if available. 
-            // For now title is the main textual field on TripRequest usually.
-        ] : undefined,
+        AND: [
+            {
+                OR: [
+                    { userId },
+                    { collaborators: { some: { id: userId } } }
+                ]
+            },
+            query ? {
+                title: { contains: query, mode: Prisma.QueryMode.insensitive }
+            } : {}
+        ]
     };
 
     const [total, requests] = await prisma.$transaction([
@@ -131,6 +145,7 @@ export async function getEmployeeRequests({
                 status: true,
                 createdAt: true,
                 budget: true,
+                userId: true,
             },
         }),
     ]);
@@ -150,7 +165,8 @@ export async function getEmployeeRequests({
                 status: req.status,
                 createdAt: req.createdAt,
                 budget: moneyToDecimal(money),
-                currency: money?.currencyCode || company?.currency || "USD"
+                currency: money?.currencyCode || company?.currency || "USD",
+                isCollaborator: req.userId !== userId
             };
         }),
         currency: company?.currency || "USD",
@@ -477,7 +493,7 @@ export async function getTripRequest(requestId: string) {
                     select: { currency: true, name: true }
                 },
                 collaborators: {
-                    select: { id: true }
+                    select: { id: true, name: true, email: true, avatarUrl: true, role: true }
                 },
                 bids: {
                     include: {
@@ -614,56 +630,64 @@ export async function postTripMessage(requestId: string, content: string) {
         const { createNotification } = await import("@/lib/notifications");
         const notifiedUserIds = new Set<string>();
 
-        // Parse @mentions from the message
-        const mentionRegex = /@(\w+)/g;
-        const mentions = content.match(mentionRegex);
+        // Parse @mentions from the message - find users whose names appear after an @
+        // First, get all active users in the company to check against
+        const companyUsers = await prisma.user.findMany({
+            where: {
+                companyId: session.user.companyId,
+                isActive: true,
+                id: { not: session.user.id } // Don't mention yourself
+            },
+            select: { id: true, name: true }
+        });
 
-        if (mentions && mentions.length > 0) {
-            // Extract usernames (remove @ symbol)
-            const usernames = mentions.map(m => m.substring(1));
+        const sortedUsers = [...companyUsers].sort((a, b) => (b.name?.length || 0) - (a.name?.length || 0));
+        const mentionedUsers: typeof companyUsers = [];
+        let tempContent = content;
 
-            // Find users by name and same company
-            const mentionedUsers = await prisma.user.findMany({
-                where: {
-                    name: { in: usernames },
-                    companyId: session.user.companyId,
-                    id: { not: session.user.id } // Don't mention yourself
-                },
-                select: { id: true, name: true }
-            });
+        for (const user of sortedUsers) {
+            if (!user.name) continue;
+            const escapedName = user.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const mentionRegex = new RegExp(`@${escapedName}(?:\\s|[.,!?]|$)`, 'i');
 
-            if (mentionedUsers.length > 0) {
-                const currentCollaboratorIds = request.collaborators.map(c => c.id);
-                const newCollaboratorIds = mentionedUsers
-                    .filter(u => !currentCollaboratorIds.includes(u.id))
-                    .map(u => u.id);
-
-                // Add new collaborators
-                if (newCollaboratorIds.length > 0) {
-                    await prisma.tripRequest.update({
-                        where: { id: requestId },
-                        data: {
-                            collaborators: {
-                                connect: newCollaboratorIds.map(id => ({ id }))
-                            }
-                        }
-                    });
-                }
-
-                // Create notifications for all mentioned users
-                await Promise.all(
-                    mentionedUsers.map(async (user) => {
-                        notifiedUserIds.add(user.id);
-                        return createNotification({
-                            userId: user.id,
-                            title: "You were mentioned",
-                            message: `${session.user.name} mentioned you in "${request.title}"`,
-                            type: "INFO",
-                            link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
-                        });
-                    })
-                );
+            if (mentionRegex.test(tempContent)) {
+                mentionedUsers.push(user);
+                // Replace the mention in tempContent to avoid matching shorter names that might be part of this name
+                tempContent = tempContent.replace(new RegExp(`@${escapedName}`, 'gi'), ' __MENTIONED__ ');
             }
+        }
+
+        if (mentionedUsers.length > 0) {
+            const currentCollaboratorIds = request.collaborators.map(c => c.id);
+            const newCollaboratorIds = mentionedUsers
+                .filter(u => !currentCollaboratorIds.includes(u.id))
+                .map(u => u.id);
+
+            // Add new collaborators
+            if (newCollaboratorIds.length > 0) {
+                await prisma.tripRequest.update({
+                    where: { id: requestId },
+                    data: {
+                        collaborators: {
+                            connect: newCollaboratorIds.map(id => ({ id }))
+                        }
+                    }
+                });
+            }
+
+            // Create notifications for all mentioned users
+            await Promise.all(
+                mentionedUsers.map(async (user) => {
+                    notifiedUserIds.add(user.id);
+                    return createNotification({
+                        userId: user.id,
+                        title: "You were mentioned",
+                        message: `${session.user.name} mentioned you in "${request.title}"`,
+                        type: "INFO",
+                        link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+                    });
+                })
+            );
         }
 
         // Notify Request Creator (if not sender and not already notified via mention)
@@ -984,5 +1008,148 @@ export async function deleteTripRequest(requestId: string) {
     } catch (e) {
         console.error("Failed to delete trip request:", e);
         return { error: "Failed to delete trip request" };
+    }
+}
+
+/**
+ * Searches for users within the same company to add as collaborators.
+ * 
+ * @param {string} query - Search term (name or email).
+ * @returns {Promise<Array>} List of matching users.
+ */
+export async function searchCompanyUsers(query: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || !session.user.companyId) return [];
+
+    if (!query || query.length < 2) return [];
+
+    const users = await prisma.user.findMany({
+        where: {
+            companyId: session.user.companyId,
+            isActive: true,
+            OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query, mode: 'insensitive' } }
+            ],
+            // Exclude current user from search
+            id: { not: session.user.id }
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true,
+            role: true
+        },
+        take: 10
+    });
+
+    return users;
+}
+
+/**
+ * Adds a user as a collaborator to a trip request.
+ * 
+ * @param {string} requestId - ID of the trip request.
+ * @param {string} userId - ID of the user to add.
+ * @returns {Promise<Object>} Success result or error object.
+ */
+export async function addCollaborator(requestId: string, userId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Unauthenticated" };
+
+    try {
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            select: { id: true, userId: true, title: true, companyId: true, company: { select: { slug: true } } }
+        });
+
+        if (!request) return { error: "Request not found" };
+
+        // Security: Ensure request belongs to user's company
+        if (request.companyId !== session.user.companyId) {
+            return { error: "Unauthorized" };
+        }
+
+        // Authorization: Only owner or admin can add collaborators
+        const isAdmin = session.user.role === 'COMPANY_ADMIN' || session.user.role === 'SUPER_ADMIN';
+        if (request.userId !== session.user.id && !isAdmin) {
+            return { error: "Only the request owner or an admin can add collaborators" };
+        }
+
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                collaborators: {
+                    connect: { id: userId }
+                }
+            }
+        });
+
+        const { createNotification } = await import("@/lib/notifications");
+
+        await createNotification({
+            userId,
+            title: "Added as collaborator",
+            message: `${session.user.name} added you as a collaborator on "${request.title}"`,
+            type: "INFO",
+            link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+        });
+
+        revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to add collaborator:", e);
+        return { error: "Failed to add collaborator" };
+    }
+}
+
+/**
+ * Removes a user from the collaborators list of a trip request.
+ * 
+ * @param {string} requestId - ID of the trip request.
+ * @param {string} userId - ID of the user to remove.
+ * @returns {Promise<Object>} Success result or error object.
+ */
+export async function removeCollaborator(requestId: string, userId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return { error: "Unauthenticated" };
+
+    try {
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            select: { id: true, userId: true, companyId: true, company: { select: { slug: true } } }
+        });
+
+        if (!request) return { error: "Request not found" };
+
+        // Security: Ensure request belongs to user's company
+        if (request.companyId !== session.user.companyId) {
+            return { error: "Unauthorized" };
+        }
+
+        // Authorization: Owner, Admin, or the collaborator themselves can remove
+        const isAdmin = session.user.role === 'COMPANY_ADMIN' || session.user.role === 'SUPER_ADMIN';
+        const isSelf = userId === session.user.id;
+        if (request.userId !== session.user.id && !isAdmin && !isSelf) {
+            return { error: "Not authorized to remove this collaborator" };
+        }
+
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                collaborators: {
+                    disconnect: { id: userId }
+                }
+            }
+        });
+
+        revalidatePath(`/company/${request.company.slug}/dashboard/requests/${requestId}`);
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to remove collaborator:", e);
+        return { error: "Failed to remove collaborator" };
     }
 }

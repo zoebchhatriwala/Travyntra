@@ -216,7 +216,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
     - Car/Others: Google Address integration (Mock/Input).
 - [x] **Searchable Selectors**: Add search functionality to Country and Timezone selectors.
 - [x] **Asset Vault Enhancements**: Add search bar, filters, and paginationUrl to the Asset Vault.
-- [ ] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
+- [x] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
 
 ### Phase 9: Smart Logic & Automation 📋 PLANNED
 - [ ] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < ₹50k.
@@ -274,7 +274,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
    - ✅ Custom Train Option (Manual Entry)
    - [x] Searchable Country & Timezone Selectors
-   - Manual collaborator management UI
+   - ✅ Manual collaborator management UI
 2. **Smart Logic & Automation** (Phase 9)
    - Policy-based auto-approvals (< ₹50k, Domestic)
    - Auto-assignment for single-agency integrations

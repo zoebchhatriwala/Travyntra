@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -41,7 +42,7 @@ export async function updateCompanySettings(
         currency?: string,
         timezone?: string,
         country?: string,
-        policyThreshold?: any
+        policyThreshold?: Prisma.InputJsonValue
     }
 ) {
     try {

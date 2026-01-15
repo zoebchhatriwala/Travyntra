@@ -49,7 +49,7 @@ interface Notification {
     type: string | null;
     link: string | null;
     read: boolean;
-    createdAt: string;
+    createdAt: string | Date;
 }
 
 function NotificationsContent() {

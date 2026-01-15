@@ -17,6 +17,7 @@ import {
     CreditCard,
     AlertTriangle
 } from "lucide-react";
+import { Prisma } from "@prisma/client";
 import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
 import {
     Card,
@@ -44,7 +45,7 @@ interface SettingsFormProps {
         currency: string;
         timezone: string;
         country: string | null;
-        policyThreshold: any | null;
+        policyThreshold: Prisma.JsonValue | null;
     };
 }
 
@@ -72,7 +73,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
             currency,
             timezone,
             country,
-            policyThreshold: createMoney(parseFloat(thresholdAmount) || 0, currency)
+            policyThreshold: createMoney(parseFloat(thresholdAmount) || 0, currency) as unknown as Prisma.InputJsonValue
         });
         setIsLoading(false);
         if (res.success) {

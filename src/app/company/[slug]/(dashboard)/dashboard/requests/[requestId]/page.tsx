@@ -8,6 +8,7 @@ import { WorkflowProgressTracker } from "@/components/workflow/workflow-progress
 import { ApprovalActions } from "@/components/workflow/approval-actions";
 import { GroupTripInfo } from "./_components/group-trip-info";
 import { BidList } from "./_components/bid-list";
+import { CollaboratorManager } from "./_components/collaborator-manager";
 
 export default async function RequestOverviewPage({
     params,
@@ -72,6 +73,15 @@ export default async function RequestOverviewPage({
                 <div className="space-y-6">
                     {/* Group Trip Widget */}
                     <GroupTripInfo request={request} slug={slug} />
+
+                    {/* Collaborators Widget */}
+                    <CollaboratorManager
+                        requestId={requestId}
+                        initialCollaborators={request.collaborators}
+                        isOwner={request.userId === userId}
+                        isAdmin={session?.user?.role === 'COMPANY_ADMIN' || session?.user?.role === 'SUPER_ADMIN'}
+                        currentUserId={userId}
+                    />
 
                     {/* Documents Widget */}
                     <div className="p-6 rounded-3xl bg-indigo-900 text-white shadow-lg overflow-hidden relative min-h-[200px] flex flex-col justify-between">
