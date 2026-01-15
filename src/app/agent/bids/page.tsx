@@ -14,6 +14,7 @@ import { BidsFilter } from "./_components/bids-filter";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { getIntegratedCompanies } from "./actions";
 import { parseMoney, formatMoney } from "@/lib/types/money";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Location {
     city?: string;
@@ -103,7 +104,6 @@ export default async function BidsPage({ searchParams }: PageProps) {
             {
                 OR: [
                     { title: { contains: query, mode: "insensitive" } },
-                    // { destination: { contains: query, mode: "insensitive" } }, // Disabled due to JSON change
                 ]
             }
         ];
@@ -163,39 +163,55 @@ export default async function BidsPage({ searchParams }: PageProps) {
                         const isBidSubmitted = !!myBid;
 
                         return (
-                            <Link key={req.id} href={`/agent/bids/${req.id}`} className="block group">
-                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl hover:shadow-md hover:ring-indigo-100 transition-all duration-300">
+                            <Link key={req.id} href={`/agent/bids/${req.id}`} className="block group min-w-0">
+                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl hover:shadow-md hover:ring-indigo-100 transition-all duration-300 overflow-hidden">
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="space-y-3">
+                                            <div className="space-y-3 min-w-0 flex-1">
                                                 <div className="flex items-center gap-3 flex-wrap">
-                                                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                        {req.title}
-                                                    </h3>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors truncate max-w-full">
+                                                                {req.title}
+                                                            </h3>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{req.title}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                     {isBidSubmitted ? (
                                                         <Badge variant="secondary" className={`
                                                             ${myBid.status === 'PENDING' ? 'bg-amber-100 text-amber-800' : ''}
                                                             ${myBid.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-800' : ''}
                                                             ${myBid.status === 'REJECTED' ? 'bg-red-100 text-red-800' : ''}
-                                                            font-bold
+                                                            font-bold shrink-0
                                                         `}>
                                                             {myBid.status === 'PENDING' && `Bid: ${formatMoney(parseMoney(myBid.amount))}`}
                                                             {myBid.status === 'ACCEPTED' && `Won: ${formatMoney(parseMoney(myBid.amount))}`}
                                                             {myBid.status === 'REJECTED' && 'Bid Rejected'}
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50 font-bold">
+                                                        <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50 font-bold shrink-0">
                                                             Open Opportunity
                                                         </Badge>
                                                     )}
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                    <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
+                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500 shrink-0">
                                                             <MapPin size={14} />
                                                         </div>
-                                                        {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="truncate">
+                                                                    {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Check, Clock, X, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { type ApprovalStepMetadata } from "@/lib/types/auto-approval-policy";
 
 interface ApprovalStep {
     id: string;
@@ -27,6 +28,7 @@ interface ApprovalStep {
     }>;
     createdAt: Date;
     updatedAt: Date;
+    metadata?: ApprovalStepMetadata;
 }
 
 interface WorkflowProgressTrackerProps {
@@ -138,6 +140,19 @@ export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps)
                                                 ? 'All approvers must approve'
                                                 : 'Any approver can approve'}
                                         </p>
+
+                                        {/* Auto-approval Metadata */}
+                                        {step.metadata?.autoApproved && (
+                                            <div className="mb-4 p-3 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+                                                <div className="flex items-center gap-2 text-emerald-700 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="text-xs font-black uppercase tracking-wider">System Auto-Approval</span>
+                                                </div>
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">
+                                                    {step.metadata.reason || "This step was automatically approved by the system."}
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {/* Approvers */}
                                         <div className="space-y-3">

@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { cn, formatStatus } from "@/lib/utils";
 import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests, getExportData } from "../../actions";
 import { generatePDF } from "@/lib/utils/export";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Request {
     id: string;
@@ -302,20 +303,27 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             />
                                         </td>
                                         <td className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform overflow-hidden ring-2 ring-white">
+                                            <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform overflow-hidden ring-2 ring-white shrink-0">
                                                     {req.userAvatar ? (
                                                         <Image src={req.userAvatar} alt="" width={48} height={48} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <span className="font-black text-lg">{req.userName[0]}</span>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <h4 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{req.title}</h4>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase">{req.userName}</span>
-                                                        <span className="text-gray-300">•</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase">{req.destination}</span>
+                                                <div className="min-w-0 flex-1">
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <h4 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors truncate">{req.title}</h4>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{req.title}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <div className="flex items-center gap-2 mt-1 min-w-0">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase truncate">{req.userName}</span>
+                                                        <span className="text-gray-300 shrink-0">•</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase truncate">{req.destination}</span>
                                                     </div>
                                                 </div>
                                             </div>

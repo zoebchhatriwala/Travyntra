@@ -12,6 +12,8 @@ import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 interface TaxItem {
     label: string;
     value: number;
@@ -90,9 +92,16 @@ export default async function RequestDetailsPage({
         <div className="grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
-                    <div className="flex items-start justify-between mb-6">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2">{request.title}</h1>
+                    <div className="flex items-start justify-between mb-6 gap-4">
+                        <div className="min-w-0 flex-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <h1 className="text-2xl font-bold text-gray-900 mb-2 truncate pr-2">{request.title}</h1>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{request.title}</p>
+                                </TooltipContent>
+                            </Tooltip>
                             <div className="flex items-center gap-4 text-sm text-gray-600">
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-full">
                                     <Building2 size={14} />
@@ -104,17 +113,26 @@ export default async function RequestDetailsPage({
                                 </span>
                             </div>
                         </div>
-                        <Badge variant="outline" className="text-sm px-3 py-1">
+                        <Badge variant="outline" className="text-sm px-3 py-1 shrink-0">
                             {request.status}
                         </Badge>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-6 mb-8">
-                        <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1">
+                        <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1 overflow-hidden">
                             <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Destination</span>
-                            <div className="flex items-center gap-2 text-gray-900 font-medium">
-                                <MapPin size={18} className="text-indigo-500" />
-                                {(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown Destination"}
+                            <div className="flex items-center gap-2 text-gray-900 font-medium min-w-0">
+                                <MapPin size={18} className="text-indigo-500 shrink-0" />
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="truncate">
+                                            {(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown Destination"}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown Destination"}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
                         <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1">
@@ -130,7 +148,7 @@ export default async function RequestDetailsPage({
                         <h3 className="font-semibold text-gray-900">Trip Details & Preferences</h3>
                         <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50 p-6 rounded-lg">
                             {request.purpose && (
-                                <p><strong>Purpose:</strong> {request.purpose}</p>
+                                <p className="break-words whitespace-pre-wrap"><strong>Purpose:</strong> {request.purpose}</p>
                             )}
                             {/* Render JSON preferences if needed */}
                             {(() => {
@@ -149,7 +167,7 @@ export default async function RequestDetailsPage({
                                     if (!content) return null;
 
                                     const renderedContent = typeof content === 'string' ? content : (
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 break-words">
                                             {content.from && <p><strong>From:</strong> {content.from}</p>}
                                             {content.to && <p><strong>To:</strong> {content.to}</p>}
                                             {content.pickup && (

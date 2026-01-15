@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { Prisma, ApprovalStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
@@ -367,15 +367,6 @@ export async function createTripRequest(data: {
             }
         }
 
-        // Fetch company workflow
-        const workflow = await prisma.approvalWorkflow.findUnique({
-            where: { companyId: session.user.companyId },
-            include: {
-                steps: {
-                    orderBy: { order: 'asc' }
-                }
-            }
-        });
 
         // Create the trip request
         const request = await prisma.tripRequest.create({
@@ -391,7 +382,7 @@ export async function createTripRequest(data: {
                 preferences: data.preferences ?? {},
                 isGroup: data.isGroup || false,
                 parentTripId: data.parentTripId || null,
-                status: workflow && workflow.steps.length > 0 ? 'PENDING_COMPANY_APPROVAL' : 'DRAFT',
+                status: 'DRAFT', // WorkflowEngine will update this
             }
         });
 
@@ -404,57 +395,9 @@ export async function createTripRequest(data: {
             }
         });
 
-        // If workflow exists, create approval steps
-        if (workflow && workflow.steps.length > 0) {
-            // Re-fetch steps to ensure correct ordering and include approvers for notification
-            const stepsWithApprovers = await prisma.workflowStep.findMany({
-                where: { workflowId: workflow.id, deletedAt: null },
-                orderBy: { order: 'asc' },
-                include: { approvers: { select: { id: true, name: true } } }
-            });
-
-            await prisma.requestApprovalStep.createMany({
-                data: stepsWithApprovers.map((step, index) => ({
-                    requestId: request.id,
-                    stepId: step.id,
-                    status: index === 0 ? ApprovalStatus.PENDING : ApprovalStatus.WAITING
-                }))
-            });
-
-            // Notify Step 1 approvers
-            const firstStep = stepsWithApprovers[0];
-            if (firstStep) {
-                const { createNotification } = await import("@/lib/notifications");
-
-                await Promise.all(
-                    firstStep.approvers.map(approver =>
-                        createNotification({
-                            userId: approver.id,
-                            title: "New Approval Request",
-                            message: `"${data.title}" requires your approval (${firstStep.name})`,
-                            type: "INFO",
-                            link: `/company/${session.user.companySlug}/dashboard/requests/${request.id}`,
-                            sendEmail: true
-                        })
-                    )
-                );
-            }
-
-            // Create activity log for workflow initiation
-            await prisma.activityLog.create({
-                data: {
-                    companyId: session.user.companyId,
-                    actorId: session.user.id,
-                    action: 'REQUEST_CREATED',
-                    description: `Trip request "${data.title}" created and sent for approval`,
-                    metadata: {
-                        requestId: request.id,
-                        workflowId: workflow.id,
-                        stepsCount: workflow.steps.length
-                    }
-                }
-            });
-        }
+        // Initialize the approval workflow
+        const { WorkflowEngine } = await import("@/lib/workflow-engine");
+        await WorkflowEngine.startWorkflow(request.id);
 
         revalidatePath(`/company/${session.user.companySlug}/dashboard`);
         return { success: true, requestId: request.id };
@@ -550,8 +493,8 @@ export async function getTripRequest(requestId: string) {
             if (amount) {
                 // Calculate total including taxes for the conversion preview
                 let totalDecimal = moneyToDecimal(amount);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const taxes = ((bid as any).taxes as any[]) || [];
+                const bidWithTaxes = bid as unknown as { taxes?: { type: string; value: number }[] };
+                const taxes = bidWithTaxes.taxes || [];
 
                 if (taxes.length > 0) {
                     taxes.forEach(t => {
@@ -972,6 +915,10 @@ export async function updateTripRequest(requestId: string, data: {
         });
 
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+
+        // Revalidate auto-approval if the request was previously auto-approved
+        const { WorkflowEngine } = await import("@/lib/workflow-engine");
+        await WorkflowEngine.handleRequestUpdate(requestId, session.user.id);
 
         return { success: true };
     } catch (e) {

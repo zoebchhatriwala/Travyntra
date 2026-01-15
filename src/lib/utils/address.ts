@@ -2,6 +2,8 @@
  * Address formatting utilities for consistent address display across the application.
  */
 
+import { countries } from "countries-list";
+
 /**
  * Full address with all required fields (used for manual address entry)
  */
@@ -78,29 +80,40 @@ export function formatAddress(
 
     const parts: string[] = [];
 
+    // Get trimmed address components
+    const street = address.street?.trim();
+    const city = address.city?.trim();
+    const state = address.state?.trim();
+    const zipcode = address.zipcode?.trim();
+    const countryCode = address.country?.trim();
+
     // Add street if requested and available
-    if (includeStreet && address.street?.trim()) {
-        parts.push(address.street.trim());
+    if (includeStreet && street) {
+        parts.push(street);
     }
 
     // Always include city if available
-    if (address.city?.trim()) {
-        parts.push(address.city.trim());
+    if (city) {
+        parts.push(city);
     }
 
     // Add state if requested and available
-    if (includeState && address.state?.trim()) {
-        parts.push(address.state.trim());
+    if (includeState && state) {
+        parts.push(state);
     }
 
     // Add zipcode if requested and available
-    if (includeZipcode && address.zipcode?.trim()) {
-        parts.push(address.zipcode.trim());
+    if (includeZipcode && zipcode) {
+        parts.push(zipcode);
     }
 
     // Add country if requested and available
-    if (includeCountry && address.country?.trim()) {
-        parts.push(address.country.trim());
+    if (includeCountry && countryCode) {
+        // Find the country name
+        const country = countries[countryCode as unknown as keyof typeof countries];
+
+        // Add the country name to the parts array
+        parts.push(country?.name ?? countryCode);
     }
 
     // If no parts were added, return fallback

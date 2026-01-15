@@ -6,8 +6,10 @@ import { Trash2 } from "lucide-react";
 import {
     type AutoApprovalPolicy,
     type AutoApprovalRule,
+    AutoApprovalRuleType,
 } from "@/lib/types/auto-approval-policy";
 import { getAutoApprovalPolicy, updateAutoApprovalPolicy } from "./actions";
+import { countries } from "countries-list";
 
 export default function AutoApprovalSettings() {
     const router = useRouter();
@@ -63,21 +65,21 @@ export default function AutoApprovalSettings() {
         setPolicy({ ...policy, enabled: !policy.enabled });
     }
 
-    function addRule(type: "BUDGET_THRESHOLD" | "DOMESTIC_TRIP" | "COMBINED") {
+    function addRule(type: AutoApprovalRuleType) {
         if (!policy) return;
 
         const newRule: AutoApprovalRule = {
             id: `rule-${Date.now()}`,
-            name: type === "BUDGET_THRESHOLD"
+            name: type === AutoApprovalRuleType.BUDGET_THRESHOLD
                 ? "Budget Threshold Rule"
-                : type === "DOMESTIC_TRIP"
+                : type === AutoApprovalRuleType.DOMESTIC_TRIP
                     ? "Domestic Trip Rule"
                     : "Combined Rule",
             enabled: true,
             type,
-            config: type === "BUDGET_THRESHOLD"
+            config: type === AutoApprovalRuleType.BUDGET_THRESHOLD
                 ? { maxAmount: 50000, currencyCode: companyCurrency }
-                : type === "DOMESTIC_TRIP"
+                : type === AutoApprovalRuleType.DOMESTIC_TRIP
                     ? { enabled: true }
                     : {
                         budget: { maxAmount: 50000, currencyCode: companyCurrency },
@@ -206,13 +208,13 @@ export default function AutoApprovalSettings() {
 
                         <div className="flex gap-3 mt-6 flex-wrap">
                             <button
-                                onClick={() => addRule("BUDGET_THRESHOLD")}
+                                onClick={() => addRule(AutoApprovalRuleType.BUDGET_THRESHOLD)}
                                 className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all"
                             >
                                 + Budget Threshold
                             </button>
                             <button
-                                onClick={() => addRule("DOMESTIC_TRIP")}
+                                onClick={() => addRule(AutoApprovalRuleType.DOMESTIC_TRIP)}
                                 disabled={!companyCountry}
                                 className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={!companyCountry ? "Set company country in settings first" : ""}
@@ -220,7 +222,7 @@ export default function AutoApprovalSettings() {
                                 + Domestic Trip
                             </button>
                             <button
-                                onClick={() => addRule("COMBINED")}
+                                onClick={() => addRule(AutoApprovalRuleType.COMBINED)}
                                 disabled={!companyCountry}
                                 className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={!companyCountry ? "Set company country in settings first" : ""}
@@ -255,6 +257,7 @@ interface RuleCardProps {
 }
 
 function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }: RuleCardProps) {
+    const country = countries[companyCountry as keyof typeof countries];
     return (
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-4 hover:shadow-md transition-all">
             {/* Header */}
@@ -288,13 +291,13 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
 
             {/* Type Badge */}
             <div className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-4">
-                {rule.type === "BUDGET_THRESHOLD" && "💰 Budget Threshold"}
-                {rule.type === "DOMESTIC_TRIP" && "🏠 Domestic Trip"}
-                {rule.type === "COMBINED" && "🔗 Combined Rule"}
+                {rule.type === AutoApprovalRuleType.BUDGET_THRESHOLD && "💰 Budget Threshold"}
+                {rule.type === AutoApprovalRuleType.DOMESTIC_TRIP && "🏠 Domestic Trip"}
+                {rule.type === AutoApprovalRuleType.COMBINED && "🔗 Combined Rule"}
             </div>
 
             {/* Configuration */}
-            {rule.type === "BUDGET_THRESHOLD" && (
+            {rule.type === AutoApprovalRuleType.BUDGET_THRESHOLD && (
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Maximum Budget
@@ -322,13 +325,13 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
                 </div>
             )}
 
-            {rule.type === "DOMESTIC_TRIP" && (
+            {rule.type === AutoApprovalRuleType.DOMESTIC_TRIP && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
-                    Auto-approves trips within {companyCountry || "your country"}
+                    Auto-approves trips within {country?.name || "your country"}
                 </div>
             )}
 
-            {rule.type === "COMBINED" && (
+            {rule.type === AutoApprovalRuleType.COMBINED && (
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">

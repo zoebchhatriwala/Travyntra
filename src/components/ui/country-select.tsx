@@ -21,7 +21,7 @@ export function CountrySelect({
     const options = [
         { value: "", label: "No country selected" },
         ...COUNTRIES.map((country) => ({
-            value: country.name,
+            value: country.code,
             label: `${country.emoji} ${country.name}`,
         })),
     ]

@@ -1,7 +1,10 @@
-
 import { prisma } from "./prisma";
-import { RequestStatus, ApprovalType, ApprovalStatus } from "@prisma/client";
+import { RequestStatus, ApprovalType, ApprovalStatus, Prisma } from "@prisma/client";
 import { AutoApprovalEngine } from "./auto-approval-engine";
+import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "./types/auto-approval-policy";
+import { createNotification } from "./notifications";
+import { AgentBidStatus } from "./enums";
+import { UserRole } from "./constants/roles";
 
 /**
  * Engine responsible for managing the lifecycle and state transitions of the trip request approval workflow.
@@ -58,18 +61,42 @@ export class WorkflowEngine {
             throw new Error(errorMsg);
         }
 
+        // Retrieve the company workflow from the request object
+        const companyData = request.company;
+        const workflow = companyData.workflow;
+        const workflowSteps = workflow?.steps || [];
+
         // Check if the request qualifies for auto-approval
         const autoApprovalEval = await AutoApprovalEngine.evaluateRequest(requestId);
 
-        if (autoApprovalEval.shouldAutoApprove) {
+        if (autoApprovalEval.shouldAutoApprove && workflowSteps.length > 0) {
             // Define the auto-approved status
-            const autoApprovedStatus = RequestStatus.PENDING_AGENT_ACTION;
+            const autoApprovedStatus = RequestStatus.APPROVED;
 
             // Update the request status to auto-approved
             await prisma.tripRequest.update({
                 where: { id: requestId },
                 data: { status: autoApprovedStatus }
             });
+
+            // Create all workflow steps as APPROVED for the audit trail
+            for (const step of workflowSteps) {
+                const metadata: ApprovalStepMetadata = {
+                    autoApproved: true,
+                    ruleType: autoApprovalEval.matchedRule?.type,
+                    ruleConfig: autoApprovalEval.matchedRule?.config,
+                    reason: autoApprovalEval.reason
+                };
+
+                await prisma.requestApprovalStep.create({
+                    data: {
+                        requestId: requestId,
+                        stepId: step.id,
+                        status: ApprovalStatus.APPROVED,
+                        metadata: metadata as unknown as Prisma.InputJsonValue
+                    }
+                });
+            }
 
             // Log the auto-approval event
             const autoApprovalComment = `✅ Auto-approved: ${autoApprovalEval.reason}`;
@@ -92,56 +119,64 @@ export class WorkflowEngine {
                 }
             });
 
-            // Exit early - no need to process workflow steps
+            // Exit early - workflow steps are already processed
             return;
         }
-
-        // Retrieve the company workflow from the request object
-        const companyData = request.company;
-        const workflow = companyData.workflow;
 
         // Check if a workflow is defined
         const hasWorkflow = !!workflow;
         // Check for existence of steps
-        const stepsExist = workflow?.steps;
-        // Determine if there are executable steps
-        const hasSteps = stepsExist && workflow.steps.length > 0;
+        const hasSteps = workflowSteps.length > 0;
         // Evaluate if the workflow should proceed
         const shouldExecuteWorkflow = hasWorkflow && hasSteps;
 
         // If no valid workflow is found
         if (!shouldExecuteWorkflow) {
+            console.log(`[WorkflowEngine] No workflow found or no steps defined for company. Moving to Approved.`);
             // Define the new status for the request
-            const nextStatus = RequestStatus.PENDING_AGENT_ACTION;
+            const nextStatus = RequestStatus.APPROVED;
 
             // Define the update data for the request
             const statusUpdateData = {
                 status: nextStatus
             };
 
-            // Update the request status directly to pending agent action
+            // Update the request status directly to approved
             await prisma.tripRequest.update({
                 where: queryWhere,
                 data: statusUpdateData
+            });
+
+            // Log activity for immediate approval (no workflow)
+            await prisma.activityLog.create({
+                data: {
+                    companyId: request.companyId,
+                    actorId: request.userId,
+                    action: 'REQUEST_CREATED',
+                    description: `Trip request "${request.title}" created and ready for agency bidding`,
+                    metadata: {
+                        requestId: request.id,
+                        workflowFound: false
+                    }
+                }
             });
 
             // Exit the function
             return;
         }
 
-        // Get the list of workflow steps from the workflow object
-        const workflowSteps = workflow.steps;
-
         // Iterate through each step in the workflow to initialize it for the request
-        for (const step of workflowSteps) {
-            // Extract the unique identifier for the step
+        console.log(`[WorkflowEngine] Starting manual approval sequence for ${requestId}. Steps: ${workflowSteps.length}`);
+        for (let i = 0; i < workflowSteps.length; i++) {
+            const step = workflowSteps[i];
             const currentStepId = step.id;
 
             // Define the data for the new request approval step record
+            // Only the first step starts as PENDING, others as WAITING
             const approvalStepData = {
                 requestId: request.id,
                 stepId: currentStepId,
-                status: ApprovalStatus.PENDING
+                status: i === 0 ? ApprovalStatus.PENDING : ApprovalStatus.WAITING
             };
 
             // Create the record in the database
@@ -193,33 +228,49 @@ export class WorkflowEngine {
             // Define the status for company approval
             const companyApprovalStatus = RequestStatus.PENDING_COMPANY_APPROVAL;
 
-            // Define the request update parameters
-            const updateRequestParams = {
-                status: companyApprovalStatus
-            };
-
             // Update the main trip request status
             await prisma.tripRequest.update({
                 where: queryWhere,
-                data: updateRequestParams
+                data: { status: companyApprovalStatus }
             });
 
-            // Define the workflow action logging data
-            const logActorId = request.userId;
-            const logRequestId = request.id;
-            const logActionType = "SUBMITTED";
-            const logCommentText = "Request submitted for approval.";
-
-            const workflowActionData = {
-                requestId: logRequestId,
-                actorId: logActorId,
-                action: logActionType,
-                comment: logCommentText
-            };
-
-            // Record the submission event in the workflow action log
+            // Record the submission event
             await prisma.workflowAction.create({
-                data: workflowActionData
+                data: {
+                    requestId: request.id,
+                    actorId: request.userId,
+                    action: "SUBMITTED",
+                    comment: "Request submitted for approval."
+                }
+            });
+
+            // Notify Step 1 approvers
+            await Promise.all(
+                firstStepApprovers.map(approver =>
+                    createNotification({
+                        userId: approver.id,
+                        title: "New Approval Request",
+                        message: `"${request.title}" requires your approval (${firstStep.name})`,
+                        type: "INFO",
+                        link: `/company/${request.company.slug}/dashboard/requests/${request.id}`,
+                        sendEmail: true
+                    })
+                )
+            );
+
+            // Log activity for manual workflow creation
+            await prisma.activityLog.create({
+                data: {
+                    companyId: request.companyId,
+                    actorId: request.userId,
+                    action: 'REQUEST_CREATED',
+                    description: `Trip request "${request.title}" created and sent for approval`,
+                    metadata: {
+                        requestId: request.id,
+                        workflowId: workflow.id,
+                        stepsCount: workflowSteps.length
+                    }
+                }
             });
         }
     }
@@ -505,7 +556,7 @@ export class WorkflowEngine {
             }
         } else {
             // Handle completion of the final approval step
-            const finalRequestStatus = RequestStatus.PENDING_AGENT_ACTION;
+            const finalRequestStatus = RequestStatus.APPROVED;
 
             // Define update parameters for final approval
             const finalUpdateParams = {
@@ -534,6 +585,312 @@ export class WorkflowEngine {
             // Record the final approval event in the workflow log
             await prisma.workflowAction.create({
                 data: finalActionPayload
+            });
+        }
+    }
+
+    /**
+     * Handles updates to a trip request, revalidating auto-approval if necessary.
+     * 
+     * @param {string} requestId - The ID of the updated trip request.
+     * @param {string} actorId - The ID of the user who made the update.
+     * @returns {Promise<void>}
+     */
+    static async handleRequestUpdate(requestId: string, actorId: string): Promise<void> {
+        // Fetch the request to check its current status
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            include: {
+                approvalSteps: {
+                    include: {
+                        step: true
+                    },
+                    orderBy: {
+                        step: {
+                            order: 'asc'
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!request) return;
+
+        // Any update to a request that was previously approved through an auto-approval step 
+        // must trigger revalidation against the original auto-approval rules recorded in the approval steps.
+        const autoApprovedStep = request.approvalSteps.find(s => {
+            const metadata = s.metadata as unknown as ApprovalStepMetadata | null;
+            return metadata?.autoApproved === true;
+        });
+
+        // Re-evaluate the request against the company's current policies
+        const evaluation = await AutoApprovalEngine.evaluateRequest(requestId);
+
+        if (autoApprovedStep) {
+            // If it was already auto-approved but no longer qualifies, revoke it
+            if (!evaluation.shouldAutoApprove) {
+                await this.revokeApproval(requestId, actorId, evaluation.reason);
+            }
+        } else {
+            // If it wasn't auto-approved but now it qualifies, apply auto-approval
+            // Only if it's currently in PENDING_COMPANY_APPROVAL status
+            if (evaluation.shouldAutoApprove && request.status === RequestStatus.PENDING_COMPANY_APPROVAL) {
+                await this.applyAutoApproval(requestId, actorId, evaluation);
+            }
+        }
+    }
+
+    /**
+     * Applies auto-approval to a request that is currently in the manual workflow.
+     */
+    private static async applyAutoApproval(
+        requestId: string,
+        actorId: string,
+        evaluation: AutoApprovalEvaluation
+    ): Promise<void> {
+        // 1. Mark all approval steps as APPROVED with metadata
+        const metadata: ApprovalStepMetadata = {
+            autoApproved: true,
+            ruleType: evaluation.matchedRule?.type,
+            ruleConfig: evaluation.matchedRule?.config,
+            reason: evaluation.reason
+        };
+
+        await prisma.requestApprovalStep.updateMany({
+            where: { requestId },
+            data: {
+                status: ApprovalStatus.APPROVED,
+                metadata: metadata as unknown as Prisma.InputJsonValue
+            }
+        });
+
+        // 2. Clear all user approvals
+        await prisma.userApproval.deleteMany({
+            where: {
+                requestApprovalStep: {
+                    requestId
+                }
+            }
+        });
+
+        // 3. Update request status
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: { status: RequestStatus.APPROVED }
+        });
+
+        // 4. Log action
+        await prisma.workflowAction.create({
+            data: {
+                requestId,
+                actorId,
+                action: "AUTO_APPROVED",
+                comment: `✅ Auto-approved after update: ${evaluation.reason}`
+            }
+        });
+
+        // 5. Send message
+        await prisma.message.create({
+            data: {
+                requestId,
+                senderId: actorId,
+                content: `✅ **Auto-Approved**: This request now qualifies for automatic approval based on the update.\n\nReason: ${evaluation.reason}`
+            }
+        });
+    }
+
+    /**
+     * Revokes previous approval for a request and reverts it to the pending approval state.
+     * 
+     * @param {string} requestId - The ID of the trip request.
+     * @param {string} actorId - The ID of the user revoking the approval.
+     * @param {string} reason - The reason for revocation.
+     * @returns {Promise<void>}
+     */
+    private static async revokeApproval(requestId: string, actorId: string, reason: string): Promise<void> {
+        // Fetch the request and its workflow steps
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            include: {
+                company: {
+                    include: {
+                        workflow: {
+                            include: {
+                                steps: {
+                                    orderBy: { order: 'asc' }
+                                }
+                            }
+                        }
+                    }
+                },
+                approvalSteps: true
+            }
+        });
+
+        if (!request) return;
+
+        // 1. Revert request status to pending company approval
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                status: RequestStatus.PENDING_COMPANY_APPROVAL,
+                assignedAgentId: null, // Clear assignment if any
+                cost: Prisma.JsonNull // Clear cost if any
+            }
+        });
+
+        // 2. Reset approval steps
+        // The first step becomes PENDING, others become WAITING
+        const sortedSteps = request.company.workflow?.steps || [];
+
+        for (const step of sortedSteps) {
+            const isFirst = step.order === sortedSteps[0].order;
+
+            await prisma.requestApprovalStep.update({
+                where: {
+                    requestId_stepId: {
+                        requestId,
+                        stepId: step.id
+                    }
+                },
+                data: {
+                    status: isFirst ? ApprovalStatus.PENDING : ApprovalStatus.WAITING,
+                    metadata: Prisma.JsonNull
+                }
+            });
+
+            // If it's the first step, we need to create/reset user approvals
+            if (isFirst) {
+                // Clear existing user approvals for this step
+                await prisma.userApproval.deleteMany({
+                    where: {
+                        requestApprovalStep: {
+                            requestId,
+                            stepId: step.id
+                        }
+                    }
+                });
+
+                // Re-fetch step with approvers
+                const stepWithApprovers = await prisma.workflowStep.findUnique({
+                    where: { id: step.id },
+                    include: { approvers: true }
+                });
+
+                if (stepWithApprovers) {
+                    const requestStep = await prisma.requestApprovalStep.findUnique({
+                        where: { requestId_stepId: { requestId, stepId: step.id } }
+                    });
+
+                    if (requestStep) {
+                        await prisma.userApproval.createMany({
+                            data: stepWithApprovers.approvers.map(approver => ({
+                                requestApprovalStepId: requestStep.id,
+                                userId: approver.id,
+                                status: ApprovalStatus.PENDING
+                            }))
+                        });
+                    }
+                }
+            } else {
+                // Clear existing user approvals for non-first steps
+                await prisma.userApproval.deleteMany({
+                    where: {
+                        requestApprovalStep: {
+                            requestId,
+                            stepId: step.id
+                        }
+                    }
+                });
+            }
+        }
+
+        // 3. Log action
+        await prisma.workflowAction.create({
+            data: {
+                requestId,
+                actorId,
+                action: "AUTO_APPROVAL_REVOKED", // Using string literal as enum might not have this
+                comment: `⚠️ Auto-approval revoked: Request update triggered re-evaluation. Reason: ${reason}`
+            }
+        });
+
+        // 4. Send message to system
+        await prisma.message.create({
+            data: {
+                requestId,
+                senderId: actorId,
+                content: `⚠️ **Approval Revoked**: This request no longer qualifies for automatic approval.\n\nReason: ${reason}\n\nThe request has been reset to the standard approval workflow.`
+            }
+        });
+
+        // 5. Notify the approvers of the first step
+        const firstStep = sortedSteps[0];
+        if (firstStep) {
+            const stepWithApprovers = await prisma.workflowStep.findUnique({
+                where: { id: firstStep.id },
+                include: { approvers: true }
+            });
+
+            if (stepWithApprovers && stepWithApprovers.approvers.length > 0) {
+                await Promise.all(stepWithApprovers.approvers.map(approver =>
+                    createNotification({
+                        userId: approver.id,
+                        title: "Approval Required",
+                        message: `A request "${request.title}" has been updated and now requires your approval.`,
+                        type: "WARNING",
+                        link: `/company/${request.company.slug}/dashboard/requests/${requestId}`,
+                        sendEmail: true
+                    })
+                ));
+            }
+        }
+
+
+        // 6. Make the bids PENDING, and notify the agents
+        const approvedBids = await prisma.agentBid.findMany({
+            where: {
+                requestId,
+                status: AgentBidStatus.ACCEPTED
+            }
+        });
+
+        // Update the status of the bids to PENDING
+        if (approvedBids.length > 0) {
+            // Notify the Agent that their bid was 
+            for (const bid of approvedBids) {
+                // Find users of the agent company to notify
+                const agentAdmins = await prisma.user.findMany({
+                    where: {
+                        companyId: bid.agentId,
+                        role: UserRole.TRAVEL_AGENT,
+                        isActive: true
+                    }
+                });
+
+                // Create notification for each agent user
+                for (const user of agentAdmins) {
+                    await createNotification({
+                        userId: user.id,
+                        title: "Bid Status Update",
+                        message: `The approval of your bid for "${request.title}" has been reversed because the request approval was revoked.`,
+                        type: "WARNING",
+                        link: `/agent/bids/${bid.id}`,
+                        sendEmail: true
+                    });
+                }
+            }
+
+            // Update the status of the bids to PENDING
+            await prisma.agentBid.updateMany({
+                where: {
+                    id: {
+                        in: approvedBids.map(bid => bid.id)
+                    }
+                },
+                data: {
+                    status: AgentBidStatus.PENDING
+                }
             });
         }
     }

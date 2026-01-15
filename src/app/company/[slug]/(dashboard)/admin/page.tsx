@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { format } from "date-fns";
 import { authOptions } from "@/lib/auth-options";
@@ -112,20 +113,27 @@ export default async function CompanyAdminPage({
                                     {stats.recentRequests.map((req) => (
                                         <Link key={req.id} href={`/company/${slug}/dashboard/requests/${req.id}`}>
                                             <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-sm transition-all cursor-pointer">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
+                                                <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden shrink-0">
                                                         {req.userAvatar ? (
                                                             <Image src={req.userAvatar} alt={req.userName} width={40} height={40} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <Ship size={18} />
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm font-black text-gray-900 leading-none">{req.title}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{req.userName} • {format(new Date(req.createdAt), 'MMM dd, yyyy')}</p>
+                                                    <div className="min-w-0 flex-1">
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <p className="text-sm font-black text-gray-900 leading-none truncate">{req.title}</p>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{req.title}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase truncate">{req.userName} • {format(new Date(req.createdAt), 'MMM dd, yyyy')}</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-4 shrink-0">
                                                     <div className="text-right hidden sm:block">
                                                         <p className="text-xs font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Budget</p>

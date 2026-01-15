@@ -12,6 +12,7 @@ import { RecentMessages } from "./_components/recent-messages";
 import { parseMoney, formatMoney } from "@/lib/types/money";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Location {
     city?: string;
@@ -44,26 +45,33 @@ export default async function FulfillmentDetailPage({
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
                     <Link
                         href="/agent/fulfillment"
-                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors shrink-0"
                     >
                         <ArrowLeft size={20} className="text-gray-600" />
                     </Link>
-                    <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">{request.title}</h1>
-                        <div className="flex items-center gap-3 mt-1">
+                    <div className="min-w-0 flex-1">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <h1 className="text-2xl font-black text-gray-900 tracking-tight truncate">{request.title}</h1>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{request.title}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <div className="flex items-center gap-3 mt-1 min-w-0">
                             <Badge variant="secondary" className={`
                                 ${request.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : ''}
                                 ${request.status === 'BOOKED' ? 'bg-blue-100 text-blue-800' : ''}
                                 ${request.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : ''}
-                                font-bold
+                                font-bold shrink-0
                             `}>
                                 {request.status.replace(/_/g, ' ')}
                             </Badge>
                             {myBid && (
-                                <span className="text-sm font-bold text-emerald-600">
+                                <span className="text-sm font-bold text-emerald-600 truncate">
                                     Won: {formatMoney(parseMoney(myBid.amount))}
                                 </span>
                             )}
@@ -96,7 +104,14 @@ export default async function FulfillmentDetailPage({
                                     </div>
                                     <div>
                                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Destination</p>
-                                        <p className="font-semibold text-gray-900">{(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <p className="font-semibold text-gray-900 truncate">{(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{(request.destination as unknown as Location)?.city || (request.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -133,7 +148,7 @@ export default async function FulfillmentDetailPage({
                             {request.purpose && (
                                 <div className="mt-6 pt-6 border-t border-gray-100">
                                     <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Purpose</p>
-                                    <p className="text-sm text-gray-600">{request.purpose}</p>
+                                    <p className="text-sm text-gray-600 break-words whitespace-pre-wrap">{request.purpose}</p>
                                 </div>
                             )}
                         </CardContent>

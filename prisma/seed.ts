@@ -143,7 +143,7 @@ async function main() {
             type: CompanyType.AGENT,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
-            country: "United Kingdom",
+            country: "UK",
             currency: "GBP",
             logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=global-voyage`,
         }
@@ -180,10 +180,7 @@ async function main() {
     }
 
     // --- 2. CREATE CLIENT COMPANY ---
-    const clientCreationMsg = "Creating Client Company (USA Based)...";
-    console.log(clientCreationMsg);
-
-    // Seed the enterprise client company - USA Based
+    // Seed the enterprise client company
     const clientCompany = await prisma.company.create({
         data: {
             name: "Nebula Innovations",
@@ -192,9 +189,29 @@ async function main() {
             type: CompanyType.ENTERPRISE,
             status: CompanyStatus.ACTIVE,
             plan: SubscriptionPlan.ENTERPRISE,
-            country: "USA",
+            country: "US",
             currency: "USD",
             logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=nebula`,
+            policyThreshold: {
+                enabled: true,
+                rules: [
+                    {
+                        id: "rule-budget-1",
+                        name: "Budget Threshold Rule",
+                        enabled: true,
+                        type: "BUDGET_THRESHOLD",
+                        config: { maxAmount: 1000, currencyCode: "USD" }
+                    },
+                    {
+                        id: "rule-domestic-1",
+                        name: "Domestic Trip Rule",
+                        enabled: true,
+                        type: "DOMESTIC_TRIP",
+                        config: { enabled: true }
+                    }
+                ],
+                updatedAt: new Date().toISOString()
+            }
         }
     });
 
@@ -376,7 +393,7 @@ async function main() {
             // Define the destination object structure
             const destinationObj = {
                 city: destinationCity,
-                country: "Various",
+                country: "US",
                 formatted: destinationCity
             };
 
@@ -514,7 +531,10 @@ async function main() {
             userId: testEmployeeUser.id,
             companyId: clientCompany.id,
             title: "CES 2026 - Las Vegas",
-            destination: { city: "Las Vegas", country: "USA", formatted: "Las Vegas, NV, USA" },
+            destination: {
+                city: "Las Vegas",
+                country: "US",
+            },
             startDate: testStartDateObj,
             endDate: testEndDateObj,
             status: RequestStatus.PENDING_COMPANY_APPROVAL,
@@ -554,6 +574,50 @@ async function main() {
     const testWorkflowStepCount = relevantWorkflowSteps.length;
     const testSummaryConclusionMsg = `✓ Created test request "${testTripRequest.title}" with ${testWorkflowStepCount} approval steps`;
     console.log(testSummaryConclusionMsg);
+
+    // --- 3.6. CREATE AN AUTO-APPROVED REQUEST ---
+    const autoApprovedRequestMsg = "Creating an auto-approved request (Domestic trip)...";
+    console.log(autoApprovedRequestMsg);
+
+    const autoApprovedTrip = await prisma.tripRequest.create({
+        data: {
+            userId: testEmployeeUser.id,
+            companyId: clientCompany.id,
+            title: "Internal Strategy Meeting",
+            destination: { city: "New York", country: "US", },
+            startDate: new Date(Date.now() + (30 * millisecondsInDay)),
+            endDate: new Date(Date.now() + (32 * millisecondsInDay)),
+            status: RequestStatus.PENDING_AGENT_ACTION,
+            purpose: "Q1 Strategy planning with NYC team.",
+            budget: createMoney(500, "USD"),
+            preferences: { flight: "Economy", hotel: "Near NYC office" }
+        }
+    });
+
+    for (const step of relevantWorkflowSteps) {
+        await prisma.requestApprovalStep.create({
+            data: {
+                requestId: autoApprovedTrip.id,
+                stepId: step.id,
+                status: ApprovalStatus.APPROVED,
+                metadata: {
+                    autoApproved: true,
+                    ruleType: "DOMESTIC_TRIP",
+                    ruleConfig: { enabled: true },
+                    reason: "Domestic trip (USA) auto-approved by policy."
+                }
+            }
+        });
+    }
+
+    await prisma.workflowAction.create({
+        data: {
+            requestId: autoApprovedTrip.id,
+            actorId: testEmployeeUser.id,
+            action: "AUTO_APPROVED",
+            comment: "✅ Trip request auto-approved based on Domestic Trip policy."
+        }
+    });
 
     // --- 4. SUPER ADMIN ---
     const superAdminEmail = "admin@travyntra.com";

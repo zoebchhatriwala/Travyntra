@@ -83,6 +83,7 @@ export function Combobox({
                                         onChange(option.value)
                                         setOpen(false)
                                     }}
+                                    keywords={[option.label]}
                                     disabled={option.disabled ?? false}
                                     className="text-gray-900 data-[disabled]:opacity-100 cursor-pointer data-[disabled]:pointer-events-auto"
                                 >

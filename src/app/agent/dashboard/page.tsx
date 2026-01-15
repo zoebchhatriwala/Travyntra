@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { UserRole } from "@prisma/client";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Location {
     city?: string;
@@ -78,15 +79,33 @@ export default async function AgencyDashboard() {
                                 <Link key={req.id} href={`/agent/bids/${req.id}`} className="block group">
                                     <Card className="h-full hover:shadow-md transition-shadow">
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
-                                                {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                            <CardTitle className="text-sm font-medium truncate pr-2">
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="truncate block">
+                                                            {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </CardTitle>
-                                            <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+                                            <div className="h-8 w-8 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                                                 {req.company.name.substring(0, 2).toUpperCase()}
                                             </div>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="text-2xl font-bold truncate">{req.title}</div>
+                                            <div className="text-2xl font-bold truncate">
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="truncate block">{req.title}</span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{req.title}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
                                             <p className="text-xs text-muted-foreground mt-1">
                                                 {req.user.name} • {req.company.name}
                                             </p>

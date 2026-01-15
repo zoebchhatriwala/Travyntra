@@ -110,6 +110,7 @@ model TripRequest {
 model AgentBid {
   id        String      @id @default(uuid())
   requestId String
+  /// The ID of the agency company
   agentId   String
   amount    Json?
   taxes     Json?
@@ -215,6 +216,7 @@ model RequestApprovalStep {
   requestId String
   stepId    String
   status    ApprovalStatus @default(PENDING)
+  metadata  Json?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   request   TripRequest    @relation(fields: [requestId], references: [id])

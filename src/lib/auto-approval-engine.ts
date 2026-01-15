@@ -3,8 +3,11 @@ import { moneyToDecimal, type Money } from "./types/money";
 import {
     type AutoApprovalEvaluation,
     type AutoApprovalRule,
+    type RequestForEvaluation,
+    AutoApprovalRuleType,
     parseAutoApprovalPolicy,
 } from "./types/auto-approval-policy";
+import { Address } from "./utils/address";
 
 /**
  * Engine responsible for evaluating trip requests against auto-approval policies.
@@ -89,19 +92,18 @@ export class AutoApprovalEngine {
      * @returns {Promise<AutoApprovalEvaluation>} The evaluation result.
      */
     private static async evaluateRule(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        request: any,
+        request: RequestForEvaluation,
         rule: AutoApprovalRule,
         company: { currency: string; country: string | null }
     ): Promise<AutoApprovalEvaluation> {
         switch (rule.type) {
-            case "BUDGET_THRESHOLD":
+            case AutoApprovalRuleType.BUDGET_THRESHOLD:
                 return this.evaluateBudgetThreshold(request, rule);
 
-            case "DOMESTIC_TRIP":
+            case AutoApprovalRuleType.DOMESTIC_TRIP:
                 return this.evaluateDomesticTrip(request, rule, company.country);
 
-            case "COMBINED":
+            case AutoApprovalRuleType.COMBINED:
                 return this.evaluateCombinedRule(request, rule, company);
 
             default:
@@ -121,8 +123,7 @@ export class AutoApprovalEngine {
      * @returns {AutoApprovalEvaluation} The evaluation result.
      */
     private static evaluateBudgetThreshold(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        request: any,
+        request: RequestForEvaluation,
         rule: AutoApprovalRule
     ): AutoApprovalEvaluation {
         // Check if request has a budget
@@ -153,7 +154,7 @@ export class AutoApprovalEngine {
             return {
                 shouldAutoApprove: true,
                 matchedRule: rule,
-                reason: `Budget ${budgetAmount} ${budget.currencyCode} is within auto-approval threshold of ${config.maxAmount} ${config.currencyCode}`,
+                reason: `Budget ${budgetAmount} ${budget.currencyCode} is within company auto-approval limits`,
             };
         }
 
@@ -172,8 +173,7 @@ export class AutoApprovalEngine {
      * @returns {AutoApprovalEvaluation} The evaluation result.
      */
     private static evaluateDomesticTrip(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        request: any,
+        request: RequestForEvaluation,
         rule: AutoApprovalRule,
         companyCountry: string | null
     ): AutoApprovalEvaluation {
@@ -186,8 +186,11 @@ export class AutoApprovalEngine {
         }
 
         // Parse destination to extract country
-        const destination = request.destination as Record<string, unknown>;
-        const destinationCountry = destination?.country as string | undefined;
+        const destination = request.destination as unknown as Address;
+        const destinationCountry = destination?.country;
+
+        console.log("Destination country:", destinationCountry);
+        console.log("Company country:", companyCountry);
 
         if (!destinationCountry) {
             return {
@@ -222,8 +225,7 @@ export class AutoApprovalEngine {
      * @returns {Promise<AutoApprovalEvaluation>} The evaluation result.
      */
     private static async evaluateCombinedRule(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        request: any,
+        request: RequestForEvaluation,
         rule: AutoApprovalRule,
         company: { currency: string; country: string | null }
     ): Promise<AutoApprovalEvaluation> {
@@ -237,7 +239,7 @@ export class AutoApprovalEngine {
             id: `${rule.id}-budget`,
             name: `${rule.name} (Budget)`,
             enabled: true,
-            type: "BUDGET_THRESHOLD",
+            type: AutoApprovalRuleType.BUDGET_THRESHOLD,
             config: config.budget,
         };
 
@@ -254,7 +256,7 @@ export class AutoApprovalEngine {
                 id: `${rule.id}-domestic`,
                 name: `${rule.name} (Domestic)`,
                 enabled: true,
-                type: "DOMESTIC_TRIP",
+                type: AutoApprovalRuleType.DOMESTIC_TRIP,
                 config: { enabled: true },
             };
 

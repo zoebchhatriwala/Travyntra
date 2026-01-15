@@ -21,6 +21,7 @@ import { ManualAddressDialog, type Address } from "@/components/manual-address-d
 import { MapPin, Pencil } from "lucide-react";
 import { TripPreferences } from "@/lib/types/trip-preferences";
 import { type Money, createMoney, moneyToDecimal } from "@/lib/types/money";
+import { formatAddress } from "@/lib/utils/address";
 
 
 const requestSchema = z.object({
@@ -108,27 +109,17 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
 
     // Handler for saving address from manual dialog
     const handleAddressSave = (address: Address) => {
-        // Format destination string for display/search
-        const parts = [address.city, address.country].filter(Boolean);
-        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Destination";
-
-        form.setValue("destination", formatted);
+        form.setValue("destination", formatAddress(address));
         form.setValue("destinationDetails", address);
     };
 
     const handlePickupAddressSave = (address: Address) => {
-        const parts = [address.city, address.country].filter(Boolean);
-        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Pickup";
-
-        form.setValue("carPickup", formatted);
+        form.setValue("carPickup", formatAddress(address));
         form.setValue("carPickupDetails", address);
     };
 
     const handleDropoffAddressSave = (address: Address) => {
-        const parts = [address.city, address.country].filter(Boolean);
-        const formatted = parts.length > 0 ? parts.join(", ") : address.street || "Custom Dropoff";
-
-        form.setValue("carDropoff", formatted);
+        form.setValue("carDropoff", formatAddress(address));
         form.setValue("carDropoffDetails", address);
     };
 
@@ -234,10 +225,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             if (initialData && requestId) {
                 const result = await updateTripRequest(requestId, {
                     title: data.title,
-                    destination: data.destinationDetails ? data.destinationDetails : {
-                        formatted: data.destination,
-                        city: data.destination
-                    },
+                    destination: data.destinationDetails as Address,
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
@@ -255,12 +243,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                 toast.success("Trip request updated successfully!");
                 router.push(`/company/${slug}/dashboard/requests/${requestId}`);
             } else {
+                // Create trip request
                 const result = await createTripRequest({
                     title: data.title,
-                    destination: data.destinationDetails ? data.destinationDetails : {
-                        formatted: data.destination,
-                        city: data.destination
-                    },
+                    destination: data.destinationDetails as Address,
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,

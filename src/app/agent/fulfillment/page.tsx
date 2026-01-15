@@ -13,6 +13,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 
 import { Prisma, RequestStatus } from "@prisma/client";
 import { parseMoney, formatMoney } from "@/lib/types/money";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Location {
     city?: string;
@@ -59,7 +60,6 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
             {
                 OR: [
                     { title: { contains: query, mode: "insensitive" } },
-                    // { destination: { contains: query, mode: "insensitive" } }, // Disabled due to JSON change
                 ]
             }
         ];
@@ -199,27 +199,43 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                 <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl hover:shadow-md hover:ring-indigo-100 transition-all duration-300">
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="space-y-3">
+                                            <div className="space-y-3 min-w-0 flex-1">
                                                 <div className="flex items-center gap-3 flex-wrap">
-                                                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                        {req.title}
-                                                    </h3>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors truncate max-w-full">
+                                                                {req.title}
+                                                            </h3>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{req.title}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                     <Badge variant="secondary" className={`
                                                         ${req.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : ''}
                                                         ${req.status === 'BOOKED' ? 'bg-blue-100 text-blue-800' : ''}
                                                         ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : ''}
-                                                        font-bold
+                                                        font-bold shrink-0
                                                     `}>
                                                         {req.status.replace(/_/g, ' ')}
                                                     </Badge>
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                    <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
+                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500 shrink-0">
                                                             <MapPin size={14} />
                                                         </div>
-                                                        {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="truncate">
+                                                                    {(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{(req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown"}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">

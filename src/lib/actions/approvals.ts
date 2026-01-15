@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth-options";
 import { ApprovalStatus, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
+import { type ApprovalStepMetadata } from "@/lib/types/auto-approval-policy";
 
 /**
  * Interface representing a geographic location.
@@ -713,6 +714,8 @@ export interface ApprovalProgressStep {
     createdAt: Date;
     /** Last update timestamp */
     updatedAt: Date;
+    /** Metadata for audit trail (e.g. auto-approval details) */
+    metadata?: ApprovalStepMetadata;
 }
 
 /**
@@ -803,7 +806,8 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
                 approvers: definitionApprovers,
                 approvals: individualDecisions,
                 createdAt: step.createdAt,
-                updatedAt: step.updatedAt
+                updatedAt: step.updatedAt,
+                metadata: step.metadata as unknown as ApprovalStepMetadata
             };
 
             return result;

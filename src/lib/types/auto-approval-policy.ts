@@ -1,3 +1,6 @@
+import { Prisma } from "@prisma/client";
+import { type Money } from "./money";
+
 /**
  * Auto-Approval Policy Configuration
  * 
@@ -5,6 +8,15 @@
  * Policies can automatically approve trip requests that meet certain criteria,
  * bypassing the standard approval workflow.
  */
+
+/**
+ * Supported types for auto-approval rules.
+ */
+export enum AutoApprovalRuleType {
+    BUDGET_THRESHOLD = "BUDGET_THRESHOLD",
+    DOMESTIC_TRIP = "DOMESTIC_TRIP",
+    COMBINED = "COMBINED",
+}
 
 /**
  * Represents a single auto-approval rule.
@@ -17,7 +29,7 @@ export interface AutoApprovalRule {
     /** Whether this rule is currently active */
     enabled: boolean;
     /** Type of rule */
-    type: "BUDGET_THRESHOLD" | "DOMESTIC_TRIP" | "COMBINED";
+    type: AutoApprovalRuleType;
     /** Configuration specific to the rule type */
     config: BudgetThresholdConfig | DomesticTripConfig | CombinedConfig;
 }
@@ -110,4 +122,20 @@ export function createDefaultPolicy(): AutoApprovalPolicy {
         rules: [],
         updatedAt: new Date().toISOString(),
     };
+}
+/**
+ * Metadata stored in RequestApprovalStep for auditing purposes.
+ */
+export interface ApprovalStepMetadata {
+    autoApproved: boolean;
+    ruleType?: AutoApprovalRuleType;
+    ruleConfig?: BudgetThresholdConfig | DomesticTripConfig | CombinedConfig;
+    reason: string;
+}
+/**
+ * Structure of a trip request needed for auto-approval evaluation.
+ */
+export interface RequestForEvaluation {
+    budget: Money | Prisma.JsonValue;
+    destination: Prisma.JsonValue;
 }

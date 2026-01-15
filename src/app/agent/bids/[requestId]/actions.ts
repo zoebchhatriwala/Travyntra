@@ -2,14 +2,16 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, UserRole, RequestStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
-import { createMoney, formatMoney, parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { createMoney, formatMoney, parseMoney, moneyToDecimal, type Money } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
+import { type ApprovalStepMetadata, type CombinedConfig, type BudgetThresholdConfig, AutoApprovalRuleType } from "@/lib/types/auto-approval-policy";
+import { AutoApprovalEngine } from "@/lib/auto-approval-engine";
 
 interface BidTax {
     label: string;
@@ -59,26 +61,23 @@ export async function submitBid(requestId: string, amount: number, message: stri
     const bidAmount = createMoney(amount, currency);
 
     try {
-        // Create the bid
-        await prisma.agentBid.create({
-            data: {
-                requestId,
-                agentId,
-                amount: bidAmount as unknown as Prisma.InputJsonValue,
-                taxes: taxes as unknown as Prisma.InputJsonValue,
-                message,
-                status: AgentBidStatus.PENDING
+        // Fetch request with approval details and company currency
+        const request = await prisma.tripRequest.findUnique({
+            where: { id: requestId },
+            include: {
+                company: true,
+                approvalSteps: {
+                    include: { step: true }
+                },
+                bids: true
             }
         });
 
-        // Get converted value for the message if company currency is different
-        const request = await prisma.tripRequest.findUnique({
-            where: { id: requestId },
-            include: { company: true }
-        });
-        const companyCurrency = request?.company.currency || "USD";
-        let conversionText = "";
+        if (!request) return { error: "Request not found" };
 
+        const companyCurrency = request.company.currency || "USD";
+
+        // Calculate total including taxes for validation
         let totalWithTaxes = amount;
         if (taxes && taxes.length > 0) {
             taxes.forEach(t => {
@@ -89,10 +88,115 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 }
             });
         }
-
         const totalMoney = createMoney(totalWithTaxes, currency);
 
-        if (currency !== companyCurrency) {
+        // Check for auto-approval constraints
+        let autoApprovedStep = request.approvalSteps.find(s => {
+            const metadata = s.metadata as unknown as ApprovalStepMetadata | null;
+            return metadata?.autoApproved === true;
+        });
+
+        let isWithinThreshold = false;
+        let policyMetadata: ApprovalStepMetadata | null = null;
+
+        if (autoApprovedStep) {
+            policyMetadata = autoApprovedStep.metadata as unknown as ApprovalStepMetadata;
+            isWithinThreshold = policyMetadata.autoApproved && (policyMetadata.ruleType === AutoApprovalRuleType.BUDGET_THRESHOLD || policyMetadata.ruleType === AutoApprovalRuleType.COMBINED);
+        } else if (request.status === RequestStatus.APPROVED && request.approvalSteps.length === 0) {
+            // If no steps exist but it's approved, it might have been auto-approved (steps skipped)
+            // Re-evaluate the policy to see if it should have been auto-approved
+            const evaluation = await AutoApprovalEngine.evaluateRequest(requestId);
+            if (evaluation.shouldAutoApprove) {
+                // If the evaluation says it should be auto-approved, we treat it as such
+                // We don't have a specific rule from the past, so we use the current evaluation's reasonings
+                // or just mark it as auto-approvable
+                isWithinThreshold = evaluation.matchedRule?.type === AutoApprovalRuleType.BUDGET_THRESHOLD || evaluation.matchedRule?.type === AutoApprovalRuleType.COMBINED;
+
+                // Construct temporary metadata for threshold checking
+                // This is a bit of a fallback, but safe since it re-checks the current policy
+                policyMetadata = {
+                    autoApproved: true,
+                    ruleType: evaluation.matchedRule?.type || AutoApprovalRuleType.BUDGET_THRESHOLD,
+                    ruleConfig: evaluation.matchedRule?.config,
+                    reason: evaluation.reason
+                };
+            }
+        }
+
+        if (policyMetadata) {
+            // If it was approved under a budget rule, validate the bid amount
+            if (policyMetadata.ruleType === AutoApprovalRuleType.BUDGET_THRESHOLD || policyMetadata.ruleType === AutoApprovalRuleType.COMBINED) {
+                const config = policyMetadata.ruleType === AutoApprovalRuleType.COMBINED
+                    ? (policyMetadata.ruleConfig as CombinedConfig)?.budget
+                    : (policyMetadata.ruleConfig as BudgetThresholdConfig);
+
+                if (config) {
+                    // Use the user's requested budget as the limit, not the secret policy threshold
+                    const requestBudget = request.budget as unknown as Money;
+                    const maxAmount = moneyToDecimal(requestBudget);
+                    const policyCurrency = requestBudget.currencyCode;
+
+                    let bidTotalInPolicyCurrency = totalWithTaxes;
+                    if (currency !== policyCurrency) {
+                        const converted = await convertMoney(totalMoney, policyCurrency);
+                        bidTotalInPolicyCurrency = moneyToDecimal(converted);
+                    }
+
+                    if (bidTotalInPolicyCurrency > maxAmount) {
+                        return { error: `Bid amount exceeds the requested budget of ${formatMoney(createMoney(maxAmount, policyCurrency))}` };
+                    }
+                }
+            }
+        }
+
+        // Create the bid
+        const newBid = await prisma.agentBid.create({
+            data: {
+                requestId,
+                agentId,
+                amount: bidAmount as unknown as Prisma.InputJsonValue,
+                taxes: taxes as unknown as Prisma.InputJsonValue,
+                message,
+                status: AgentBidStatus.PENDING
+            }
+        });
+
+        let autoApprovalApplied = false;
+
+        // If it was auto-approved (via step or skipped steps) and this bid is within threshold, 
+        // check if we can auto-accept
+        if (policyMetadata) {
+            // Check if any bid is already accepted for this request
+            const alreadyAccepted = request.bids.some(b => b.status === AgentBidStatus.ACCEPTED);
+
+            if (alreadyAccepted) {
+                // If a bid is already accepted, auto-reject this one
+                await prisma.agentBid.update({
+                    where: { id: newBid.id },
+                    data: { status: AgentBidStatus.REJECTED }
+                });
+
+                await prisma.message.create({
+                    data: {
+                        requestId,
+                        senderId: session.user.id,
+                        content: `**Bid Auto-Rejected**: This request has already been assigned or fulfilled. Subsequent bids are not accepted.`
+                    }
+                });
+
+                return { success: true, message: "Request already has an active bid. Your bid was automatically rejected." };
+            }
+
+            // If not already accepted, check if this bid qualifies for auto-acceptance
+            if (isWithinThreshold) {
+                // Auto-approve this bid
+                await approveBidInternal(newBid.id, requestId, session.user.id);
+                autoApprovalApplied = true;
+            }
+        }
+
+        let conversionText = "";
+        if (currency !== companyCurrency && !autoApprovalApplied) {
             const converted = await convertMoney(totalMoney, companyCurrency);
             conversionText = ` (Approx. Total ${formatMoney(converted)})`;
         }
@@ -135,15 +239,110 @@ export async function submitBid(requestId: string, amount: number, message: stri
         revalidatePath(`/agent/bids/${requestId}`);
         revalidatePath(`/agent/bids`);
 
-        // Revalidate company view so they see the new bid/message
-        // Ideally we'd know the company slug here, but we can't easily get it without a DB query.
-        // The UI will refresh on next visit anyway.
-
         return { success: true };
     } catch (e) {
         console.error("Failed to submit bid:", e);
-        return { error: "Failed to submit bid" };
+        return { error: e instanceof Error ? e.message : "Failed to submit bid" };
     }
+}
+
+/**
+ * Internal helper to approve a bid using existing mechanics.
+ * Extracted from approveBid to be used for auto-approvals.
+ */
+async function approveBidInternal(bidId: string, requestId: string, actorId: string) {
+    const bid = await prisma.agentBid.findUnique({
+        where: { id: bidId },
+        include: {
+            agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+            request: { include: { company: true } }
+        }
+    });
+
+    if (!bid) throw new Error("Bid not found");
+
+    // 1. Update Bid Status
+    await prisma.agentBid.update({
+        where: { id: bidId },
+        data: { status: AgentBidStatus.ACCEPTED }
+    });
+
+    // 2. Reject other bids
+    await prisma.agentBid.updateMany({
+        where: {
+            requestId,
+            id: { not: bidId }
+        },
+        data: { status: AgentBidStatus.REJECTED }
+    });
+
+    // Calculate total amount with taxes
+    const amount = moneyToDecimal(parseMoney(bid.amount));
+    let totalWithTaxes = amount;
+    const taxes = (bid.taxes as unknown as BidTax[]) || [];
+
+    if (taxes.length > 0) {
+        taxes.forEach(t => {
+            if (t.type === 'PERCENTAGE') {
+                totalWithTaxes += (amount * (t.value || 0)) / 100;
+            } else {
+                totalWithTaxes += (t.value || 0);
+            }
+        });
+    }
+
+    const bidCurrency = (bid.amount as unknown as { currencyCode: string })?.currencyCode || "USD";
+    let totalMoney = createMoney(totalWithTaxes, bidCurrency);
+    const companyCurrency = bid.request.company.currency || "USD";
+
+    if (bidCurrency !== companyCurrency) {
+        totalMoney = await convertMoney(totalMoney, companyCurrency);
+    }
+
+    const formattedTotal = formatMoney(totalMoney);
+
+    // 3. Update Request: Assign Agent, Set Cost, Update Status
+    await prisma.tripRequest.update({
+        where: { id: requestId },
+        data: {
+            assignedAgentId: bid.agentId,
+            status: "IN_PROGRESS",
+            cost: totalMoney as unknown as Prisma.InputJsonValue
+        }
+    });
+
+    // 4. Log Activity
+    await prisma.activityLog.create({
+        data: {
+            companyId: bid.request.companyId,
+            actorId: actorId,
+            action: ActivityLogAction.BID_APPROVED,
+            description: `Auto-approved bid of ${formattedTotal} based on auto-approval policy.`,
+            metadata: { requestId, bidId, autoApproved: true }
+        }
+    });
+
+    // 5. System Message
+    await prisma.message.create({
+        data: {
+            requestId,
+            senderId: actorId,
+            content: `✅ **Bid Auto-Accepted**: ${formattedTotal}. This request was auto-approved and the first matching bid has been accepted automatically.`
+        }
+    });
+
+    // 6. Notify the Agent's users
+    const agentUsers = bid.agent.users.map(u => u.id);
+    await Promise.all(agentUsers.map(userId =>
+        createNotification({
+            userId,
+            title: "Bid Auto-Approved!",
+            message: `Your bid for "${bid.request.title}" was auto-accepted based on the company's policy.`,
+            type: "SUCCESS",
+            link: `/agent/fulfillment/${requestId}`,
+            sendEmail: true
+        })
+    ));
 }
 /**
  * Updates an existing bid.
@@ -176,10 +375,19 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         });
 
         // Post update to discussion
+        // Post update to discussion
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
-            include: { company: true }
+            include: {
+                company: true,
+                approvalSteps: {
+                    include: { step: true }
+                },
+                bids: true
+            }
         });
+
+        if (!request) return { error: "Request not found" };
         const companyCurrency = request?.company.currency || "USD";
         let conversionText = "";
 
@@ -196,10 +404,76 @@ export async function updateBid(bidId: string, requestId: string, amount: number
 
         const totalMoney = createMoney(totalWithTaxes, currency);
 
-        if (currency !== companyCurrency) {
+
+        // --- Auto-Approval Logic Start ---
+        // Check for auto-approval constraints
+        let autoApprovedStep = request.approvalSteps.find(s => {
+            const metadata = s.metadata as unknown as ApprovalStepMetadata | null;
+            return metadata?.autoApproved === true;
+        });
+
+        let isWithinThreshold = false;
+        let policyMetadata: ApprovalStepMetadata | null = null;
+
+        if (autoApprovedStep) {
+            policyMetadata = autoApprovedStep.metadata as unknown as ApprovalStepMetadata;
+            isWithinThreshold = policyMetadata.autoApproved && (policyMetadata.ruleType === AutoApprovalRuleType.BUDGET_THRESHOLD || policyMetadata.ruleType === AutoApprovalRuleType.COMBINED);
+        } else if (request.status === RequestStatus.APPROVED && request.approvalSteps.length === 0) {
+            // Re-evaluate
+            const evaluation = await AutoApprovalEngine.evaluateRequest(requestId);
+            if (evaluation.shouldAutoApprove) {
+                isWithinThreshold = evaluation.matchedRule?.type === AutoApprovalRuleType.BUDGET_THRESHOLD || evaluation.matchedRule?.type === AutoApprovalRuleType.COMBINED;
+                policyMetadata = {
+                    autoApproved: true,
+                    ruleType: evaluation.matchedRule?.type || AutoApprovalRuleType.BUDGET_THRESHOLD,
+                    ruleConfig: evaluation.matchedRule?.config,
+                    reason: evaluation.reason
+                };
+            }
+        }
+
+        if (policyMetadata) {
+            if (policyMetadata.ruleType === AutoApprovalRuleType.BUDGET_THRESHOLD || policyMetadata.ruleType === AutoApprovalRuleType.COMBINED) {
+                const config = policyMetadata.ruleType === AutoApprovalRuleType.COMBINED
+                    ? (policyMetadata.ruleConfig as CombinedConfig)?.budget
+                    : (policyMetadata.ruleConfig as BudgetThresholdConfig);
+
+                if (config) {
+                    // Use the user's requested budget as the limit, not the secret policy threshold
+                    const requestBudget = request.budget as unknown as Money;
+                    const maxAmount = moneyToDecimal(requestBudget);
+                    const policyCurrency = requestBudget.currencyCode;
+
+                    let bidTotalInPolicyCurrency = totalWithTaxes;
+                    if (currency !== policyCurrency) {
+                        const converted = await convertMoney(totalMoney, policyCurrency);
+                        bidTotalInPolicyCurrency = moneyToDecimal(converted);
+                    }
+
+                    if (bidTotalInPolicyCurrency > maxAmount) {
+                        return { error: `Bid amount exceeds the requested budget of ${formatMoney(createMoney(maxAmount, policyCurrency))}` };
+                    }
+                }
+            }
+        }
+
+        let autoApprovalApplied = false;
+
+        if (policyMetadata) {
+            const alreadyAccepted = request.bids.some(b => b.status === AgentBidStatus.ACCEPTED);
+            // We don't auto-reject updates here, we just check if we can auto-accept this update
+            if (!alreadyAccepted && isWithinThreshold) {
+                await approveBidInternal(bidId, requestId, session.user.id);
+                autoApprovalApplied = true;
+            }
+        }
+        // --- Auto-Approval Logic End ---
+
+        if (currency !== companyCurrency && !autoApprovalApplied) {
             const converted = await convertMoney(totalMoney, companyCurrency);
             conversionText = ` (Approx. Total ${formatMoney(converted)})`;
         }
+
 
         let taxDetails = "";
         if (taxes && taxes.length > 0) {
@@ -389,7 +663,12 @@ export async function unapproveBid(bidId: string, requestId: string) {
             where: { id: bidId },
             include: {
                 agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
-                request: { include: { company: true } }
+                request: {
+                    include: {
+                        company: true,
+                        approvalSteps: true
+                    }
+                }
             }
         });
         if (!bid) return { error: "Bid not found" };
@@ -405,7 +684,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
             where: { id: requestId },
             data: {
                 assignedAgentId: null,
-                status: "APPROVED",
+                status: RequestStatus.APPROVED,
                 cost: Prisma.JsonNull
             }
         });
@@ -476,7 +755,7 @@ export async function removeBid(bidId: string, requestId: string) {
                 where: { id: requestId },
                 data: {
                     assignedAgentId: null,
-                    status: "APPROVED", // Back to approved/open for bidding
+                    status: RequestStatus.APPROVED,
                     cost: Prisma.JsonNull
                 }
             });

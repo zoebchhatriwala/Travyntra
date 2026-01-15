@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Plus, Plane, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default async function RequestsPage({
     params,
@@ -69,19 +70,26 @@ export default async function RequestsPage({
                     {requests.map((req) => (
                         <Link key={req.id} href={`/company/${slug}/dashboard/requests/${req.id}`}>
                             <div className="flex items-center justify-between p-6 bg-white rounded-3xl border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all group">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <div className="flex items-center gap-6 min-w-0 flex-1 mr-4">
+                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors shrink-0">
                                         <Plane size={24} />
                                     </div>
-                                    <div>
-                                        <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">{req.title}</h4>
+                                    <div className="min-w-0 flex-1">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors truncate">{req.title}</h4>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{req.title}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                         <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
                                             <Clock size={12} />
                                             <span>Submitted on {format(new Date(req.createdAt), "MMM dd, yyyy")}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-6 shrink-0">
                                     {req.isCollaborator && (
                                         <Badge variant="outline" className="rounded-xl px-3 py-1 font-bold text-[10px] border-indigo-100 bg-indigo-50/50 text-indigo-600">
                                             Shared with me

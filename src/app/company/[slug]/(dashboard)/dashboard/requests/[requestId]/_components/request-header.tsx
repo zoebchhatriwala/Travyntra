@@ -17,6 +17,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useConfirm } from "@/lib/hooks/use-confirm";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 interface RequestHeaderProps {
     request: {
         id: string;
@@ -81,17 +83,24 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
 
     return (
         <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
                     <FileText size={24} />
                 </div>
-                <div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight">{request.title}</h1>
-                    <p className="text-sm text-gray-500 font-medium">Request ID: <span className="font-mono">{request.id.slice(0, 8)}</span></p>
+                <div className="min-w-0 flex-1">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight truncate">{request.title}</h1>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{request.title}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <p className="text-sm text-gray-500 font-medium truncate">Request ID: <span className="font-mono">{request.id.slice(0, 8)}</span></p>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0 ml-4">
                 <Badge className={cn(
                     "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500",
                     getStatusStyles(request.status)

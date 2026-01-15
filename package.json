@@ -28,6 +28,7 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/papaparse": "^5.5.2",
     "bcryptjs": "^2.4.3",

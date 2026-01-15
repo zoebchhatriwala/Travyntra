@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTripRequest } from "../../actions";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
@@ -50,29 +51,36 @@ export default async function RequestLayout({
                     </div>
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h1 className="text-2xl font-display font-bold text-gray-900 flex items-center gap-3">
-                                {request.title}
-                            </h1>
+                        <div className="min-w-0 flex-1 mr-4">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <h1 className="text-2xl font-display font-bold text-gray-900 flex items-center gap-3 truncate">
+                                        {request.title}
+                                    </h1>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{request.title}</p>
+                                </TooltipContent>
+                            </Tooltip>
                             <div className="flex items-center gap-4 mt-2">
-                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium shrink-0">
                                     <Clock size={14} />
                                     <span>Submitted {new Date(request.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 overflow-hidden">
+                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium shrink-0">
+                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 overflow-hidden shrink-0">
                                         {request.user.avatarUrl ? (
                                             <Image src={request.user.avatarUrl} alt="" width={20} height={20} className="w-full h-full object-cover" />
                                         ) : (
                                             request.user.name?.[0]
                                         )}
                                     </div>
-                                    <span>{request.user.name}</span>
+                                    <span className="truncate">{request.user.name}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 shrink-0">
                             <Badge className={cn(
                                 "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500 flex items-center gap-1.5",
                                 request.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :

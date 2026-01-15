@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plane, Calendar, MapPin, DollarSign, FileText, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
@@ -41,11 +42,18 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                             <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
                                 <MapPin size={20} />
                             </div>
-                            <div>
+                            <div className="min-w-0 flex-1">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destination</p>
-                                <p className="text-base font-bold text-gray-900">
-                                    {destinationDisplay}
-                                </p>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <p className="text-base font-bold text-gray-900 truncate">
+                                            {destinationDisplay}
+                                        </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{destinationDisplay}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
 
@@ -86,7 +94,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-gray-600 leading-relaxed text-sm">
+                    <p className="text-gray-600 leading-relaxed text-sm break-words whitespace-pre-wrap">
                         {request.purpose || "No details provided."}
                     </p>
                 </CardContent>
