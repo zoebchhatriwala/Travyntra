@@ -275,6 +275,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Custom Train Option (Manual Entry)
    - [x] Searchable Country & Timezone Selectors
    - ✅ Manual collaborator management UI
+   - ✅ Copy-to-clipboard for Request IDs
 2. **Smart Logic & Automation** (Phase 9)
    - Policy-based auto-approvals (< ₹50k, Domestic)
    - Auto-assignment for single-agency integrations
@@ -282,8 +283,34 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 3. **Financial Layer** (Phase 10)
    - ✅ Invoice generation for completed requests
    - ✅ Multi-currency support (Request-level currency)
-   - Multi-currency conversion & FX caching
+   - ✅ Multi-currency conversion & FX caching
    - ✅ Payment tracking
+   - ✅ Tax Template Management System
+   - ✅ Enhanced notification system with tax breakdowns
+
+### Latest Updates (January 15, 2026) ✅
+1. **Tax Template Management System**
+   - ✅ Database schema: `TaxTemplate` model with agency relation
+   - ✅ CRUD operations: Create, read, update, delete tax templates
+   - ✅ Default template support (auto-apply to new bids)
+   - ✅ Template selector in bid form with quick apply
+   - ✅ Support for percentage and fixed tax types
+   - ✅ Settings menu reorganization (Configuration & Tax Templates)
+   - ✅ Responsive tax input layout for mobile
+
+2. **Enhanced Notification System**
+   - ✅ Company admins notified on bid submissions/updates
+   - ✅ Company admins notified on trip completion
+   - ✅ Staff notified on status/role changes
+   - ✅ Tax breakdown included in invoice notifications
+   - ✅ Detailed tax information in bid messages
+   - ✅ Email notifications for all critical events
+
+3. **UI/UX Improvements**
+   - ✅ Copy button for request IDs with visual feedback
+   - ✅ Improved bid form tax layout (mobile-responsive)
+   - ✅ Settings menu with card-based navigation
+   - ✅ Better message formatting with tax details
 
 ---
 ---
