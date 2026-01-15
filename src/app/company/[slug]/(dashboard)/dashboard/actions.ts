@@ -145,6 +145,7 @@ export async function getEmployeeRequests({
                 status: true,
                 createdAt: true,
                 budget: true,
+                cost: true,
                 userId: true,
             },
         }),
@@ -165,7 +166,8 @@ export async function getEmployeeRequests({
                 status: req.status,
                 createdAt: req.createdAt,
                 budget: moneyToDecimal(money),
-                currency: money?.currencyCode || company?.currency || "USD",
+                cost: req.cost ? moneyToDecimal(parseMoney(req.cost)) : null,
+                currency: (req.cost ? parseMoney(req.cost)?.currencyCode : money?.currencyCode) || company?.currency || "USD",
                 isCollaborator: req.userId !== userId
             };
         }),
@@ -551,14 +553,45 @@ export async function getTripRequest(requestId: string) {
         const bidsWithConversion = await Promise.all(request.bids.map(async (bid) => {
             const amount = bid.amount ? parseMoney(bid.amount) : null;
             let convertedAmount = null;
+            let totalAmount = null;
 
-            if (amount && amount.currencyCode !== companyCurrency) {
-                convertedAmount = await convertMoney(amount, companyCurrency);
+            if (amount) {
+                // Calculate total including taxes for the conversion preview
+                let totalDecimal = moneyToDecimal(amount);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const taxes = ((bid as any).taxes as any[]) || [];
+
+                if (taxes.length > 0) {
+                    taxes.forEach(t => {
+                        if (t.type === 'PERCENTAGE') {
+                            totalDecimal += (moneyToDecimal(amount) * (t.value || 0)) / 100;
+                        } else {
+                            totalDecimal += (t.value || 0);
+                        }
+                    });
+                }
+
+                // Create a temporary Money object for the total to convert
+                // We use the same currency code as the base amount
+                const { createMoney } = await import("@/lib/types/money");
+                totalAmount = createMoney(totalDecimal, amount.currencyCode);
+
+                if (amount.currencyCode !== companyCurrency) {
+                    convertedAmount = await convertMoney(totalAmount, companyCurrency);
+                }
             }
 
             return {
-                ...bid,
+                id: bid.id,
+                status: bid.status,
+                message: bid.message,
+                createdAt: bid.createdAt,
+                updatedAt: bid.updatedAt,
+                requestId: bid.requestId,
+                agentId: bid.agentId,
+                agent: bid.agent,
                 amount,
+                totalAmount, // Return total in original currency
                 convertedAmount
             };
         }));
@@ -707,8 +740,51 @@ export async function postTripMessage(requestId: string, content: string) {
 
         return { success: true };
     } catch (e) {
-        console.error("Failed to send message:", e);
-        return { error: "Failed to send message" };
+        console.error("Failed to post message:", e);
+        return { error: "Failed to post message" };
+    }
+}
+
+/**
+ * Get all messages for a specific trip request
+ */
+export async function getTripMessages(requestId: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return [];
+
+    try {
+        const messages = await prisma.message.findMany({
+            where: { requestId },
+            orderBy: { createdAt: 'asc' },
+            include: {
+                sender: {
+                    select: {
+                        name: true,
+                        role: true,
+                        avatarUrl: true,
+                        company: { select: { name: true } }
+                    }
+                }
+            }
+        });
+
+        // Convert dates to strings/compatible types if needed, or return as is (Next.js handles Dates in Server Actions usually,
+        // but for Client Components, they are serialized. Let's return objects that are compatible with the Message interface)
+        return messages.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            createdAt: msg.createdAt, // Will be serialized to string over wire
+            senderId: msg.senderId,
+            sender: {
+                name: msg.sender.name,
+                avatarUrl: msg.sender.avatarUrl,
+                role: msg.sender.role,
+                company: msg.sender.company
+            }
+        }));
+    } catch (e) {
+        console.error("Failed to fetch messages:", e);
+        return [];
     }
 }
 

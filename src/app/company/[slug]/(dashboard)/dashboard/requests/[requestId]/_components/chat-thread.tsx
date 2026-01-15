@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, User as UserIcon, Loader2, Paperclip, X, Image as ImageIcon, Download, File, Maximize2, Minimize2 } from "lucide-react";
-import { postTripMessage, uploadMessageAttachment } from "../../../actions";
+import { postTripMessage, uploadMessageAttachment, getTripMessages } from "../../../actions";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,35 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
+
+    // Poll for new messages every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const latestMessages = await getTripMessages(requestId);
+                if (latestMessages && latestMessages.length > messages.length) {
+                    // Update only if we have more messages (simple check, ideally check IDs)
+                    // But for now, simple replacement is safer for consistency
+                    // Note: Optimistic updates might flicker if we replace all.
+                    // Better: Merger. But MVP: replace.
+                    // IMPORTANT: Convert dates from string if server action returns strings (client/server boundary)
+                    // Messages usually have Dates, but over wire they become strings.
+                    // If latestMessages come from server action, dates might be strings?
+                    // Let's assume server action returns Date objects if using "use server" properly?
+                    // Actually, Client Components receive Serialized Data.
+                    // We need to map dates if necessary.
+                    setMessages(latestMessages.map((m: any) => ({
+                        ...m,
+                        createdAt: new Date(m.createdAt)
+                    })));
+                }
+            } catch (e) {
+                console.error("Failed to poll messages", e);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [requestId, messages.length]);
 
     // Handle @ mentions
     useEffect(() => {

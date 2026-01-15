@@ -205,7 +205,8 @@ export async function getCompanyRequests(slug: string, options: {
                 status: req.status,
                 createdAt: req.createdAt,
                 budget: moneyToDecimal(money),
-                currency: money?.currencyCode || company.currency || "USD",
+                cost: req.cost ? moneyToDecimal(parseMoney(req.cost)) : null,
+                currency: (req.cost ? parseMoney(req.cost)?.currencyCode : money?.currencyCode) || company?.currency || "USD",
                 destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
                 startDate: req.startDate,
                 endDate: req.endDate
@@ -342,7 +343,8 @@ export async function getCompanyAnalytics(slug: string) {
             status: { not: 'CANCELLED' }
         },
         select: {
-            budget: true
+            budget: true,
+            cost: true
         }
     });
 
@@ -358,6 +360,21 @@ export async function getCompanyAnalytics(slug: string) {
         return 0;
     }));
     const mtdBudget = mtdResults.reduce((sum, val) => sum + val, 0);
+
+    // Calculate MTD Cost
+    const mtdCostResults = await Promise.all(mtdRequests.map(async (req) => {
+        if (req.cost) {
+            const money = parseMoney(req.cost);
+            if (money) {
+                // Cost should already be in company currency, but safe to convert if ever needed
+                const converted = await convertMoney(money, targetCurrency);
+                return moneyToDecimal(converted);
+            }
+        }
+        return 0;
+    }));
+    const mtdCost = mtdCostResults.reduce((sum, val) => sum + val, 0);
+
 
     // 3. Policy Violations (based on company threshold)
     const thresholdMoney = parseMoney(company.policyThreshold);
@@ -434,6 +451,7 @@ export async function getCompanyAnalytics(slug: string) {
     return {
         avgApprovalTime: avgApprovalTimeDays.toFixed(1),
         mtdBudget: mtdBudget,
+        mtdCost: mtdCost,
         violations,
         budgetByMonth,
         topDestinations: topDestinations.map(d => ({

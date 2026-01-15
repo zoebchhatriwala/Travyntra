@@ -30,7 +30,7 @@ const taxSchema = z.object({
 });
 
 const bidSchema = z.object({
-    amount: z.number().min(1, "Amount must be greater than 0"),
+    amount: z.number().min(0.01, "Amount must be positive"),
     taxes: z.array(taxSchema).default([]),
     message: z.string().min(10, "Please provide some details about your offer")
 });
@@ -140,6 +140,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                         <Input
                             id="amount"
                             type="number"
+                            step="0.01"
                             placeholder="0.00"
                             disabled={isClosed}
                             {...form.register("amount", {
@@ -218,6 +219,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                 <div className="col-span-10 md:col-span-3 space-y-1">
                                     <Input
                                         type="number"
+                                        step="0.01"
                                         placeholder="0"
                                         disabled={isClosed}
                                         {...form.register(`taxes.${index}.value`, { valueAsNumber: true })}

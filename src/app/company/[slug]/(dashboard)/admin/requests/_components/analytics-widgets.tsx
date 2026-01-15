@@ -15,6 +15,7 @@ interface AnalyticsWidgetsProps {
     analytics: {
         avgApprovalTime: string;
         mtdBudget: number;
+        mtdCost: number;
         violations: number;
         budgetByMonth: unknown[];
         topDestinations: { name: string, count: number }[];
@@ -24,7 +25,7 @@ interface AnalyticsWidgetsProps {
 
 export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <AnalyticsCard
                 title="Avg. Approval Time"
                 value={`${analytics?.avgApprovalTime || "0.0"} Days`}
@@ -42,6 +43,17 @@ export function AnalyticsWidgets({ analytics }: AnalyticsWidgetsProps) {
                 subtitle="Current month"
                 icon={TrendingUp}
                 color="emerald"
+            />
+            <AnalyticsCard
+                title="Total Cost (MTD)"
+                value={new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: analytics?.currency || "USD",
+                    maximumFractionDigits: 0
+                }).format(analytics?.mtdCost || 0)}
+                subtitle="Booked amount"
+                icon={TrendingUp}
+                color="blue"
             />
             <AnalyticsCard
                 title="Top Destination"
@@ -74,13 +86,14 @@ function AnalyticsCard({
     subtitle: string,
     icon: LucideIcon,
     trend?: 'up' | 'down',
-    color: 'indigo' | 'emerald' | 'amber' | 'rose'
+    color: 'indigo' | 'emerald' | 'amber' | 'rose' | 'blue'
 }) {
     const colors = {
         indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
         emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
         amber: "bg-amber-50 text-amber-600 ring-amber-100",
-        rose: "bg-rose-50 text-rose-600 ring-rose-100"
+        rose: "bg-rose-50 text-rose-600 ring-rose-100",
+        blue: "bg-blue-50 text-blue-600 ring-blue-100"
     };
 
     return (

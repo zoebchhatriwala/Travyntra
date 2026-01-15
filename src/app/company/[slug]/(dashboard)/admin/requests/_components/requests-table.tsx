@@ -38,6 +38,7 @@ interface Request {
     status: string;
     createdAt: Date;
     budget: number;
+    cost?: number | null;
     currency: string;
     destination: string;
     startDate: Date;
@@ -293,8 +294,17 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             </Badge>
                                         </td>
                                         <td className="p-6 text-right">
-                                            <p className="font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Est. Spend</p>
+                                            {req.cost ? (
+                                                <>
+                                                    <p className="font-black text-gray-900">{req.currency} {req.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Total Cost</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Est. Spend</p>
+                                                </>
+                                            )}
                                         </td>
                                         <td className="p-6 text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-2">

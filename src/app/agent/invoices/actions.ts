@@ -4,11 +4,21 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { RequestStatus, InvoiceStatus } from "@prisma/client";
+import { Prisma, RequestStatus, InvoiceStatus } from "@prisma/client";
 import { ActivityLogAction } from "@/lib/enums";
 import { createNotification } from "@/lib/notifications";
-import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
-import { convertMoney, convertCurrency } from "@/lib/services/currency";
+import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { convertCurrency } from "@/lib/services/currency";
+
+interface BidTax {
+    label: string;
+    value: number;
+    type: "PERCENTAGE" | "FIXED";
+}
+
+interface InvoiceTax extends BidTax {
+    calculatedAmount: number;
+}
 
 /**
  * Generate an invoice for a completed trip request
@@ -43,12 +53,13 @@ export async function generateInvoice(requestId: string) {
             return { error: "Request not found or not in COMPLETED status" };
         }
 
-        if (request.invoice) {
-            return { error: "Invoice already generated for this request" };
+        if (request.invoice && request.invoice.status === InvoiceStatus.PAID) {
+            return { error: "Invoice for this request has already been paid and cannot be regenerated." };
         }
 
         const acceptedBid = await prisma.agentBid.findFirst({
             where: { requestId, agentId: agencyId, status: "ACCEPTED" },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             select: { amount: true, taxes: true } as any
         });
 
@@ -62,25 +73,30 @@ export async function generateInvoice(requestId: string) {
         }
 
         const companyCurrency = request.company.currency || "USD";
-        const convertedMoney = await convertMoney(money, companyCurrency);
-        const subtotal = moneyToDecimal(convertedMoney);
+        const bidCurrency = money.currencyCode;
+        const bidSubtotal = moneyToDecimal(money);
+
+        // Convert base amount to Company Currency
+        const convertedSubtotal = await convertCurrency(bidSubtotal, bidCurrency, companyCurrency);
+        const subtotal = Number(convertedSubtotal.toFixed(2));
+        const invoiceCurrency = companyCurrency;
 
         // Calculate total with taxes
         let totalAmount = subtotal;
-        const bidTaxes = (acceptedBid.taxes as any[]) || [];
-        const invoiceTaxes: any[] = [];
+        const bidTaxes = (acceptedBid.taxes as unknown as BidTax[]) || [];
+        const invoiceTaxes: InvoiceTax[] = [];
 
         for (const tax of bidTaxes) {
             let taxValue = 0;
             if (tax.type === "PERCENTAGE") {
                 taxValue = (subtotal * tax.value) / 100;
             } else {
-                // If it's a fixed amount, it's already in agent's currency.
-                // We should technically convert it to company currency.
-                const taxMoney = createMoney(tax.value, money.currencyCode);
-                const convertedTax = await convertMoney(taxMoney, companyCurrency);
-                taxValue = moneyToDecimal(convertedTax);
+                // Fixed taxes need conversion to company currency
+                taxValue = await convertCurrency(tax.value, bidCurrency, companyCurrency);
             }
+            // Round tax value to 2 decimals
+            taxValue = Number(taxValue.toFixed(2));
+
             totalAmount += taxValue;
             invoiceTaxes.push({
                 ...tax,
@@ -88,27 +104,49 @@ export async function generateInvoice(requestId: string) {
             });
         }
 
-        // Create the invoice
-        const invoice = await prisma.invoice.create({
-            data: {
-                requestId,
-                companyId: request.company.id,
-                agencyId: agencyId,
-                amount: totalAmount,
-                subtotal: subtotal,
-                taxes: invoiceTaxes as any,
-                currency: companyCurrency,
-                status: InvoiceStatus.PENDING,
-                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
-            } as any
-        });
+        // Final rounding of total amount to handle cumulative floating point errors
+        totalAmount = Number(totalAmount.toFixed(2));
+
+        let invoice;
+
+        if (request.invoice) {
+            // Update existing invoice
+            invoice = await prisma.invoice.update({
+                where: { id: request.invoice.id },
+                data: {
+                    amount: totalAmount,
+                    subtotal: subtotal,
+                    taxes: invoiceTaxes as unknown as Prisma.InputJsonArray,
+                    currency: invoiceCurrency,
+                    // We don't change status if updating, unless it was something else? Keep it as is or reset to PENDING?
+                    // User said "if bid updated", likely implies new negotiation, so maybe reset?
+                    // But if it was already SENT/PENDING, it just updates amounts.
+                } as any
+            });
+        } else {
+            // Create the invoice
+            invoice = await prisma.invoice.create({
+                data: {
+                    requestId,
+                    companyId: request.company.id,
+                    agencyId: agencyId,
+                    amount: totalAmount,
+                    subtotal: subtotal,
+                    taxes: invoiceTaxes as unknown as Prisma.InputJsonArray,
+                    currency: invoiceCurrency,
+                    status: InvoiceStatus.PENDING,
+                    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any
+            });
+        }
 
         // Add a system message
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Invoice Generated**: An invoice for ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${companyCurrency} has been generated (converted from ${moneyToDecimal(money)} ${money.currencyCode}).`
+                content: `**Invoice ${request.invoice ? 'Updated' : 'Generated'}**: An invoice for ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${invoiceCurrency} has been ${request.invoice ? 'updated' : 'generated'} (based on ${bidSubtotal.toLocaleString()} ${bidCurrency}).`
             }
         });
 
@@ -123,9 +161,9 @@ export async function generateInvoice(requestId: string) {
                     requestId,
                     invoiceId: invoice.id,
                     amount: totalAmount,
-                    currency: companyCurrency,
-                    originalAmount: moneyToDecimal(money),
-                    originalCurrency: money.currencyCode
+                    currency: invoiceCurrency,
+                    originalAmount: subtotal,
+                    originalCurrency: invoiceCurrency
                 }
             }
         });
@@ -190,8 +228,10 @@ export async function getAgencyInvoices() {
             invoices: await Promise.all(invoices.map(async inv => ({
                 id: inv.id,
                 amount: Number(inv.amount),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 subtotal: Number((inv as any)?.subtotal || 0),
-                taxes: (inv as any).taxes as any[],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                taxes: ((inv as any).taxes || []) as InvoiceTax[],
                 currency: inv.currency,
                 // Convert for statistics
                 convertedAmount: await convertCurrency(Number(inv.amount), inv.currency, agency?.currency || "USD"),

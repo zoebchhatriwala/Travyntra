@@ -95,7 +95,7 @@ export default async function CompanyAdminPage({
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-xl font-black text-gray-900">Recent Trip Requests</h3>
                                 <Button variant="ghost" asChild className="text-xs font-black text-indigo-600 uppercase tracking-widest">
-                                    <Link href={`/company/${slug}/admin/workflow`}>
+                                    <Link href={`/company/${slug}/admin/requests`}>
                                         View All <ArrowUpRight size={14} className="ml-1" />
                                     </Link>
                                 </Button>
@@ -108,35 +108,37 @@ export default async function CompanyAdminPage({
                                     <p className="text-gray-300 text-[10px] mt-1 italic leading-relaxed">Staff requests awaiting approval will appear here.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
+                                <div className="space-y-4 flex flex-col">
                                     {stats.recentRequests.map((req) => (
-                                        <div key={req.id} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-sm transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
-                                                    {req.userAvatar ? (
-                                                        <Image src={req.userAvatar} alt={req.userName} width={40} height={40} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Ship size={18} />
-                                                    )}
+                                        <Link key={req.id} href={`/company/${slug}/dashboard/requests/${req.id}`}>
+                                            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-sm transition-all cursor-pointer">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden">
+                                                        {req.userAvatar ? (
+                                                            <Image src={req.userAvatar} alt={req.userName} width={40} height={40} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <Ship size={18} />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-gray-900 leading-none">{req.title}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{req.userName} • {format(new Date(req.createdAt), 'MMM dd, yyyy')}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-black text-gray-900 leading-none">{req.title}</p>
-                                                    <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{req.userName} • {format(new Date(req.createdAt), 'MMM dd, yyyy')}</p>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="text-right hidden sm:block">
+                                                        <p className="text-xs font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Budget</p>
+                                                    </div>
+                                                    <Badge className={`rounded-lg px-2 py-0.5 font-bold text-[9px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
+                                                        req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
+                                                            'bg-amber-100 text-amber-700'
+                                                        }`}>
+                                                        {req.status}
+                                                    </Badge>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="text-right hidden sm:block">
-                                                    <p className="text-xs font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Budget</p>
-                                                </div>
-                                                <Badge className={`rounded-lg px-2 py-0.5 font-bold text-[9px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                                                    req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                                        'bg-amber-100 text-amber-700'
-                                                    }`}>
-                                                    {req.status}
-                                                </Badge>
-                                            </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}

@@ -87,12 +87,21 @@ export default async function RequestsPage({
                                             Shared with me
                                         </Badge>
                                     )}
-                                    {req.budget > 0 && (
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
-                                            <p className="text-[10px] uppercase font-bold text-gray-400">Est. Budget</p>
-                                        </div>
-                                    )}
+                                    <div className="text-right hidden sm:block space-y-1">
+                                        {req.cost ? (
+                                            <div>
+                                                <p className="text-sm font-black text-gray-900">{req.currency} {req.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                <p className="text-[10px] uppercase font-bold text-gray-400">Total Cost</p>
+                                            </div>
+                                        ) : (
+                                            req.budget > 0 && (
+                                                <div>
+                                                    <p className="text-sm font-black text-gray-400">{req.currency} {req.budget.toLocaleString()}</p>
+                                                    <p className="text-[10px] uppercase font-bold text-gray-400">Est. Budget</p>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
                                     <Badge className={`rounded-xl px-3 py-1 font-bold text-[10px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
                                         req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
                                             'bg-amber-100 text-amber-700'

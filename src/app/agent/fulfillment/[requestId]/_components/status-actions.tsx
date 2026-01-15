@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { markAsBooked, markAsCompleted } from "../../actions";
 import { generateInvoice, updateInvoiceStatus } from "../../../invoices/actions";
-import { Loader2, CheckCircle, Plane, FileText, CheckCircle2, Ban } from "lucide-react";
+import { Loader2, CheckCircle, Plane, FileText, CheckCircle2, Ban, RefreshCw } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/use-confirm";
 import { InvoiceStatus } from "@prisma/client";
 
@@ -18,9 +18,10 @@ interface StatusActionsProps {
         id: string;
         status: InvoiceStatus;
     } | null;
+    canRegenerate?: boolean;
 }
 
-export function StatusActions({ requestId, currentStatus, allItemsCompleted, hasItems, invoice }: StatusActionsProps) {
+export function StatusActions({ requestId, currentStatus, allItemsCompleted, hasItems, invoice, canRegenerate }: StatusActionsProps) {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { confirm, ConfirmDialog } = useConfirm();
 
@@ -171,6 +172,25 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
+                                {canRegenerate && (
+                                    <>
+                                        <Button
+                                            onClick={handleGenerateInvoice}
+                                            disabled={isLoading !== null}
+                                            variant="outline"
+                                            className="border-indigo-100 bg-indigo-50/50 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-xl font-semibold"
+                                            title="Update invoice with latest bid details"
+                                        >
+                                            {isLoading === 'invoice' ? (
+                                                <Loader2 size={16} className="animate-spin mr-2" />
+                                            ) : (
+                                                <RefreshCw size={16} className="mr-2" />
+                                            )}
+                                            Regenerate
+                                        </Button>
+                                        <div className="h-8 w-px bg-gray-200 mx-1" />
+                                    </>
+                                )}
                                 <Button
                                     onClick={handleMarkPaid}
                                     disabled={isLoading !== null}

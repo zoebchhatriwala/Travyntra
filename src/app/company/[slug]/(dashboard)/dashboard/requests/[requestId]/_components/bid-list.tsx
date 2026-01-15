@@ -12,6 +12,7 @@ import { useConfirm } from "@/lib/hooks/use-confirm";
 interface Bid {
     id: string;
     amount: Money | null;
+    totalAmount?: Money | null;
     convertedAmount?: Money | null;
     status: string;
     message?: string | null;
@@ -87,7 +88,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <span className="font-bold text-xl text-gray-900">
-                                    {bid.amount ? formatMoney(bid.amount) : 'N/A'}
+                                    {bid.totalAmount ? formatMoney(bid.totalAmount) : (bid.amount ? formatMoney(bid.amount) : 'N/A')}
                                 </span>
                                 {bid.convertedAmount && (
                                     <span className="text-sm font-bold text-gray-400">

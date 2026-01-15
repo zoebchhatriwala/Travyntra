@@ -1,5 +1,6 @@
 "use server";
 
+
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -34,7 +35,7 @@ export async function getFulfillmentRequest(requestId: string) {
             user: { select: { name: true, email: true } },
             bids: {
                 where: { agentId: agencyId, status: "ACCEPTED" },
-                select: { amount: true }
+                select: { amount: true, updatedAt: true }
             },
             fulfillmentItems: {
                 orderBy: { order: 'asc' },
@@ -66,7 +67,8 @@ export async function getFulfillmentRequest(requestId: string) {
                     id: true,
                     status: true,
                     amount: true,
-                    createdAt: true
+                    createdAt: true,
+                    updatedAt: true
                 }
             }
         }
@@ -77,10 +79,13 @@ export async function getFulfillmentRequest(requestId: string) {
     // Convert decimal values to numbers for Client Component compatibility
     return {
         ...request,
+        bids: request.bids as any, // Cast to any to avoid type check issues if types mismatch, but strictly it is JsonValue
         invoice: request.invoice
             ? {
                 ...request.invoice,
                 amount: Number(request.invoice.amount),
+                // Invoice subtotal is also a Decimal and needs conversion
+                subtotal: (request.invoice as any).subtotal ? Number((request.invoice as any).subtotal) : 0,
             }
             : null,
     };

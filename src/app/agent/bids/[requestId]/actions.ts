@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
-import { createMoney, formatMoney, parseMoney } from "@/lib/types/money";
+import { createMoney, formatMoney, parseMoney, moneyToDecimal } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
 
@@ -24,6 +24,9 @@ import { createNotification } from "@/lib/notifications";
  */
 
 export async function getConversionPreview(amount: number, fromCurrency: string, toCurrency: string) {
+    if (fromCurrency === toCurrency) {
+        return formatMoney(createMoney(amount, fromCurrency));
+    }
     const money = createMoney(amount, fromCurrency);
     const converted = await convertMoney(money, toCurrency);
     return formatMoney(converted);
@@ -70,22 +73,35 @@ export async function submitBid(requestId: string, amount: number, message: stri
         const companyCurrency = request?.company.currency || "USD";
         let conversionText = "";
 
+        let totalWithTaxes = amount;
+        if (taxes && taxes.length > 0) {
+            taxes.forEach(t => {
+                if (t.type === 'PERCENTAGE') {
+                    totalWithTaxes += (amount * (t.value || 0)) / 100;
+                } else {
+                    totalWithTaxes += (t.value || 0);
+                }
+            });
+        }
+
+        const totalMoney = createMoney(totalWithTaxes, currency);
+
         if (currency !== companyCurrency) {
-            const converted = await convertMoney(bidAmount, companyCurrency);
-            conversionText = ` (Approx. ${formatMoney(converted)})`;
+            const converted = await convertMoney(totalMoney, companyCurrency);
+            conversionText = ` (Approx. Total ${formatMoney(converted)})`;
         }
 
         // 1. Link to Discussion: Post a system message in the request discussion
         let taxDetails = "";
         if (taxes && taxes.length > 0) {
-            taxDetails = "\n**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
+            taxDetails = "**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
         }
 
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}${conversionText}.${taxDetails}\n\n**Proposal Details**:\n${message}`
+                content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n${taxDetails}\n\n**Proposal Details**:\n${message}`
             }
         });
 
@@ -140,21 +156,34 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         const companyCurrency = request?.company.currency || "USD";
         let conversionText = "";
 
+        let totalWithTaxes = amount;
+        if (taxes && taxes.length > 0) {
+            taxes.forEach(t => {
+                if (t.type === 'PERCENTAGE') {
+                    totalWithTaxes += (amount * (t.value || 0)) / 100;
+                } else {
+                    totalWithTaxes += (t.value || 0);
+                }
+            });
+        }
+
+        const totalMoney = createMoney(totalWithTaxes, currency);
+
         if (currency !== companyCurrency) {
-            const converted = await convertMoney(bidAmount, companyCurrency);
-            conversionText = ` (Approx. ${formatMoney(converted)})`;
+            const converted = await convertMoney(totalMoney, companyCurrency);
+            conversionText = ` (Approx. Total ${formatMoney(converted)})`;
         }
 
         let taxDetails = "";
         if (taxes && taxes.length > 0) {
-            taxDetails = "\n**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
+            taxDetails = "**Taxes**:\n" + taxes.map(t => `- ${t.label}: ${t.type === 'PERCENTAGE' ? `${t.value}%` : formatMoney(createMoney(t.value, currency))}`).join('\n');
         }
 
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}${conversionText}.${taxDetails}\n\n**Updated Proposal**:\n${message}`
+                content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n${taxDetails}\n\n**Updated Proposal**:\n${message}`
             }
         });
 
@@ -185,7 +214,13 @@ export async function approveBid(bidId: string, requestId: string) {
     }
 
     try {
-        const bid = await prisma.agentBid.findUnique({ where: { id: bidId } });
+        const bid = await prisma.agentBid.findUnique({
+            where: { id: bidId },
+            include: {
+                agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+                request: { include: { company: true } }
+            }
+        });
         if (!bid) return { error: "Bid not found" };
 
         // 1. Update Bid Status
@@ -205,17 +240,43 @@ export async function approveBid(bidId: string, requestId: string) {
             data: { status: AgentBidStatus.REJECTED }
         });
 
+        // Calculate total amount with taxes
+        const amount = moneyToDecimal(parseMoney(bid.amount));
+        let totalWithTaxes = amount;
+        const taxes = ((bid as any).taxes as any[]) || [];
+
+        if (taxes.length > 0) {
+            taxes.forEach(t => {
+                if (t.type === 'PERCENTAGE') {
+                    totalWithTaxes += (amount * (t.value || 0)) / 100;
+                } else {
+                    totalWithTaxes += (t.value || 0);
+                }
+            });
+        }
+
+        // Create full money object for the total cost
+        // We use the currency of the bid itself
+        const bidCurrency = (bid.amount as any)?.currencyCode || "USD";
+        let totalMoney = createMoney(totalWithTaxes, bidCurrency);
+        const companyCurrency = bid.request.company.currency || "USD";
+
+        // If currencies differ, convert the total cost to the company's currency before saving
+        if (bidCurrency !== companyCurrency) {
+            totalMoney = await convertMoney(totalMoney, companyCurrency);
+        }
+
+        const formattedTotal = formatMoney(totalMoney);
+
         // 3. Update Request: Assign Agent, Set Cost, Update Status
         await prisma.tripRequest.update({
             where: { id: requestId },
             data: {
                 assignedAgentId: bid.agentId,
                 status: "IN_PROGRESS", // Or BOOKED, depending on workflow. usually IN_PROGRESS means fulfillment started.
-                cost: bid.amount as unknown as Prisma.InputJsonValue
+                cost: totalMoney as unknown as Prisma.InputJsonValue
             }
         });
-
-        const formattedAmount = formatMoney(parseMoney(bid.amount));
 
         // 4. Log Activity
         await prisma.activityLog.create({
@@ -223,7 +284,7 @@ export async function approveBid(bidId: string, requestId: string) {
                 companyId: session.user.companyId!,
                 actorId: session.user.id,
                 action: ActivityLogAction.BID_APPROVED,
-                description: `Approved bid of ${formattedAmount} from agent.`,
+                description: `Approved bid of ${formattedTotal} from agent.`,
                 metadata: { requestId, bidId }
             }
         });
@@ -233,11 +294,26 @@ export async function approveBid(bidId: string, requestId: string) {
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Bid Accepted**: ${formattedAmount}. Agency has been assigned.`
+                content: `**Bid Accepted**: ${formattedTotal}. Agency has been assigned.`
             }
         });
 
+        // 6. Notify the Agent's users
+        const agentUsers = bid.agent.users.map(u => u.id);
+        await Promise.all(agentUsers.map(userId =>
+            createNotification({
+                userId,
+                title: "Bid Approved!",
+                message: `Your bid for "${bid.request.title}" has been accepted by the company.`,
+                type: "SUCCESS",
+                link: `/agent/fulfillment/${requestId}`,
+                sendEmail: true
+            })
+        ));
+
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+        revalidatePath(`/agent/bids/${requestId}`);
+        revalidatePath(`/agent/bids`);
         return { success: true };
 
     } catch (e) {
