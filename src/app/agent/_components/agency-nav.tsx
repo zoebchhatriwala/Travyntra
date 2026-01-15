@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Gavel, Plane, FileText, Settings, Users, LucideIcon } from "lucide-react";
+import { LayoutDashboard, Gavel, Plane, FileText, Settings, Users, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
@@ -17,16 +17,20 @@ interface NavItem {
     exact?: boolean;
 }
 
+import { useSidebar } from "@/components/layout/sidebar-layout";
+
 export function AgencyNav() {
+    const { isCollapsed } = useSidebar();
     const pathname = usePathname();
     const { data: session } = useSession();
     const userRole = session?.user?.role;
 
+    // ... rest of the function remains the same, remove prop definition and interface ...
     const navItems: NavItem[] = [
         {
             name: "Dashboard",
             href: "/agent/dashboard",
-            icon: Gauge,
+            icon: LayoutDashboard,
             exact: true
         }
     ];
@@ -64,10 +68,12 @@ export function AgencyNav() {
     }
 
     return (
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-4">
-                Agency Workspace
-            </div>
+        <nav className={cn("flex-1 px-3 py-6 space-y-1 overflow-y-auto", isCollapsed ? "px-2" : "px-4")}>
+            {!isCollapsed && (
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-4 whitespace-nowrap overflow-hidden">
+                    Agency Workspace
+                </div>
+            )}
             {navItems.map((item) => {
                 const isActive = item.exact
                     ? pathname === item.href
@@ -78,20 +84,24 @@ export function AgencyNav() {
                         key={item.href}
                         href={item.href}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                             isActive
                                 ? "bg-indigo-50 text-indigo-700 shadow-sm"
-                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                            isCollapsed && "justify-center px-2"
                         )}
+                        title={isCollapsed ? item.name : undefined}
                     >
                         <item.icon
-                            size={18}
+                            size={20}
                             className={cn(
-                                "transition-colors",
+                                "transition-colors shrink-0",
                                 isActive ? "text-indigo-600" : "text-gray-400 group-hover:text-gray-500"
                             )}
                         />
-                        {item.name}
+                        {!isCollapsed && (
+                            <span className="truncate">{item.name}</span>
+                        )}
                     </Link>
                 );
             })}

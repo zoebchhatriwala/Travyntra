@@ -25,12 +25,14 @@ interface NavLink {
     icon: LucideIcon;
 }
 
+import { useSidebar } from "@/components/layout/sidebar-layout";
+
 interface CompanyNavProps {
     slug: string;
-    isCollapsed?: boolean;
 }
 
-export function CompanyNav({ slug, isCollapsed = false }: CompanyNavProps) {
+export function CompanyNav({ slug }: CompanyNavProps) {
+    const { isCollapsed } = useSidebar();
     const pathname = usePathname();
 
     const companyLinks: NavLink[] = [

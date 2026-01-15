@@ -18,11 +18,14 @@ interface NavLink {
     icon: LucideIcon;
 }
 
+import { useSidebar } from "@/components/layout/sidebar-layout";
+
 interface EmployeeNavProps {
     slug: string;
 }
 
 export function EmployeeNav({ slug }: EmployeeNavProps) {
+    const { isCollapsed } = useSidebar();
     const pathname = usePathname();
 
     const navLinks: NavLink[] = [
@@ -34,7 +37,7 @@ export function EmployeeNav({ slug }: EmployeeNavProps) {
     ];
 
     return (
-        <nav className="flex-1 px-4 space-y-1">
+        <nav className={cn("flex-1 px-3 space-y-1", isCollapsed ? "px-2" : "px-4")}>
             {navLinks.map((link) => {
                 const isActive = pathname === link.href || (link.href !== `/company/${slug}/dashboard` && pathname.startsWith(link.href));
 
@@ -43,20 +46,24 @@ export function EmployeeNav({ slug }: EmployeeNavProps) {
                         key={link.href}
                         href={link.href}
                         className={cn(
-                            "flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200 group",
+                            "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group",
                             isActive
                                 ? "text-indigo-600 bg-indigo-50 shadow-sm shadow-indigo-100/50"
-                                : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/30"
+                                : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/30",
+                            isCollapsed && "justify-center px-2"
                         )}
+                        title={isCollapsed ? link.label : undefined}
                     >
                         <link.icon
                             size={20}
                             className={cn(
-                                "transition-transform group-hover:scale-110",
+                                "transition-transform group-hover:scale-110 shrink-0",
                                 isActive ? "scale-110" : ""
                             )}
                         />
-                        {link.label}
+                        {!isCollapsed && (
+                            <span className="truncate">{link.label}</span>
+                        )}
                     </Link>
                 );
             })}
