@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travyntra - Corporate Travel Infrastructure Pitch Deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --accent: #f59e0b;
+            --mint: #d1fae5;
+            --sky: #dbeafe;
+            --lavender: #e0e7ff;
+            --charcoal: #1f2937;
+            --white: #ffffff;
+            --light-gray: #f9fafb;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--charcoal);
+            color: var(--charcoal);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .deck-container {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100%;
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Slide Backgrounds */
+        .slide-1 {
+            background: var(--gradient-1);
+        }
+
+        .slide-2 {
+            background: var(--white);
+        }
+
+        .slide-3 {
+            background: var(--light-gray);
+        }
+
+        .slide-4 {
+            background: var(--white);
+        }
+
+        .slide-5 {
+            background: var(--gradient-3);
+        }
+
+        .slide-6 {
+            background: var(--white);
+        }
+
+        .slide-7 {
+            background: var(--light-gray);
+        }
+
+        .slide-8 {
+            background: var(--white);
+        }
+
+        .slide-9 {
+            background: var(--gradient-4);
+        }
+
+        .slide-10 {
+            background: var(--gradient-5);
+        }
+
+        /* Hero Slide */
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.25rem, 3vw, 2rem);
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 300;
+            margin-bottom: 3rem;
+            max-width: 800px;
+        }
+
+        .hero-tagline {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 400;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            display: inline-block;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            color: #6b7280;
+            margin-bottom: 3rem;
+            max-width: 700px;
+        }
+
+        /* Problem Slide */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .problem-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+        }
+
+        .problem-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .problem-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .problem-text {
+            font-size: 1rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Solution Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .feature-text {
+            font-size: 1rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Architecture Slide */
+        .architecture-diagram {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-top: 3rem;
+        }
+
+        .arch-layer {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .arch-box {
+            background: var(--gradient-1);
+            color: var(--white);
+            padding: 1.5rem 2.5rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .arch-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .arch-box.secondary {
+            background: var(--gradient-3);
+        }
+
+        .arch-box.tertiary {
+            background: var(--gradient-4);
+        }
+
+        .arch-arrow {
+            font-size: 2rem;
+            color: #9ca3af;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        /* Market Slide */
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+        }
+
+        .stat-number {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Business Model */
+        .revenue-streams {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .revenue-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 6px solid var(--primary);
+        }
+
+        .revenue-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .revenue-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .revenue-text {
+            font-size: 1rem;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .revenue-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* Roadmap */
+        .roadmap-timeline {
+            position: relative;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .roadmap-item {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            align-items: flex-start;
+        }
+
+        .roadmap-phase {
+            background: var(--gradient-1);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .roadmap-content {
+            flex: 1;
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .roadmap-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .roadmap-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .roadmap-list li {
+            padding: 0.5rem 0;
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .roadmap-list li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Team Slide */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .team-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--charcoal);
+        }
+
+        .team-role {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .team-bio {
+            font-size: 0.95rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* CTA Slide */
+        .cta-content {
+            text-align: center;
+            color: var(--white);
+        }
+
+        .cta-title {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: var(--white);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-text {
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            margin-bottom: 3rem;
+            color: rgba(255, 255, 255, 0.95);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 1.5rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button.primary {
+            background: var(--white);
+            color: var(--primary);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button.primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            color: var(--white);
+            border: 3px solid var(--white);
+        }
+
+        .cta-button.secondary:hover {
+            background: var(--white);
+            color: var(--primary);
+        }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-dot:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--white);
+            border-color: var(--primary);
+            transform: scale(1.3);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-content > * {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* White text for gradient backgrounds */
+        .slide-1 .section-title,
+        .slide-5 .section-title,
+        .slide-9 .section-title {
+            background: var(--white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-1 .section-subtitle,
+        .slide-5 .section-subtitle,
+        .slide-9 .section-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 2rem 1rem;
+            }
+
+            .nav-dots {
+                display: none;
+            }
+
+            .roadmap-item {
+                flex-direction: column;
+            }
+
+            .roadmap-phase {
+                min-width: 100%;
+            }
+        }
+
+        /* Logo */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--white);
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 10;
+        }
+
+        .slide-2 .logo,
+        .slide-3 .logo,
+        .slide-4 .logo,
+        .slide-6 .logo,
+        .slide-7 .logo,
+        .slide-8 .logo {
+            color: var(--charcoal);
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .highlight-text {
+            font-size: 1.2rem;
+            color: var(--charcoal);
+            font-weight: 500;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="deck-container" id="deck">
+        <!-- Slide 1: Hero -->
+        <section class="slide slide-1">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h1 class="hero-title">Travyntra</h1>
+                <p class="hero-subtitle">Corporate Travel Infrastructure for the Modern Enterprise</p>
+                <div class="hero-tagline">Built for scale. Designed for simplicity.</div>
+            </div>
+        </section>
+
+        <!-- Slide 2: The Problem -->
+        <section class="slide slide-2">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">The Problem</h2>
+                <p class="section-subtitle">Corporate travel management is broken. Companies struggle with fragmented systems, lack of visibility, and inefficient workflows.</p>
+                
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <div class="problem-icon">🔀</div>
+                        <h3 class="problem-title">Fragmented Systems</h3>
+                        <p class="problem-text">Companies juggle multiple tools for bookings, approvals, and expense tracking, leading to data silos and inefficiencies.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">👁️</div>
+                        <h3 class="problem-title">Zero Visibility</h3>
+                        <p class="problem-text">Finance teams lack real-time insights into travel spend, making budget control and forecasting nearly impossible.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">⏱️</div>
+                        <h3 class="problem-title">Manual Workflows</h3>
+                        <p class="problem-text">Approval chains rely on email threads and spreadsheets, causing delays and frustration for employees and managers.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">🤝</div>
+                        <h3 class="problem-title">Agency Disconnect</h3>
+                        <p class="problem-text">Travel agencies operate in isolation, with no integrated platform to collaborate with corporate clients efficiently.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: The Solution -->
+        <section class="slide slide-3">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">The Solution</h2>
+                <p class="section-subtitle">A unified, multi-tenant platform that connects companies, employees, and travel agencies in one intelligent ecosystem.</p>
+                
+                <div class="highlight-box">
+                    <p class="highlight-text">Travyntra transforms complex travel processes into smooth, connected experiences — enabling businesses to operate efficiently, reliably, and globally.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏢</div>
+                        <h3 class="feature-title">Multi-Tenant Architecture</h3>
+                        <p class="feature-text">Dedicated portals for each company with complete data isolation and customizable branding.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Smart Workflows</h3>
+                        <p class="feature-text">Hierarchical approval chains with role-based access and automated routing.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <h3 class="feature-title">Real-Time Collaboration</h3>
+                        <p class="feature-text">Slack-like discussion threads for every request with @mentions and file attachments.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Key Features -->
+        <section class="slide slide-4">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Key Features</h2>
+                <p class="section-subtitle">Everything you need to manage corporate travel at scale.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Agency Marketplace</h3>
+                        <p class="feature-text">Competitive bidding system where multiple agencies compete for your business, ensuring best rates and service.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Financial Intelligence</h3>
+                        <p class="feature-text">Multi-currency support, automated invoicing, tax templates, and real-time spend analytics.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <h3 class="feature-title">Group Trip Management</h3>
+                        <p class="feature-text">Coordinate team travel with parent-child request linking, bulk approvals, and shared itineraries.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔔</div>
+                        <h3 class="feature-title">Smart Notifications</h3>
+                        <p class="feature-text">Real-time alerts for approvals, status changes, and mentions with email digest support.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📁</div>
+                        <h3 class="feature-title">Asset Vault</h3>
+                        <p class="feature-text">Centralized repository for tickets, visas, and travel documents with search and filtering.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3 class="feature-title">Audit Trail</h3>
+                        <p class="feature-text">Immutable activity logs tracking every action, approval, and conversation for complete transparency.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Technical Architecture -->
+        <section class="slide slide-5">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Technical Architecture</h2>
+                <p class="section-subtitle">Built on modern, scalable technologies for enterprise-grade performance.</p>
+                
+                <div class="architecture-diagram">
+                    <div class="arch-layer">
+                        <div class="arch-box">Next.js 15 App Router</div>
+                        <div class="arch-box secondary">React + TypeScript</div>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer">
+                        <div class="arch-box tertiary">NextAuth.js</div>
+                        <div class="arch-box tertiary">Zod Validation</div>
+                        <div class="arch-box tertiary">Tailwind CSS</div>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer">
+                        <div class="arch-box">Prisma ORM</div>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer">
+                        <div class="arch-box secondary">PostgreSQL Database</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 3rem;">
+                    <p class="highlight-text">🔒 Enterprise-grade security with role-based access control, data isolation, and complete audit trails.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Market Opportunity -->
+        <section class="slide slide-6">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Market Opportunity</h2>
+                <p class="section-subtitle">The corporate travel management market is massive and growing rapidly.</p>
+                
+                <div class="market-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">$1.4T</div>
+                        <div class="stat-label">Global Business Travel Market (2024)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">11.7%</div>
+                        <div class="stat-label">Expected CAGR (2024-2030)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">65%</div>
+                        <div class="stat-label">Companies Seeking Better Travel Tech</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$2.3T</div>
+                        <div class="stat-label">Projected Market Size by 2030</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 3rem;">
+                    <p class="highlight-text">💡 Post-pandemic, companies are prioritizing digital transformation in travel management, creating a perfect window for innovative solutions like Travyntra.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Business Model -->
+        <section class="slide slide-7">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Business Model</h2>
+                <p class="section-subtitle">Multiple revenue streams for sustainable growth.</p>
+                
+                <div class="revenue-streams">
+                    <div class="revenue-card">
+                        <h3 class="revenue-title">Agency Subscriptions</h3>
+                        <p class="revenue-text">Tiered pricing for travel agencies based on request volume and features.</p>
+                        <div class="revenue-price">$99 - $999/mo</div>
+                    </div>
+                    <div class="revenue-card">
+                        <h3 class="revenue-title">Enterprise Licensing</h3>
+                        <p class="revenue-text">Custom pricing for large corporations with dedicated support and SLAs.</p>
+                        <div class="revenue-price">Custom</div>
+                    </div>
+                    <div class="revenue-card">
+                        <h3 class="revenue-title">Transaction Fees</h3>
+                        <p class="revenue-text">Small percentage on completed bookings processed through the platform.</p>
+                        <div class="revenue-price">2-3%</div>
+                    </div>
+                    <div class="revenue-card">
+                        <h3 class="revenue-title">Premium Features</h3>
+                        <p class="revenue-text">Advanced analytics, API access, white-labeling, and custom integrations.</p>
+                        <div class="revenue-price">Add-ons</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Roadmap -->
+        <section class="slide slide-8">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Product Roadmap</h2>
+                <p class="section-subtitle">Our journey from MVP to market leader.</p>
+                
+                <div class="roadmap-timeline">
+                    <div class="roadmap-item">
+                        <div class="roadmap-phase">Phase 1-4<br>✅ Complete</div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Foundation & Core Features</h3>
+                            <ul class="roadmap-list">
+                                <li>Multi-tenant architecture with company portals</li>
+                                <li>Hierarchical approval workflows</li>
+                                <li>Request management & collaboration threads</li>
+                                <li>Notification system & activity logging</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-phase">Phase 5-7<br>✅ Complete</div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Agency Integration & Analytics</h3>
+                            <ul class="roadmap-list">
+                                <li>Agency marketplace & bidding system</li>
+                                <li>Fulfillment console with document management</li>
+                                <li>Financial tracking & multi-currency support</li>
+                                <li>Admin analytics & reporting dashboard</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-phase">Phase 8-9<br>🚀 Active</div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Smart Automation & UX</h3>
+                            <ul class="roadmap-list">
+                                <li>Policy-based auto-approvals</li>
+                                <li>Budget revision workflows</li>
+                                <li>Enhanced location selectors (airports, stations)</li>
+                                <li>Advanced search & filtering</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-phase">Phase 10+<br>📋 Planned</div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Enterprise & Scale</h3>
+                            <ul class="roadmap-list">
+                                <li>Mobile applications (iOS & Android)</li>
+                                <li>API marketplace for third-party integrations</li>
+                                <li>AI-powered travel recommendations</li>
+                                <li>Predictive analytics & spend forecasting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 9: Competitive Advantage -->
+        <section class="slide slide-9">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content">
+                <h2 class="section-title">Why Travyntra Wins</h2>
+                <p class="section-subtitle">Our unique advantages in a competitive market.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Three-Sided Marketplace</h3>
+                        <p class="feature-text">Unlike competitors, we connect companies, employees, AND agencies in one platform, creating network effects.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3 class="feature-title">Customizable Workflows</h3>
+                        <p class="feature-text">Visual workflow builder lets companies design approval chains that match their org structure perfectly.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <h3 class="feature-title">Transparent Pricing</h3>
+                        <p class="feature-text">Competitive bidding ensures companies get the best rates, while agencies compete on value, not just price.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <h3 class="feature-title">Modern Tech Stack</h3>
+                        <p class="feature-text">Built with Next.js 15 and modern tools, we can iterate faster and deliver features competitors can't match.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌍</div>
+                        <h3 class="feature-title">Global-First Design</h3>
+                        <p class="feature-text">Multi-currency, multi-timezone, and multi-language support built in from day one.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3 class="feature-title">Delightful UX</h3>
+                        <p class="feature-text">Corporate software doesn't have to be boring. Our "Corporate Joy" design philosophy makes work enjoyable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 10: Call to Action -->
+        <section class="slide slide-10">
+            <div class="logo">Travyntra</div>
+            <div class="slide-content cta-content">
+                <h2 class="cta-title">Let's Transform Corporate Travel Together</h2>
+                <p class="cta-text">Join us in building the future of travel management. One platform. Endless journeys.</p>
+                
+                <div class="cta-buttons">
+                    <a href="mailto:hello@travyntra.com" class="cta-button primary">Schedule a Demo</a>
+                    <a href="https://travyntra.com" class="cta-button secondary">Learn More</a>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 4rem; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-left-color: white;">
+                    <p class="highlight-text" style="color: white;">
+                        📧 hello@travyntra.com | 🌐 travyntra.com | 📍 Built with ❤️ for modern enterprises
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="nav-dots">
+        <div class="nav-dot active" data-slide="0"></div>
+        <div class="nav-dot" data-slide="1"></div>
+        <div class="nav-dot" data-slide="2"></div>
+        <div class="nav-dot" data-slide="3"></div>
+        <div class="nav-dot" data-slide="4"></div>
+        <div class="nav-dot" data-slide="5"></div>
+        <div class="nav-dot" data-slide="6"></div>
+        <div class="nav-dot" data-slide="7"></div>
+        <div class="nav-dot" data-slide="8"></div>
+        <div class="nav-dot" data-slide="9"></div>
+    </div>
+
+    <script>
+        // Navigation dots functionality
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.nav-dot');
+        const deck = document.getElementById('deck');
+
+        // Update active dot on scroll
+        deck.addEventListener('scroll', () => {
+            const scrollPosition = deck.scrollTop;
+            const slideHeight = window.innerHeight;
+            const currentSlide = Math.round(scrollPosition / slideHeight);
+
+            dots.forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        });
+
+        // Click dots to navigate
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                slides[index].scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const currentScroll = deck.scrollTop;
+            const slideHeight = window.innerHeight;
+            const currentSlide = Math.round(currentScroll / slideHeight);
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (currentSlide < slides.length - 1) {
+                    slides[currentSlide + 1].scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSlide > 0) {
+                    slides[currentSlide - 1].scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                slides[0].scrollIntoView({ behavior: 'smooth' });
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                slides[slides.length - 1].scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>

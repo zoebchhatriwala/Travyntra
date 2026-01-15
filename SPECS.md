@@ -370,4 +370,5 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Linting Standard**: Every build and development step MUST pass `yarn lint` (or `npm run lint`) with zero errors and zero warnings. Code quality is non-negotiable.
 - **Documentation Standard**: All functions, interfaces, and complex logic MUST be documented using proper **JSDoc** syntax to ensure long-term maintainability and clarity.
 - **Type Safety Standard**: Follow the TypeScript Strict Typing rules above. All code MUST be strongly typed with proper interfaces. The use of `any` type requires explicit justification in code comments.
+- **Pitch Deck Maintenance**: The project includes a comprehensive pitch deck (`pitch-deck.html`) that serves as the primary marketing and investor presentation material. When significant features are added, market data changes, or the product roadmap is updated, the AI assistant SHOULD review and update the pitch deck to ensure it accurately reflects the current state of the platform. This includes updating feature lists, roadmap phases, market statistics, and competitive advantages.
 
