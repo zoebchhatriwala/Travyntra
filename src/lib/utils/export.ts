@@ -5,7 +5,7 @@ import autoTable from 'jspdf-autotable';
 /**
  * Export data to CSV and trigger download
  */
-export const exportToCSV = (data: any[], filename: string) => {
+export const exportToCSV = (data: Record<string, unknown>[], filename: string) => {
     const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -25,7 +25,7 @@ export const exportToCSV = (data: any[], filename: string) => {
  */
 export const generatePDF = (
     headers: string[],
-    data: any[][],
+    data: (string | number | boolean)[][],
     filename: string,
     title: string,
     orientation: 'portrait' | 'landscape' = 'portrait'

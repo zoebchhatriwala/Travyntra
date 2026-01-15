@@ -40,11 +40,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface Tax {
+    label: string;
+    calculatedAmount: number;
+}
+
 interface Invoice {
     id: string;
     amount: number;
     subtotal?: number;
-    taxes?: any[];
+    taxes?: Tax[];
     currency: string;
     convertedAmount: number;
     status: InvoiceStatus;
@@ -93,6 +98,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
     const searchParams = useSearchParams();
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
     }, []);
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { InvoiceStatus } from "@prisma/client";
+import { InvoiceStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -38,12 +38,12 @@ export async function getCompanyInvoices(
 
         if (!company) return { invoices: [], currency: "USD", stats: { totalSpent: 0, pendingAmount: 0 }, metadata: { totalCount: 0, totalPages: 0, currentPage: 1 } };
 
-        const where: any = {
+        const where: Prisma.InvoiceWhereInput = {
             companyId: company.id
         };
 
         if (status && status !== "ALL") {
-            where.status = status;
+            where.status = status as InvoiceStatus;
         }
 
         if (query) {
@@ -54,16 +54,18 @@ export async function getCompanyInvoices(
         }
 
         if (startDate || endDate) {
-            where.createdAt = {};
-            if (startDate) where.createdAt.gte = new Date(startDate);
-            if (endDate) where.createdAt.lte = new Date(endDate);
+            const createdAt: Prisma.DateTimeFilter = {};
+            if (startDate) createdAt.gte = new Date(startDate);
+            if (endDate) createdAt.lte = new Date(endDate);
+            where.createdAt = createdAt;
         }
 
-        const statsWhere: any = { companyId: company.id };
+        const statsWhere: Prisma.InvoiceWhereInput = { companyId: company.id };
         if (startDate || endDate) {
-            statsWhere.createdAt = {};
-            if (startDate) statsWhere.createdAt.gte = new Date(startDate);
-            if (endDate) statsWhere.createdAt.lte = new Date(endDate);
+            const createdAt: Prisma.DateTimeFilter = {};
+            if (startDate) createdAt.gte = new Date(startDate);
+            if (endDate) createdAt.lte = new Date(endDate);
+            statsWhere.createdAt = createdAt;
         }
 
         const [invoices, totalCount, statsGroup] = await Promise.all([
@@ -97,12 +99,19 @@ export async function getCompanyInvoices(
             .filter(g => g.status === "PENDING" || g.status === "OVERDUE")
             .reduce((sum, g) => sum + Number(g._sum.amount || 0), 0);
 
+        interface Tax {
+            label: string;
+            value: number;
+            type: string;
+            calculatedAmount: number;
+        }
+
         return {
             invoices: invoices.map((inv) => ({
                 id: inv.id,
                 amount: Number(inv.amount),
-                subtotal: Number((inv as any)?.subtotal || 0),
-                taxes: (inv as any).taxes as any[],
+                subtotal: Number((inv as unknown as { subtotal?: number }).subtotal || 0),
+                taxes: (inv as unknown as { taxes?: Tax[] }).taxes || [],
                 currency: inv.currency || company.currency || "USD",
                 date: inv.createdAt,
                 status: inv.status,

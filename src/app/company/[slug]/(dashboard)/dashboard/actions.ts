@@ -8,15 +8,7 @@ import { revalidatePath } from "next/cache";
 import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
 import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
-
-/**
- * Represents a location/destination structure with extensible properties.
- */
-interface Location {
-    city?: string;
-    formatted?: string;
-    [key: string]: Prisma.InputJsonValue | undefined;
-}
+import { type PartialAddress, formatAddressShort } from "@/lib/utils/address";
 
 /**
  * Retrieves dashboard statistics for the currently authenticated employee.
@@ -212,7 +204,7 @@ export async function getCompanyGroupTrips() {
 
     return groupTrips.map((trip) => ({
         ...trip,
-        destination: (trip.destination as unknown as Location)?.city || (trip.destination as unknown as Location)?.formatted || "Unknown Destination"
+        destination: formatAddressShort(trip.destination as unknown as PartialAddress)
     }));
 }
 
@@ -291,7 +283,7 @@ export async function getEmployeeAssets({
             url: doc.url,
             createdAt: doc.createdAt,
             tripTitle: doc.request?.title || "Unknown Trip",
-            tripDestination: (doc.request?.destination as unknown as Location)?.city || (doc.request?.destination as unknown as Location)?.formatted || "Unknown",
+            tripDestination: formatAddressShort(doc.request?.destination as unknown as PartialAddress),
             uploadedBy: doc.uploader.name || "Unknown",
             uploaderRole: doc.uploader.role
         })),
@@ -352,7 +344,7 @@ export async function updateEmployeeProfile(formData: FormData) {
  */
 export async function createTripRequest(data: {
     title: string;
-    destination: Location;
+    destination: PartialAddress;
     startDate: Date;
     endDate: Date;
     purpose?: string;
@@ -391,7 +383,7 @@ export async function createTripRequest(data: {
                 userId: session.user.id,
                 companyId: session.user.companyId,
                 title: data.title,
-                destination: data.destination,
+                destination: data.destination as unknown as Prisma.InputJsonValue,
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
@@ -408,7 +400,7 @@ export async function createTripRequest(data: {
             data: {
                 requestId: request.id,
                 senderId: session.user.id,
-                content: `🚀 Trip request created: **${data.title}** to **${data.destination?.city || data.destination?.formatted || 'Destination'}**.`
+                content: `🚀 Trip request created: **${data.title}** to **${formatAddressShort(data.destination)}**.`
             }
         });
 
@@ -596,8 +588,8 @@ export async function getTripRequest(requestId: string) {
             };
         }));
 
-        const destinationObj = request.destination as unknown as Location;
-        const destinationString = destinationObj?.formatted || destinationObj?.city || (typeof request.destination === 'string' ? request.destination : "Unknown");
+        const destinationObj = request.destination as unknown as PartialAddress;
+        const destinationString = formatAddressShort(destinationObj);
         const hasDetails = destinationObj && typeof destinationObj === 'object' && !Array.isArray(destinationObj);
 
         return {
@@ -615,7 +607,7 @@ export async function getTripRequest(requestId: string) {
             childTrips: request.childTrips.map((child) => ({
                 ...child,
                 budget: child.budget ? parseMoney(child.budget) : null,
-                destination: (child.destination as unknown as Location)?.city || (child.destination as unknown as Location)?.formatted || "Unknown" // Handle child trips too
+                destination: formatAddressShort(child.destination as unknown as PartialAddress)
             })),
         };
     } catch (e) {
@@ -860,7 +852,7 @@ export async function uploadMessageAttachment(formData: FormData) {
  */
 export async function updateTripRequest(requestId: string, data: {
     title?: string;
-    destination?: Location;
+    destination?: PartialAddress;
     startDate?: Date;
     endDate?: Date;
     purpose?: string;
@@ -920,7 +912,7 @@ export async function updateTripRequest(requestId: string, data: {
             where: { id: requestId },
             data: {
                 title: data.title,
-                destination: data.destination,
+                destination: data.destination ? (data.destination as unknown as Prisma.InputJsonValue) : undefined,
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
@@ -937,7 +929,7 @@ export async function updateTripRequest(requestId: string, data: {
         const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         if (data.title && data.title !== request.title) changes.push(`- **Title**: "${request.title}" → "${data.title}"`);
-        if (data.destination && JSON.stringify(data.destination) !== JSON.stringify(request.destination)) changes.push(`- **Destination**: ${(request.destination as unknown as Location)?.city || 'Old'} → ${(data.destination as unknown as Location)?.city || 'New'}`);
+        if (data.destination && JSON.stringify(data.destination) !== JSON.stringify(request.destination)) changes.push(`- **Destination**: ${formatAddressShort(request.destination as unknown as PartialAddress)} → ${formatAddressShort(data.destination)}`);
         if (data.startDate && data.startDate.getTime() !== new Date(request.startDate).getTime()) changes.push(`- **Start Date**: ${formatDate(request.startDate)} → ${formatDate(data.startDate)}`);
         if (data.endDate && data.endDate.getTime() !== new Date(request.endDate).getTime()) changes.push(`- **End Date**: ${formatDate(request.endDate)} → ${formatDate(data.endDate)}`);
         if (data.purpose && data.purpose !== request.purpose) changes.push(`- **Purpose**: Updated`);

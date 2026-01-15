@@ -70,7 +70,8 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                     // Let's assume server action returns Date objects if using "use server" properly?
                     // Actually, Client Components receive Serialized Data.
                     // We need to map dates if necessary.
-                    setMessages(latestMessages.map((m: any) => ({
+                    type SerializedMessage = Omit<Message, 'createdAt'> & { createdAt: string | Date };
+                    setMessages(latestMessages.map((m: SerializedMessage) => ({
                         ...m,
                         createdAt: new Date(m.createdAt)
                     })));

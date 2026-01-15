@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { UserRole } from "@prisma/client";
+import { UserRole, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface TaxItem {
@@ -65,7 +65,7 @@ export async function createTaxTemplate(data: {
                 agencyId: session.user.companyId,
                 name: data.name,
                 description: data.description,
-                taxes: data.taxes as unknown as any,
+                taxes: data.taxes as unknown as Prisma.InputJsonValue,
                 isDefault: data.isDefault || false
             }
         });
@@ -116,7 +116,7 @@ export async function updateTaxTemplate(id: string, data: {
             data: {
                 name: data.name,
                 description: data.description,
-                taxes: data.taxes as unknown as any,
+                taxes: data.taxes as unknown as Prisma.InputJsonValue,
                 isDefault: data.isDefault || false
             }
         });

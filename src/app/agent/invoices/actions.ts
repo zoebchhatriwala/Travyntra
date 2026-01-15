@@ -60,8 +60,7 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
 
         const acceptedBid = await prisma.agentBid.findFirst({
             where: { requestId, agentId: agencyId, status: "ACCEPTED" },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            select: { amount: true, taxes: true } as any
+            select: { amount: true, taxes: true }
         });
 
         if (!acceptedBid || !acceptedBid.amount) {
@@ -123,7 +122,7 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
                     // We don't change status if updating, unless it was something else? Keep it as is or reset to PENDING?
                     // User said "if bid updated", likely implies new negotiation, so maybe reset?
                     // But if it was already SENT/PENDING, it just updates amounts.
-                } as any
+                }
             });
         } else {
             // Create the invoice
@@ -139,8 +138,7 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
                     status: InvoiceStatus.PENDING,
                     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
                     pdfUrl: pdfUrl || null
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } as any
+                }
             });
         }
 
@@ -175,7 +173,7 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
                     currency: invoiceCurrency,
                     originalAmount: subtotal,
                     originalCurrency: invoiceCurrency
-                }
+                } as unknown as Prisma.InputJsonValue
             }
         });
 
@@ -262,10 +260,10 @@ export async function getAgencyInvoices(
     });
 
     try {
-        const where: any = { agencyId };
+        const where: Prisma.InvoiceWhereInput = { agencyId };
 
         if (status && status !== "ALL") {
-            where.status = status;
+            where.status = status as InvoiceStatus;
         }
 
         if (query) {
@@ -276,16 +274,18 @@ export async function getAgencyInvoices(
         }
 
         if (startDate || endDate) {
-            where.createdAt = {};
-            if (startDate) where.createdAt.gte = new Date(startDate);
-            if (endDate) where.createdAt.lte = new Date(endDate);
+            const createdAt: Prisma.DateTimeFilter = {};
+            if (startDate) createdAt.gte = new Date(startDate);
+            if (endDate) createdAt.lte = new Date(endDate);
+            where.createdAt = createdAt;
         }
 
-        const statsWhere: any = { agencyId };
+        const statsWhere: Prisma.InvoiceWhereInput = { agencyId };
         if (startDate || endDate) {
-            statsWhere.createdAt = {};
-            if (startDate) statsWhere.createdAt.gte = new Date(startDate);
-            if (endDate) statsWhere.createdAt.lte = new Date(endDate);
+            const createdAt: Prisma.DateTimeFilter = {};
+            if (startDate) createdAt.gte = new Date(startDate);
+            if (endDate) createdAt.lte = new Date(endDate);
+            statsWhere.createdAt = createdAt;
         }
 
         const [invoices, totalCount, statsGroup] = await Promise.all([
@@ -328,10 +328,8 @@ export async function getAgencyInvoices(
             invoices: await Promise.all(invoices.map(async inv => ({
                 id: inv.id,
                 amount: Number(inv.amount),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                subtotal: Number((inv as any)?.subtotal || 0),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                taxes: ((inv as any).taxes || []) as InvoiceTax[],
+                subtotal: Number((inv as unknown as { subtotal?: number }).subtotal || 0),
+                taxes: ((inv as unknown as { taxes?: InvoiceTax[] }).taxes || []),
                 currency: inv.currency,
                 // Convert for statistics
                 convertedAmount: await convertCurrency(Number(inv.amount), inv.currency, agency?.currency || "USD"),

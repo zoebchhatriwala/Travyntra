@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { RequestStatus, UserRole } from "@prisma/client";
+import { RequestStatus, UserRole, Prisma } from "@prisma/client";
 import { ActivityLogAction } from "@/lib/enums";
 import { createNotification } from "@/lib/notifications";
 
@@ -81,13 +81,13 @@ export async function getFulfillmentRequest(requestId: string) {
 
     return {
         ...request,
-        bids: request.bids as any, // Cast to any to avoid type check issues if types mismatch, but strictly it is JsonValue
+        bids: request.bids as unknown as { amount: Prisma.JsonValue; updatedAt: Date }[],
         invoice: (request.invoice && showInvoice)
             ? {
                 ...request.invoice,
                 amount: Number(request.invoice.amount),
                 // Invoice subtotal is also a Decimal and needs conversion
-                subtotal: (request.invoice as any).subtotal ? Number((request.invoice as any).subtotal) : 0,
+                subtotal: (request.invoice as unknown as { subtotal?: number }).subtotal ? Number((request.invoice as unknown as { subtotal?: number }).subtotal) : 0,
             }
             : null,
     };

@@ -234,7 +234,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             if (initialData && requestId) {
                 const result = await updateTripRequest(requestId, {
                     title: data.title,
-                    destination: data.destinationDetails || { formatted: data.destination, city: data.destination },
+                    destination: data.destinationDetails ? data.destinationDetails : {
+                        formatted: data.destination,
+                        city: data.destination
+                    },
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
@@ -254,7 +257,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             } else {
                 const result = await createTripRequest({
                     title: data.title,
-                    destination: data.destinationDetails || { formatted: data.destination, city: data.destination },
+                    destination: data.destinationDetails ? data.destinationDetails : {
+                        formatted: data.destination,
+                        city: data.destination
+                    },
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,

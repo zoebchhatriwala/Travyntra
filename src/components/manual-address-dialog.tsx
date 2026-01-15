@@ -6,16 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { CountrySelect } from "@/components/ui/country-select";
+import { type Address } from "@/lib/utils/address";
 
-export interface Address {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipcode: string;
-    latitude?: string;
-    longitude?: string;
-}
+// Re-export for backward compatibility
+export type { Address };
 
 interface ManualAddressDialogProps {
     open: boolean;

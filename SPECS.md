@@ -218,12 +218,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Asset Vault Enhancements**: Add search bar, filters, and paginationUrl to the Asset Vault.
 - [x] **Collaborator Management**: UI to manually add collaborators to requests (complementing auto-mentions).
 
-### Phase 9: Smart Logic & Automation 📋 PLANNED
-- [ ] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < ₹50k.
-- [ ] **International/Domestic Detection**: Auto-tag requests based on company country vs destination.
+### Phase 9: Smart Logic & Automation ✅ COMPLETED
+- [x] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < configured threshold.
+- [x] **International/Domestic Detection**: Auto-tag requests based on company country vs destination.
 - [ ] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
 
-### Phase 10: Financial Layer �️ ACTIVE
+### Phase 10: Financial Layer 🛠️ ACTIVE
 - [ ] **Invoice Management**: Company view of all invoices.
 - [x] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
 - [x] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
@@ -289,7 +289,18 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Enhanced notification system with tax breakdowns
 
 ### Latest Updates (January 15, 2026) ✅
-1. **Tax Template Management System**
+1. **Auto-Approval Policy System** (Phase 9)
+   - ✅ TypeScript interfaces for auto-approval policies
+   - ✅ Auto-approval evaluation engine with rule-based logic
+   - ✅ Budget threshold rules (configurable per company)
+   - ✅ Domestic trip auto-approval (based on company country)
+   - ✅ Combined rules (budget AND domestic)
+   - ✅ Workflow engine integration for automatic approval
+   - ✅ Admin UI for policy configuration
+   - ✅ Audit trail for auto-approved requests
+   - ✅ System messages in discussion threads for auto-approvals
+
+2. **Tax Template Management System**
    - ✅ Database schema: `TaxTemplate` model with agency relation
    - ✅ CRUD operations: Create, read, update, delete tax templates
    - ✅ Default template support (auto-apply to new bids)
@@ -298,7 +309,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Settings menu reorganization (Configuration & Tax Templates)
    - ✅ Responsive tax input layout for mobile
 
-2. **Enhanced Notification System**
+3. **Enhanced Notification System**
    - ✅ Company admins notified on bid submissions/updates
    - ✅ Company admins notified on trip completion
    - ✅ Staff notified on status/role changes
@@ -306,11 +317,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Detailed tax information in bid messages
    - ✅ Email notifications for all critical events
 
-3. **UI/UX Improvements**
+4. **UI/UX Improvements**
    - ✅ Copy button for request IDs with visual feedback
    - ✅ Improved bid form tax layout (mobile-responsive)
    - ✅ Settings menu with card-based navigation
    - ✅ Better message formatting with tax details
+   - ✅ Auto-approval settings page with modern design
 
 ---
 ---

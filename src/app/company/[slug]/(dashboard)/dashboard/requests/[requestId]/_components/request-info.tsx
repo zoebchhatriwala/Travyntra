@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
 import { Money, formatMoney } from "@/lib/types/money";
 import { Prisma } from "@prisma/client";
+import { formatAddressShort, normalizeAddress } from "@/lib/utils/address";
 
 interface RequestInfoProps {
     request: {
@@ -22,7 +23,8 @@ interface RequestInfoProps {
 export function RequestInfo({ request }: { request: RequestInfoProps['request'] }) {
     const preferences: TripPreferences = request.preferences as TripPreferences;
 
-    const destination = request.destination as { city?: string; formatted?: string } | null;
+    // Use standardized address formatting
+    const destinationDisplay = formatAddressShort(normalizeAddress(request.destination));
 
     return (
         <div className="space-y-6">
@@ -42,7 +44,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destination</p>
                                 <p className="text-base font-bold text-gray-900">
-                                    {destination?.city || destination?.formatted || "Unknown Destination"}
+                                    {destinationDisplay}
                                 </p>
                             </div>
                         </div>

@@ -12,6 +12,12 @@ import { format } from "date-fns";
 import { TripPreferences } from "@/lib/types/trip-preferences";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
 
+interface TaxItem {
+    label: string;
+    value: number;
+    type: "PERCENTAGE" | "FIXED";
+}
+
 export default async function RequestDetailsPage({
     params
 }: {
@@ -200,7 +206,7 @@ export default async function RequestDetailsPage({
                         id: myBid.id,
                         amount: moneyToDecimal(parseMoney(myBid.amount)),
                         message: myBid.message,
-                        taxes: (myBid as any).taxes as any[]
+                        taxes: (myBid.taxes as unknown as TaxItem[]) || []
                     } : null}
                 />
             </div>

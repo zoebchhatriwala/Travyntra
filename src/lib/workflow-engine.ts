@@ -1,6 +1,7 @@
 
 import { prisma } from "./prisma";
 import { RequestStatus, ApprovalType, ApprovalStatus } from "@prisma/client";
+import { AutoApprovalEngine } from "./auto-approval-engine";
 
 /**
  * Engine responsible for managing the lifecycle and state transitions of the trip request approval workflow.
@@ -55,6 +56,44 @@ export class WorkflowEngine {
             const errorMsg = "Request not found";
             // Throw a descriptive error if the request is missing
             throw new Error(errorMsg);
+        }
+
+        // Check if the request qualifies for auto-approval
+        const autoApprovalEval = await AutoApprovalEngine.evaluateRequest(requestId);
+
+        if (autoApprovalEval.shouldAutoApprove) {
+            // Define the auto-approved status
+            const autoApprovedStatus = RequestStatus.PENDING_AGENT_ACTION;
+
+            // Update the request status to auto-approved
+            await prisma.tripRequest.update({
+                where: { id: requestId },
+                data: { status: autoApprovedStatus }
+            });
+
+            // Log the auto-approval event
+            const autoApprovalComment = `✅ Auto-approved: ${autoApprovalEval.reason}`;
+
+            await prisma.workflowAction.create({
+                data: {
+                    requestId: requestId,
+                    actorId: request.userId,
+                    action: "AUTO_APPROVED",
+                    comment: autoApprovalComment
+                }
+            });
+
+            // Create a system message in the discussion thread
+            await prisma.message.create({
+                data: {
+                    requestId: requestId,
+                    senderId: request.userId,
+                    content: `✅ **Auto-Approved**: ${autoApprovalEval.reason}\n\nThis request met the criteria for automatic approval and has been sent directly to the agency for fulfillment.`
+                }
+            });
+
+            // Exit early - no need to process workflow steps
+            return;
         }
 
         // Retrieve the company workflow from the request object

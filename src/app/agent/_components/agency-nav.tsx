@@ -3,19 +3,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Gavel, Plane, FileText, Settings, Users } from "lucide-react";
+import { Gauge, Gavel, Plane, FileText, Settings, Users, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
 
 
 
+interface NavItem {
+    name: string;
+    href: string;
+    icon: LucideIcon;
+    exact?: boolean;
+}
+
 export function AgencyNav() {
     const pathname = usePathname();
     const { data: session } = useSession();
     const userRole = session?.user?.role;
 
-    const navItems = [
+    const navItems: NavItem[] = [
         {
             name: "Dashboard",
             href: "/agent/dashboard",
@@ -29,31 +36,31 @@ export function AgencyNav() {
             name: "Bid Management",
             href: "/agent/bids",
             icon: Gavel
-        } as any);
+        });
     }
 
     navItems.push({
         name: "Fulfillment Console",
         href: "/agent/fulfillment",
         icon: Plane
-    } as any);
+    });
 
     if (userRole === UserRole.TRAVEL_AGENT) {
         navItems.push({
             name: "Invoices",
             href: "/agent/invoices",
             icon: FileText
-        } as any);
+        });
         navItems.push({
             name: "Staff",
             href: "/agent/staff",
             icon: Users
-        } as any);
+        });
         navItems.push({
             name: "Settings",
             href: "/agent/settings",
             icon: Settings
-        } as any);
+        });
     }
 
     return (

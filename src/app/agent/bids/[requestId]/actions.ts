@@ -11,6 +11,12 @@ import { createMoney, formatMoney, parseMoney, moneyToDecimal } from "@/lib/type
 import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
 
+interface BidTax {
+    label: string;
+    value: number;
+    type: 'PERCENTAGE' | 'FIXED';
+}
+
 // --- Agent Actions ---
 
 /**
@@ -43,7 +49,7 @@ export async function getConversionPreview(amount: number, fromCurrency: string,
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
 
-export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
+export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD", taxes: BidTax[] = []) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         return { error: "Unauthorized" };
@@ -62,7 +68,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
                 status: AgentBidStatus.PENDING
-            } as any
+            }
         });
 
         // Get converted value for the message if company currency is different
@@ -152,7 +158,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
 
-export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
+export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD", taxes: BidTax[] = []) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) return { error: "Unauthorized" };
 
@@ -166,7 +172,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
                 taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
                 updatedAt: new Date()
-            } as any
+            }
         });
 
         // Post update to discussion
@@ -285,7 +291,7 @@ export async function approveBid(bidId: string, requestId: string) {
         // Calculate total amount with taxes
         const amount = moneyToDecimal(parseMoney(bid.amount));
         let totalWithTaxes = amount;
-        const taxes = ((bid as any).taxes as any[]) || [];
+        const taxes = (bid.taxes as unknown as BidTax[]) || [];
 
         if (taxes.length > 0) {
             taxes.forEach(t => {
@@ -299,7 +305,7 @@ export async function approveBid(bidId: string, requestId: string) {
 
         // Create full money object for the total cost
         // We use the currency of the bid itself
-        const bidCurrency = (bid.amount as any)?.currencyCode || "USD";
+        const bidCurrency = (bid.amount as unknown as { currencyCode: string })?.currencyCode || "USD";
         let totalMoney = createMoney(totalWithTaxes, bidCurrency);
         const companyCurrency = bid.request.company.currency || "USD";
 
