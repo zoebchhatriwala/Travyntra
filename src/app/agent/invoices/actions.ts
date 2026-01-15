@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { Prisma, RequestStatus, InvoiceStatus } from "@prisma/client";
+import { Prisma, RequestStatus, InvoiceStatus, UserRole } from "@prisma/client";
 import { ActivityLogAction } from "@/lib/enums";
 import { createNotification } from "@/lib/notifications";
 import { parseMoney, moneyToDecimal } from "@/lib/types/money";
@@ -24,9 +24,9 @@ interface InvoiceTax extends BidTax {
 /**
  * Generate an invoice for a completed trip request
  */
-export async function generateInvoice(requestId: string) {
+export async function generateInvoice(requestId: string, pdfUrl?: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         return { error: "Unauthorized" };
     }
 
@@ -119,6 +119,7 @@ export async function generateInvoice(requestId: string) {
                     subtotal: subtotal,
                     taxes: invoiceTaxes as unknown as Prisma.InputJsonArray,
                     currency: invoiceCurrency,
+                    pdfUrl: pdfUrl || undefined
                     // We don't change status if updating, unless it was something else? Keep it as is or reset to PENDING?
                     // User said "if bid updated", likely implies new negotiation, so maybe reset?
                     // But if it was already SENT/PENDING, it just updates amounts.
@@ -137,6 +138,7 @@ export async function generateInvoice(requestId: string) {
                     currency: invoiceCurrency,
                     status: InvoiceStatus.PENDING,
                     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
+                    pdfUrl: pdfUrl || null
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } as any
             });
@@ -174,7 +176,7 @@ export async function generateInvoice(requestId: string) {
         const admins = await prisma.user.findMany({
             where: {
                 companyId: request.company.id,
-                role: "COMPANY_ADMIN",
+                role: UserRole.COMPANY_ADMIN,
                 isActive: true
             }
         });
@@ -185,7 +187,7 @@ export async function generateInvoice(requestId: string) {
                 title: "New Invoice Received",
                 message: `A new invoice has been generated for trip "${request.title}" by ${session.user.name}.`,
                 type: "INFO",
-                link: `/company/${request.company.slug}/admin/billing`,
+                link: `/company/${request.company.slug}/admin/billing#invoice_${invoice.id}`,
                 sendEmail: true
             });
         }
@@ -211,9 +213,34 @@ export async function generateInvoice(requestId: string) {
 /**
  * Get all invoices for the current agency
  */
-export async function getAgencyInvoices() {
+export async function getAgencyInvoices(
+    options: {
+        page?: number;
+        pageSize?: number;
+        query?: string;
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+    } = {}
+) {
+    const {
+        page = 1,
+        pageSize = 10,
+        query = "",
+        status,
+        startDate,
+        endDate
+    } = options;
+
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId) return { agencyCurrency: "USD", invoices: [] };
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
+        return {
+            agencyCurrency: "USD",
+            invoices: [],
+            stats: { totalBilled: 0, pendingAmount: 0 },
+            metadata: { totalCount: 0, totalPages: 0, currentPage: 1 }
+        };
+    }
 
     const agencyId = session.user.companyId;
     const agency = await prisma.company.findUnique({
@@ -222,14 +249,66 @@ export async function getAgencyInvoices() {
     });
 
     try {
-        const invoices = await prisma.invoice.findMany({
-            where: { agencyId },
-            include: {
-                company: { select: { name: true, slug: true } },
-                request: { select: { title: true } }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        const where: any = { agencyId };
+
+        if (status && status !== "ALL") {
+            where.status = status;
+        }
+
+        if (query) {
+            where.OR = [
+                { request: { title: { contains: query, mode: 'insensitive' } } },
+                { company: { name: { contains: query, mode: 'insensitive' } } }
+            ];
+        }
+
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt.gte = new Date(startDate);
+            if (endDate) where.createdAt.lte = new Date(endDate);
+        }
+
+        const statsWhere: any = { agencyId };
+        if (startDate || endDate) {
+            statsWhere.createdAt = {};
+            if (startDate) statsWhere.createdAt.gte = new Date(startDate);
+            if (endDate) statsWhere.createdAt.lte = new Date(endDate);
+        }
+
+        const [invoices, totalCount, statsGroup] = await Promise.all([
+            prisma.invoice.findMany({
+                where,
+                include: {
+                    company: { select: { name: true, slug: true } },
+                    request: { select: { title: true } }
+                },
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize
+            }),
+            prisma.invoice.count({ where }),
+            prisma.invoice.groupBy({
+                by: ['status'],
+                where: statsWhere,
+                _sum: { amount: true }
+            })
+        ]);
+
+        // Calculate stats in agency currency
+        const totalBilled = await Promise.all(
+            statsGroup
+                .filter(g => g.status === "PAID")
+                .map(async g => {
+                    // For simplicity, assuming all invoices are in agency currency or need conversion
+                    return Number(g._sum.amount || 0);
+                })
+        ).then(amounts => amounts.reduce((sum, amt) => sum + amt, 0));
+
+        const pendingAmount = await Promise.all(
+            statsGroup
+                .filter(g => g.status === "PENDING" || g.status === "OVERDUE")
+                .map(async g => Number(g._sum.amount || 0))
+        ).then(amounts => amounts.reduce((sum, amt) => sum + amt, 0));
 
         return {
             agencyCurrency: agency?.currency || "USD",
@@ -250,17 +329,31 @@ export async function getAgencyInvoices() {
                 requestTitle: inv.request.title,
                 requestId: inv.requestId,
                 pdfUrl: inv.pdfUrl
-            })))
+            }))),
+            stats: {
+                totalBilled,
+                pendingAmount
+            },
+            metadata: {
+                totalCount,
+                totalPages: Math.ceil(totalCount / pageSize),
+                currentPage: page
+            }
         };
     } catch (e) {
         console.error("Get agency invoices error:", e);
-        return { agencyCurrency: "USD", invoices: [] };
+        return {
+            agencyCurrency: agency?.currency || "USD",
+            invoices: [],
+            stats: { totalBilled: 0, pendingAmount: 0 },
+            metadata: { totalCount: 0, totalPages: 0, currentPage: 1 }
+        };
     }
 }
 
 export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || (session.user.role !== "TRAVEL_AGENT" && session.user.role !== "AGENCY_EMPLOYEE")) {
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         return { error: "Unauthorized" };
     }
 
@@ -281,7 +374,7 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
         const admins = await prisma.user.findMany({
             where: {
                 companyId: invoice.companyId,
-                role: "COMPANY_ADMIN",
+                role: UserRole.COMPANY_ADMIN,
                 isActive: true
             }
         });
@@ -314,7 +407,7 @@ export async function updateInvoiceStatus(invoiceId: string, status: InvoiceStat
 
 export async function uploadInvoicePdf(formData: FormData) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || (session.user.role !== "TRAVEL_AGENT" && session.user.role !== "AGENCY_EMPLOYEE")) {
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         return { error: "Unauthorized" };
     }
 
@@ -343,5 +436,25 @@ export async function uploadInvoicePdf(formData: FormData) {
     } catch (e) {
         console.error("Upload invoice PDF error:", e);
         return { error: "Failed to upload invoice PDF" };
+    }
+}
+
+export async function uploadInvoiceAttachment(formData: FormData) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
+        return { error: "Unauthorized" };
+    }
+
+    const file = formData.get("file") as File;
+    if (!file) {
+        return { error: "Missing file" };
+    }
+
+    try {
+        const url = await uploadFile(file, "invoices");
+        return { success: true, url };
+    } catch (e) {
+        console.error("Upload invoice attachment error:", e);
+        return { error: "Failed to upload file" };
     }
 }

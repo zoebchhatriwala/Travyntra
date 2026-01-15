@@ -4,7 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { RequestStatus, IntegrationStatus } from "@prisma/client";
+import { RequestStatus, IntegrationStatus, UserRole } from "@prisma/client";
 
 export async function getAgencyStats() {
     const session = await getServerSession(authOptions);
@@ -20,51 +20,69 @@ export async function getAgencyStats() {
 
     const agencyId = session.user.companyId;
 
-    const [openOpportunities, activeBids, pendingFulfillment] = await Promise.all([
-        // Requests that are APPROVED (by company) but not yet assigned to anyone
-        // Filter: Must be from a company that has integrated with us
-        prisma.tripRequest.count({
-            where: {
-                status: RequestStatus.APPROVED,
-                assignedAgentId: null,
-                company: {
-                    integrationsAsClient: {
-                        some: {
-                            agencyId: agencyId,
-                            status: IntegrationStatus.ACTIVE
+    const isAgent = session.user.role === UserRole.TRAVEL_AGENT;
+
+    let openOpportunities = 0;
+    let activeBids = 0;
+    // eslint-disable-next-line prefer-const
+    let pendingFulfillment = 0;
+
+    if (isAgent) {
+        const stats = await Promise.all([
+            // Requests that are APPROVED (by company) but not yet assigned to anyone
+            prisma.tripRequest.count({
+                where: {
+                    status: RequestStatus.APPROVED,
+                    assignedAgentId: null,
+                    company: {
+                        integrationsAsClient: {
+                            some: {
+                                agencyId: agencyId,
+                                status: IntegrationStatus.ACTIVE
+                            }
+                        }
+                    },
+                    bids: {
+                        none: {
+                            agentId: agencyId
                         }
                     }
-                },
-                // Exclude requests we already bid on
-                bids: {
-                    none: {
-                        agentId: agencyId
+                }
+            }),
+            // Bids we've made that are still pending
+            prisma.agentBid.count({
+                where: {
+                    agentId: agencyId,
+                    status: "PENDING",
+                    request: {
+                        assignedAgentId: null
                     }
                 }
-            }
-        }),
-
-        // Bids we've made that are still pending
-        prisma.agentBid.count({
-            where: {
-                agentId: agencyId,
-                status: "PENDING",
-                request: {
-                    assignedAgentId: null // Ensure request is still open
+            }),
+            // Fulfillment
+            prisma.tripRequest.count({
+                where: {
+                    assignedAgentId: agencyId,
+                    status: {
+                        in: [RequestStatus.APPROVED, RequestStatus.BOOKED, RequestStatus.IN_PROGRESS]
+                    }
                 }
-            }
-        }),
-
-        // Requests assigned to us that are not yet marked completed/cancelled
-        prisma.tripRequest.count({
+            })
+        ]);
+        openOpportunities = stats[0];
+        activeBids = stats[1];
+        pendingFulfillment = stats[2];
+    } else {
+        // Agency Employee only sees fulfillment
+        pendingFulfillment = await prisma.tripRequest.count({
             where: {
                 assignedAgentId: agencyId,
                 status: {
                     in: [RequestStatus.APPROVED, RequestStatus.BOOKED, RequestStatus.IN_PROGRESS]
                 }
             }
-        })
-    ]);
+        });
+    }
 
     // Fetch agency currency
     const agency = await prisma.company.findUnique({
@@ -83,7 +101,7 @@ export async function getAgencyStats() {
 
 export async function getRecentOpportunities() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || !["TRAVEL_AGENT", "AGENCY_EMPLOYEE"].includes(session.user.role)) return [];
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) return [];
 
     const agencyId = session.user.companyId;
 

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Gauge, Gavel, Plane, FileText, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { UserRole } from "@prisma/client";
 
 
 
@@ -20,35 +21,39 @@ export function AgencyNav() {
             href: "/agent/dashboard",
             icon: Gauge,
             exact: true
-        },
-        {
-            name: "Bid Management",
-            href: "/agent/bids",
-            icon: Gavel
-        },
-        {
-            name: "Fulfillment Console",
-            href: "/agent/fulfillment",
-            icon: Plane
-        },
-        {
-            name: "Invoices",
-            href: "/agent/invoices",
-            icon: FileText
         }
     ];
 
-    if (userRole === "TRAVEL_AGENT") {
+    if (userRole === UserRole.TRAVEL_AGENT) {
+        navItems.push({
+            name: "Bid Management",
+            href: "/agent/bids",
+            icon: Gavel
+        } as any);
+    }
+
+    navItems.push({
+        name: "Fulfillment Console",
+        href: "/agent/fulfillment",
+        icon: Plane
+    } as any);
+
+    if (userRole === UserRole.TRAVEL_AGENT) {
+        navItems.push({
+            name: "Invoices",
+            href: "/agent/invoices",
+            icon: FileText
+        } as any);
         navItems.push({
             name: "Staff",
             href: "/agent/staff",
             icon: Users
-        });
+        } as any);
         navItems.push({
             name: "Settings",
             href: "/agent/settings",
             icon: Settings
-        });
+        } as any);
     }
 
     return (

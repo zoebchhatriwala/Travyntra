@@ -2,7 +2,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
@@ -45,7 +45,7 @@ export async function getConversionPreview(amount: number, fromCurrency: string,
 
 export async function submitBid(requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         return { error: "Unauthorized" };
     }
 
@@ -133,7 +133,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
 
 export async function updateBid(bidId: string, requestId: string, amount: number, message: string, currency: string = "USD", taxes: any[] = []) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId) return { error: "Unauthorized" };
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) return { error: "Unauthorized" };
 
     const bidAmount = createMoney(amount, currency);
 
@@ -209,7 +209,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
 export async function approveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     // Only company admins or super admins can approve bids
-    if (!session?.user || (session.user.role !== 'COMPANY_ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.user || (session.user.role !== UserRole.COMPANY_ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
         return { error: "Unauthorized" };
     }
 
@@ -332,7 +332,7 @@ export async function approveBid(bidId: string, requestId: string) {
 
 export async function unapproveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user.role !== 'COMPANY_ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.user || (session.user.role !== UserRole.COMPANY_ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
         return { error: "Unauthorized" };
     }
 
@@ -414,7 +414,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
 export async function removeBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     // Only company admins or super admins can remove bids
-    if (!session?.user || (session.user.role !== 'COMPANY_ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.user || (session.user.role !== UserRole.COMPANY_ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
         return { error: "Unauthorized" };
     }
 

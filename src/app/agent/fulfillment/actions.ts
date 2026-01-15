@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { RequestStatus } from "@prisma/client";
+import { RequestStatus, UserRole } from "@prisma/client";
 import { ActivityLogAction } from "@/lib/enums";
 import { createNotification } from "@/lib/notifications";
 
@@ -77,10 +77,12 @@ export async function getFulfillmentRequest(requestId: string) {
     if (!request) return null;
 
     // Convert decimal values to numbers for Client Component compatibility
+    const showInvoice = session.user.role === UserRole.TRAVEL_AGENT;
+
     return {
         ...request,
         bids: request.bids as any, // Cast to any to avoid type check issues if types mismatch, but strictly it is JsonValue
-        invoice: request.invoice
+        invoice: (request.invoice && showInvoice)
             ? {
                 ...request.invoice,
                 amount: Number(request.invoice.amount),
@@ -98,7 +100,7 @@ export async function getFulfillmentRequest(requestId: string) {
  */
 export async function addFulfillmentItem(requestId: string, title: string, description?: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -148,7 +150,7 @@ export async function updateFulfillmentItem(
     data: { title?: string; description?: string; isCompleted?: boolean }
 ) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -187,7 +189,7 @@ export async function updateFulfillmentItem(
  */
 export async function deleteFulfillmentItem(itemId: string, requestId: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -233,7 +235,7 @@ export async function deleteFulfillmentItem(itemId: string, requestId: string) {
  */
 export async function toggleFulfillmentItem(itemId: string, requestId: string, isCompleted: boolean) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -274,7 +276,7 @@ export async function toggleFulfillmentItem(itemId: string, requestId: string, i
  */
 export async function uploadFulfillmentDocument(formData: FormData) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -396,7 +398,7 @@ export async function uploadFulfillmentDocument(formData: FormData) {
  */
 export async function deleteDocument(documentId: string, requestId: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -438,7 +440,7 @@ export async function deleteDocument(documentId: string, requestId: string) {
  */
 export async function markAsBooked(requestId: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 
@@ -508,7 +510,7 @@ export async function markAsBooked(requestId: string) {
  */
 export async function markAsCompleted(requestId: string) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
         return { error: "Unauthorized" };
     }
 

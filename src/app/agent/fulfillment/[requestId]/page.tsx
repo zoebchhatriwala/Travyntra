@@ -10,6 +10,8 @@ import { FulfillmentChecklist } from "./_components/fulfillment-checklist";
 import { StatusActions } from "./_components/status-actions";
 import { RecentMessages } from "./_components/recent-messages";
 import { parseMoney, formatMoney } from "@/lib/types/money";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
 interface Location {
     city?: string;
@@ -22,6 +24,7 @@ export default async function FulfillmentDetailPage({
     params: Promise<{ requestId: string }>;
 }) {
     const { requestId } = await params;
+    const session = await getServerSession(authOptions);
 
     const request = await getFulfillmentRequest(requestId);
 
@@ -75,6 +78,7 @@ export default async function FulfillmentDetailPage({
                     hasItems={totalItems > 0}
                     invoice={request.invoice}
                     canRegenerate={canRegenerate}
+                    userRole={session?.user?.role}
                 />
             </div>
 

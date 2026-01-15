@@ -7,7 +7,26 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
 
-export async function getCompanyInvoices(slug: string) {
+export async function getCompanyInvoices(
+    slug: string,
+    options: {
+        page?: number;
+        pageSize?: number;
+        query?: string;
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+    } = {}
+) {
+    const {
+        page = 1,
+        pageSize = 10,
+        query = "",
+        status,
+        startDate,
+        endDate
+    } = options;
+
     try {
         const company = await prisma.company.findUnique({
             where: { slug },
@@ -17,22 +36,66 @@ export async function getCompanyInvoices(slug: string) {
             }
         });
 
-        if (!company) return { invoices: [], currency: "USD" };
+        if (!company) return { invoices: [], currency: "USD", stats: { totalSpent: 0, pendingAmount: 0 }, metadata: { totalCount: 0, totalPages: 0, currentPage: 1 } };
 
-        const invoices = await prisma.invoice.findMany({
-            where: {
-                companyId: company.id
-            },
-            include: {
-                request: {
-                    select: { title: true }
+        const where: any = {
+            companyId: company.id
+        };
+
+        if (status && status !== "ALL") {
+            where.status = status;
+        }
+
+        if (query) {
+            where.OR = [
+                { request: { title: { contains: query, mode: 'insensitive' } } },
+                { agency: { name: { contains: query, mode: 'insensitive' } } }
+            ];
+        }
+
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt.gte = new Date(startDate);
+            if (endDate) where.createdAt.lte = new Date(endDate);
+        }
+
+        const statsWhere: any = { companyId: company.id };
+        if (startDate || endDate) {
+            statsWhere.createdAt = {};
+            if (startDate) statsWhere.createdAt.gte = new Date(startDate);
+            if (endDate) statsWhere.createdAt.lte = new Date(endDate);
+        }
+
+        const [invoices, totalCount, statsGroup] = await Promise.all([
+            prisma.invoice.findMany({
+                where,
+                include: {
+                    request: {
+                        select: { title: true }
+                    },
+                    agency: {
+                        select: { name: true }
+                    }
                 },
-                agency: {
-                    select: { name: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize
+            }),
+            prisma.invoice.count({ where }),
+            prisma.invoice.groupBy({
+                by: ['status'],
+                where: statsWhere,
+                _sum: { amount: true }
+            })
+        ]);
+
+        const totalSpent = statsGroup
+            .filter(g => g.status === "PAID")
+            .reduce((sum, g) => sum + Number(g._sum.amount || 0), 0);
+
+        const pendingAmount = statsGroup
+            .filter(g => g.status === "PENDING" || g.status === "OVERDUE")
+            .reduce((sum, g) => sum + Number(g._sum.amount || 0), 0);
 
         return {
             invoices: invoices.map((inv) => ({
@@ -48,11 +111,25 @@ export async function getCompanyInvoices(slug: string) {
                 requestId: inv.requestId,
                 pdfUrl: inv.pdfUrl
             })),
-            currency: company.currency
+            currency: company.currency,
+            stats: {
+                totalSpent,
+                pendingAmount
+            },
+            metadata: {
+                totalCount,
+                totalPages: Math.ceil(totalCount / pageSize),
+                currentPage: page
+            }
         };
     } catch (error) {
         console.error("Failed to fetch invoices:", error);
-        return { invoices: [], currency: "USD" };
+        return {
+            invoices: [],
+            currency: "USD",
+            stats: { totalSpent: 0, pendingAmount: 0 },
+            metadata: { totalCount: 0, totalPages: 0, currentPage: 1 }
+        };
     }
 }
 

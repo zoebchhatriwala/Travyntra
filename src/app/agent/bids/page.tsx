@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { Prisma, RequestStatus, IntegrationStatus } from "@prisma/client";
+import { Prisma, RequestStatus, IntegrationStatus, UserRole } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ interface PageProps {
 
 export default async function BidsPage({ searchParams }: PageProps) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.companyId) redirect("/");
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) redirect("/");
 
     const agencyId = session.user.companyId as string;
     const params = await searchParams;

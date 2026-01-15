@@ -10,7 +10,8 @@ import {
     Calendar,
     FileText,
     Download,
-    Upload
+    Upload,
+    Filter
 } from "lucide-react";
 import { UploadInvoiceDialog } from "./upload-invoice-dialog";
 import { format } from "date-fns";
@@ -33,6 +34,11 @@ import {
 import { CheckCircle2, MoreVertical } from "lucide-react";
 import { updateInvoiceStatus } from "../actions";
 import { toast } from "sonner";
+import { SearchInput } from "@/components/ui/search-input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Invoice {
     id: string;
@@ -53,6 +59,15 @@ interface Invoice {
 interface InvoiceListProps {
     invoices: Invoice[];
     agencyCurrency: string;
+    metadata: {
+        totalCount: number;
+        totalPages: number;
+        currentPage: number;
+    };
+    stats: {
+        totalBilled: number;
+        pendingAmount: number;
+    };
 }
 
 const getStatusStyles = (status: InvoiceStatus) => {
@@ -70,24 +85,31 @@ const getStatusStyles = (status: InvoiceStatus) => {
     }
 };
 
-export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
+export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: InvoiceListProps) {
     const [isMounted, setIsMounted] = useState(false);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [selectedInvoiceForUpload, setSelectedInvoiceForUpload] = useState<Invoice | null>(null);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    const totalBilled = invoices
-        .filter(inv => inv.status === InvoiceStatus.PAID)
-        .reduce((sum, inv) => sum + inv.convertedAmount, 0);
+    const totalBilled = stats.totalBilled;
+    const pendingAmount = stats.pendingAmount;
+    const totalInvoiceCount = metadata.totalCount;
 
-    const pendingAmount = invoices
-        .filter(inv => inv.status === InvoiceStatus.PENDING || inv.status === InvoiceStatus.OVERDUE)
-        .reduce((sum, inv) => sum + inv.convertedAmount, 0);
-
-    const totalInvoiceCount = invoices.length;
+    const handleFilterChange = (key: string, value: string | null) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set(key, value);
+        } else {
+            params.delete(key);
+        }
+        params.set("page", "1");
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
 
     const formatNumber = (num: number, options?: Intl.NumberFormatOptions) => {
         if (!isMounted) return "...";
@@ -210,6 +232,50 @@ export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
                         >
                             <FileText size={16} className="mr-2" /> Export PDF
                         </Button>
+                    </div>
+                </div>
+
+                {/* Filters */}
+                <div className="p-6 border-b border-gray-50 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                        <Filter size={16} className="text-indigo-600" />
+                        Filters
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="md:col-span-2">
+                            <SearchInput placeholder="Search by company or trip..." />
+                        </div>
+                        <Select
+                            value={searchParams.get("status") || "ALL"}
+                            onValueChange={(value) => handleFilterChange("status", value === "ALL" ? null : value)}
+                        >
+                            <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="All Statuses" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Statuses</SelectItem>
+                                <SelectItem value="PENDING">Pending</SelectItem>
+                                <SelectItem value="PAID">Paid</SelectItem>
+                                <SelectItem value="OVERDUE">Overdue</SelectItem>
+                                <SelectItem value="VOID">Void</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div className="flex gap-2">
+                            <Input
+                                type="date"
+                                placeholder="Start Date"
+                                value={searchParams.get("startDate") || ""}
+                                onChange={(e) => handleFilterChange("startDate", e.target.value || null)}
+                                className="rounded-xl"
+                            />
+                            <Input
+                                type="date"
+                                placeholder="End Date"
+                                value={searchParams.get("endDate") || ""}
+                                onChange={(e) => handleFilterChange("endDate", e.target.value || null)}
+                                className="rounded-xl"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -342,18 +408,24 @@ export function InvoiceList({ invoices, agencyCurrency }: InvoiceListProps) {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination */}
+                <div className="p-6 border-t border-gray-50">
+                    <PaginationControls
+                        totalCount={metadata.totalCount}
+                        pageSize={10}
+                    />
+                </div>
             </Card>
 
-            {
-                selectedInvoiceForUpload && (
-                    <UploadInvoiceDialog
-                        invoiceId={selectedInvoiceForUpload.id}
-                        open={uploadDialogOpen}
-                        onOpenChange={setUploadDialogOpen}
-                        currentPdfUrl={selectedInvoiceForUpload.pdfUrl}
-                    />
-                )
-            }
-        </div >
+            {selectedInvoiceForUpload && (
+                <UploadInvoiceDialog
+                    invoiceId={selectedInvoiceForUpload.id}
+                    open={uploadDialogOpen}
+                    onOpenChange={setUploadDialogOpen}
+                    currentPdfUrl={selectedInvoiceForUpload.pdfUrl}
+                />
+            )}
+        </div>
     );
 }

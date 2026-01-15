@@ -7,7 +7,8 @@ import {
     Receipt,
     TrendingUp,
     Clock,
-    FileText
+    FileText,
+    Filter
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -34,6 +35,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Ban } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Invoice {
     id: string;
@@ -53,6 +59,15 @@ interface BillingListProps {
     invoices: Invoice[];
     currency: string;
     companySlug: string;
+    metadata: {
+        totalCount: number;
+        totalPages: number;
+        currentPage: number;
+    };
+    stats: {
+        totalSpent: number;
+        pendingAmount: number;
+    };
 }
 
 const MOCK_CHART_DATA = [
@@ -80,22 +95,29 @@ const getStatusStyles = (status: InvoiceStatus) => {
 };
 
 
-export function BillingList({ invoices, currency, companySlug }: BillingListProps) {
+export function BillingList({ invoices, currency, companySlug, metadata, stats }: BillingListProps) {
     const [isMounted, setIsMounted] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    const totalSpent = invoices
-        .filter(inv => inv.status === InvoiceStatus.PAID)
-        .reduce((sum, inv) => sum + inv.amount, 0);
+    const totalSpent = stats.totalSpent;
+    const pendingAmount = stats.pendingAmount;
+    const averageCost = metadata.totalCount > 0 ? (totalSpent + pendingAmount) / metadata.totalCount : 0;
 
-    const pendingAmount = invoices
-        .filter(inv => inv.status === InvoiceStatus.PENDING || inv.status === InvoiceStatus.OVERDUE)
-        .reduce((sum, inv) => sum + inv.amount, 0);
-
-    const averageCost = invoices.length > 0 ? (totalSpent + pendingAmount) / invoices.length : 0;
+    const handleFilterChange = (key: string, value: string | null) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set(key, value);
+        } else {
+            params.delete(key);
+        }
+        params.set("page", "1");
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
 
     const formatNumber = (num: number, options?: Intl.NumberFormatOptions) => {
         if (!isMounted) return "...";
@@ -235,6 +257,50 @@ export function BillingList({ invoices, currency, companySlug }: BillingListProp
                         </Button>
                     </div>
                 </div>
+
+                {/* Filters */}
+                <div className="p-6 border-b border-gray-50 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                        <Filter size={16} className="text-indigo-600" />
+                        Filters
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="md:col-span-2">
+                            <SearchInput placeholder="Search by trip or agency..." />
+                        </div>
+                        <Select
+                            value={searchParams.get("status") || "ALL"}
+                            onValueChange={(value) => handleFilterChange("status", value === "ALL" ? null : value)}
+                        >
+                            <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="All Statuses" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Statuses</SelectItem>
+                                <SelectItem value="PENDING">Pending</SelectItem>
+                                <SelectItem value="PAID">Paid</SelectItem>
+                                <SelectItem value="OVERDUE">Overdue</SelectItem>
+                                <SelectItem value="VOID">Void</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div className="flex gap-2">
+                            <Input
+                                type="date"
+                                placeholder="Start Date"
+                                value={searchParams.get("startDate") || ""}
+                                onChange={(e) => handleFilterChange("startDate", e.target.value || null)}
+                                className="rounded-xl"
+                            />
+                            <Input
+                                type="date"
+                                placeholder="End Date"
+                                value={searchParams.get("endDate") || ""}
+                                onChange={(e) => handleFilterChange("endDate", e.target.value || null)}
+                                className="rounded-xl"
+                            />
+                        </div>
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -264,7 +330,9 @@ export function BillingList({ invoices, currency, companySlug }: BillingListProp
                                 </tr>
                             ) : (
                                 invoices.map((invoice) => (
-                                    <tr key={invoice.id} className="hover:bg-gray-50/50 transition-colors group">
+                                    <tr key={invoice.id}
+                                        id={`invoice_${invoice.id}`}
+                                        className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="py-6 px-8">
                                             <p className="text-sm font-black text-gray-900 leading-none group-hover:text-indigo-600 transition-colors">{invoice.description}</p>
                                             <p className="text-[10px] font-bold text-gray-300 mt-2 uppercase tracking-widest italic font-mono">#{invoice.id.slice(0, 8)}</p>
@@ -337,6 +405,14 @@ export function BillingList({ invoices, currency, companySlug }: BillingListProp
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="p-6 border-t border-gray-50">
+                    <PaginationControls
+                        totalCount={metadata.totalCount}
+                        pageSize={10}
+                    />
                 </div>
             </Card>
         </div>

@@ -1,5 +1,6 @@
 
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { notFound, redirect } from "next/navigation";
@@ -19,7 +20,7 @@ export default async function RequestDetailsPage({
     const { requestId } = await params; // await params in Next.js 15
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.companyId || session.user.role !== "TRAVEL_AGENT") {
+    if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
         redirect("/");
     }
 
