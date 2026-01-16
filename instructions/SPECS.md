@@ -198,7 +198,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Group Trip Creation**: Parent trip with multiple linked requests
 - [x] **Bulk Approvals**: Approve entire group at once
 - [x] **Shared Itinerary**: Consolidated view for team trips (implemented via GroupTripInfo)
-- [ ] **Participant Management**: Add/remove employees from group trips
+- [x] **Participant Management**: Add/remove employees from group trips
 
 ### Phase 7: Agency Integration 🛠️ ACTIVE
 - [x] **Agency Portal**: Dashboard for travel agencies
@@ -221,10 +221,10 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 ### Phase 9: Smart Logic & Automation ✅ COMPLETED
 - [x] **Policy-Based Auto Approval**: Automatic approval for domestic trips or costs < configured threshold.
 - [x] **International/Domestic Detection**: Auto-tag requests based on company country vs destination.
-- [ ] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
+- [x] **Budget Revision Workflow**: Support for budget edits with Admin approval requirement and notifications.
 
 ### Phase 10: Financial Layer 🛠️ ACTIVE
-- [ ] **Invoice Management**: Company view of all invoices.
+- [x] **Invoice Management**: Company view of all invoices.
 - [x] **Multi-Currency Support**: Support different currencies for Companies (Requestor) and Agencies (Provider).
 - [x] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
 - [x] **Payment Tracking**: Mark invoices as paid/pending.
