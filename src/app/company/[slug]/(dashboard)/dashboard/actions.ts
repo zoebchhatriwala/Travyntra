@@ -74,12 +74,14 @@ export async function getEmployeeDashboardStats() {
         currency: company?.currency || "USD",
         recentRequests: recentRequests.map(req => {
             const money = req.budget ? parseMoney(req.budget) : null;
+            const budgetValue = money ? moneyToDecimal(money) : 0;
+
             return {
                 id: req.id,
                 title: req.title,
                 status: req.status,
                 createdAt: req.createdAt,
-                budget: moneyToDecimal(money),
+                budget: budgetValue,
                 currency: money?.currencyCode || company?.currency || "USD",
                 isCollaborator: req.userId !== userId
             };
@@ -154,12 +156,13 @@ export async function getEmployeeRequests({
     return {
         requests: requests.map(req => {
             const money = req.budget ? parseMoney(req.budget) : null;
+            const budgetValue = money ? moneyToDecimal(money) : 0;
             return {
                 id: req.id,
                 title: req.title,
                 status: req.status,
                 createdAt: req.createdAt,
-                budget: moneyToDecimal(money),
+                budget: budgetValue,
                 cost: req.cost ? moneyToDecimal(parseMoney(req.cost)) : null,
                 currency: (req.cost ? parseMoney(req.cost)?.currencyCode : money?.currencyCode) || company?.currency || "USD",
                 isCollaborator: req.userId !== userId

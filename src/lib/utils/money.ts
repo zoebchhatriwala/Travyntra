@@ -55,6 +55,13 @@ export function moneyToDecimal(money: Money | null | undefined): number {
     // Extract the multiplier from the money object
     const multiplier = activeMoney.multiplier;
 
+    // Validate that both amount and multiplier are valid numbers
+    if (typeof integerAmount !== 'number' || typeof multiplier !== 'number' ||
+        isNaN(integerAmount) || isNaN(multiplier) || multiplier === 0) {
+        // Return 0 if invalid to prevent NaN
+        return 0;
+    }
+
     // Calculate the decimal amount by dividing the integer amount by the multiplier
     const decimalValue = integerAmount / multiplier;
 

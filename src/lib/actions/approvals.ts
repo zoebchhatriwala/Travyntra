@@ -162,8 +162,8 @@ export async function getMyPendingApprovals(): Promise<PendingApprovalResult[]> 
             const myCalculatedStatus = myPrevApproval?.status || ApprovalStatus.PENDING;
 
             // Retrieve the numeric budget and ensure it is treated as a number
-            const budgetVal = tripRequestObj.budget;
-            const budgetNum = Number(budgetVal || 0);
+            const budgetVal = parseMoney(tripRequestObj.budget);
+            const budgetNum = moneyToDecimal(budgetVal);
 
             // Construct and return the finalized object
             const result: PendingApprovalResult = {
@@ -688,6 +688,8 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
 }
 
 import { type WorkflowProgressStep } from "@/types/workflow/step";
+import { moneyToDecimal, parseMoney } from "../utils/money";
+
 
 /**
  * Interface representing the progress of an individual approval step.

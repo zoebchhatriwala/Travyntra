@@ -111,6 +111,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
         totalSpend: totalSpend,
         recentRequests: recentRequests.map(req => {
             const money = req.budget ? parseMoney(req.budget) : null;
+            const budgetValue = money ? moneyToDecimal(money) : 0;
             return {
                 id: req.id,
                 title: req.title,
@@ -118,7 +119,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
                 userAvatar: req.user.avatarUrl,
                 status: req.status,
                 createdAt: req.createdAt,
-                budget: moneyToDecimal(money),
+                budget: budgetValue,
                 currency: money?.currencyCode || company.currency || "USD"
             };
         })
@@ -195,6 +196,7 @@ export async function getCompanyRequests(slug: string, options: {
     return {
         requests: requests.map(req => {
             const money = req.budget ? parseMoney(req.budget) : null;
+            const budgetValue = money ? moneyToDecimal(money) : 0;
             return {
                 id: req.id,
                 title: req.title,
@@ -202,7 +204,7 @@ export async function getCompanyRequests(slug: string, options: {
                 userAvatar: req.user.avatarUrl,
                 status: req.status,
                 createdAt: req.createdAt,
-                budget: moneyToDecimal(money),
+                budget: budgetValue,
                 cost: req.cost ? moneyToDecimal(parseMoney(req.cost)) : null,
                 currency: (req.cost ? parseMoney(req.cost)?.currencyCode : money?.currencyCode) || company?.currency || "USD",
                 destination: (req.destination as unknown as Location)?.city || (req.destination as unknown as Location)?.formatted || "Unknown",
