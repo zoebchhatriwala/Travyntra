@@ -1,4 +1,4 @@
-
+import { AnalyticsBreakdown } from "./breakdown";
 import { getBudgetAnalytics } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, Wallet, ArrowDownRight, ArrowUpRight } from "lucide-react";
@@ -78,10 +78,21 @@ export default async function AnalyticsPage({
                             const actualHeight = maxVal > 0 ? (item.actual / maxVal) * 100 : 0;
                             const budgetHeight = maxVal > 0 ? (item.budget / maxVal) * 100 : 0;
 
+                            // Determine specific tooltip positioning to avoid overflow at edges
+                            const isFirst = i === 0;
+                            const isLast = i === data.chartData.length - 1;
+
+                            let tooltipPosition = "left-1/2 -translate-x-1/2"; // Default Center
+                            if (isFirst) tooltipPosition = "left-0 translate-x-0";
+                            if (isLast) tooltipPosition = "right-0 translate-x-0";
+
                             return (
                                 <div key={i} className="group relative flex-1 h-full flex flex-col justify-end gap-1">
                                     {/* Tooltip */}
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 w-48 bg-gray-900 text-white p-3 rounded-corner-md shadow-xl text-xs">
+                                    <div className={cn(
+                                        "absolute bottom-full mb-2 hidden group-hover:block z-10 w-48 bg-gray-900 text-white p-3 rounded-corner-md shadow-xl text-xs",
+                                        tooltipPosition
+                                    )}>
                                         <p className="font-bold mb-1 border-b border-gray-700 pb-1">{item.month}</p>
                                         <div className="space-y-1">
                                             <div className="flex justify-between">
@@ -129,6 +140,13 @@ export default async function AnalyticsPage({
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Breakdowns */}
+            <AnalyticsBreakdown
+                currency={data.currency}
+                employeeBreakdown={data.employeeBreakdown}
+                requestBreakdown={data.requestBreakdown}
+            />
         </div>
     );
 }

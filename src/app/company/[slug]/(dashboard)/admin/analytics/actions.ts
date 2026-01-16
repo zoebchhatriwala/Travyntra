@@ -4,6 +4,10 @@
 import { prisma } from "@/lib/prisma";
 import { format, subMonths } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { Money } from "@/types/finance/money";
+import { EmployeeSpendStats, RequestSpendStats } from "@/types/analytics";
+
+import { convertCurrency } from "@/lib/services/currency";
 
 export async function getBudgetAnalytics(slug: string) {
     const company = await prisma.company.findUnique({
@@ -18,20 +22,16 @@ export async function getBudgetAnalytics(slug: string) {
     const now = new Date();
 
     // Convert current server time (UTC) to Company's Local Time.
-    // This ensures that "This Month" refers to the month in the Company's timezone,
-    // protecting against month-end cutoff issues (e.g. 1st Jan UTC is still 31st Dec EST).
     const zonedEndDate = toZonedTime(now, timeZone);
-    // const zonedStartDate = subMonths(startOfMonth(zonedEndDate), 11); // Last 12 months in company time
 
-    // Calculate the UTC start date for database query (approximation to ensure we cover enough range)
-    // We can just use the startDate (Date object) as it represents a timestamp effectively for Prisma
-    // But to be precise for "last 12 months in this timezone", we should query sufficiently wide range.
-    // Using a simple 13 months ago UTC is safe enough to fetch data, then filter/group in JS.
+    // Calculate the UTC start date for database query
     const queryStartDate = subMonths(new Date(), 13);
+    const targetCurrency = company.currency || "USD";
 
-    // 1. Fetch Invoices (Actual Spend)
-    const invoices = await prisma.invoice.groupBy({
-        by: ['status'],
+    // 1. Fetch Invoices Grouped by Currency for Total Spend
+    // We group by currency so we can convert each bucket's sum to the company currency
+    const invoicesGrouped = await prisma.invoice.groupBy({
+        by: ['status', 'currency'],
         where: {
             companyId: company.id,
             status: { in: ['PAID', 'PENDING'] },
@@ -42,10 +42,15 @@ export async function getBudgetAnalytics(slug: string) {
         }
     });
 
-    const totalSpend = invoices.reduce((acc: number, curr: { _sum: { amount: unknown } }) => acc + (Number(curr._sum.amount) || 0), 0);
+    let totalSpend = 0;
+    for (const group of invoicesGrouped) {
+        if (!group._sum.amount) continue;
+        const amount = Number(group._sum.amount);
+        const converted = await convertCurrency(amount, group.currency, targetCurrency);
+        totalSpend += converted;
+    }
 
-    // 2. Fetch Monthly Spend Trend
-    // improved aggregation for charting
+    // 2. Fetch Monthly Spend Trend (Detailed Invoices)
     const monthlyInvoices = await prisma.invoice.findMany({
         where: {
             companyId: company.id,
@@ -55,28 +60,36 @@ export async function getBudgetAnalytics(slug: string) {
         select: {
             amount: true,
             createdAt: true,
-            status: true
+            status: true,
+            currency: true
         }
     });
 
-    // 3. Fetch Trip Requests (Estimated Budget)
+    // 3. Fetch Trip Requests
     const requests = await prisma.tripRequest.findMany({
         where: {
             companyId: company.id,
             status: { not: 'DRAFT' },
             createdAt: { gte: queryStartDate }
         },
-        select: {
-            budget: true,
-            createdAt: true,
-            status: true
-        }
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true
+                }
+            },
+            invoice: {
+                select: { amount: true, currency: true, status: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
     });
 
-    // Process data for charts
+    // 4. Initialize Chart Data Intervals
     const monthlyData = new Map<string, { month: string; actual: number; budget: number }>();
-
-    // Initialize all months
     for (let i = 0; i < 12; i++) {
         const d = subMonths(zonedEndDate, i);
         const key = format(d, 'yyyy-MM');
@@ -87,54 +100,102 @@ export async function getBudgetAnalytics(slug: string) {
         });
     }
 
-    // Fill Actual Spend
-    monthlyInvoices.forEach((inv: { createdAt: Date, amount: unknown }) => {
-        // Convert the record's UTC creation time to Company Local Time
-        // so it falls into the correct monthly bucket (e.g. Dec vs Jan)
+    // 5. Process Invoices (Actual Spend Trend)
+    // We process these in parallel for currency conversion
+    await Promise.all(monthlyInvoices.map(async (inv) => {
         const zonedDate = toZonedTime(inv.createdAt, timeZone);
         const key = format(zonedDate, 'yyyy-MM');
         if (monthlyData.has(key)) {
             const entry = monthlyData.get(key)!;
-            entry.actual += Number(inv.amount);
+            const amount = Number(inv.amount);
+            const converted = await convertCurrency(amount, inv.currency, targetCurrency);
+            entry.actual += converted;
         }
-    });
+    }));
 
-    // Fill Estimated Budget
-    // Need to parse Json budget
-    interface Money {
-        amount: number;
-        currencyCode: string;
-        multiplier?: number;
-    }
+    // 6. Process Requests (Breakdowns & Budget Trend)
+    const employeeMap = new Map<string, EmployeeSpendStats>();
 
-    requests.forEach((req: { budget: unknown, createdAt: Date }) => {
-        if (!req.budget) return;
-        // Same logic: Convert Request UTC time to Company Local Time
+    // Process requests in parallel
+    const requestBreakdown: RequestSpendStats[] = await Promise.all(requests.map(async (req) => {
+        // --- Calculate Actual Spend for this request ---
+        let actualSpend = 0;
+        if (req.invoice && ['PAID', 'PENDING'].includes(req.invoice.status)) {
+            const parsed = Number(req.invoice.amount);
+            actualSpend = await convertCurrency(parsed, req.invoice.currency, targetCurrency);
+        }
+
+        // --- Calculate Budget Amount ---
+        let budgetAmount = 0;
+        if (req.budget) {
+            const b = req.budget as unknown as Money;
+            if (b && typeof b.amount === 'number') {
+                const multiplier = b.multiplier || 100;
+                const rawVal = b.amount / multiplier;
+                // Budget currency might differ from company currency
+                budgetAmount = await convertCurrency(rawVal, b.currencyCode, targetCurrency);
+            }
+        }
+
+        // --- Fill Monthly Budget Chart ---
         const zonedDate = toZonedTime(req.createdAt, timeZone);
         const key = format(zonedDate, 'yyyy-MM');
         if (monthlyData.has(key)) {
             const entry = monthlyData.get(key)!;
-            // Best effort extraction - assuming base currency or ignore conversion for now as spec mentions Use USD as pivot but that's complex without FX rates
-            // For now assume same currency or raw sum as per early phase
-            const budgetData = req.budget as unknown as Money;
-            if (budgetData && typeof budgetData.amount === 'number') {
-                const multiplier = budgetData.multiplier || 100;
-                entry.budget += (budgetData.amount / multiplier);
-            }
+            entry.budget += budgetAmount;
         }
-    });
+
+        // --- Aggregate Employee Stats (Side Effect) ---
+        const userId = req.user.id;
+        if (!employeeMap.has(userId)) {
+            employeeMap.set(userId, {
+                id: userId,
+                name: req.user.name || "Unknown User",
+                email: req.user.email,
+                avatarUrl: req.user.avatarUrl,
+                tripCount: 0,
+                totalSpend: 0,
+                avgCost: 0
+            });
+        }
+        const emp = employeeMap.get(userId)!;
+        emp.tripCount += 1;
+        emp.totalSpend += actualSpend;
+
+        return {
+            id: req.id,
+            title: (req as any).title || "Untitled Trip",
+            userName: req.user.name || "Unknown User",
+            userAvatar: req.user.avatarUrl,
+            date: req.createdAt,
+            status: req.status,
+            budget: budgetAmount,
+            actual: actualSpend,
+            variance: budgetAmount > 0 ? ((actualSpend - budgetAmount) / budgetAmount) * 100 : 0
+        };
+    }));
+
+    // Finalize Employee Stats
+    const employeeBreakdown = Array.from(employeeMap.values())
+        .map(e => ({
+            ...e,
+            avgCost: e.tripCount > 0 ? e.totalSpend / e.tripCount : 0
+        }))
+        .sort((a, b) => b.totalSpend - a.totalSpend)
+        .slice(0, 10);
 
     const chartData = Array.from(monthlyData.values()).reverse();
 
-    // 4. Calculate Average Trip Cost
-    const completedTripsCount = requests.filter((r: { status: string }) => r.status === 'COMPLETED' || r.status === 'BOOKED').length;
-    // Use total spend for average calculation
+    // Average Trip Cost (based on converted total spend)
+    const completedTripsCount = requests.filter((r) => r.status === 'COMPLETED' || r.status === 'BOOKED').length;
     const avgTripCost = completedTripsCount > 0 ? totalSpend / completedTripsCount : 0;
 
     return {
-        currency: company.currency,
+        currency: targetCurrency,
         totalSpend,
         avgTripCost,
-        chartData
+        chartData,
+        employeeBreakdown,
+        requestBreakdown: requestBreakdown.slice(0, 50)
     };
 }

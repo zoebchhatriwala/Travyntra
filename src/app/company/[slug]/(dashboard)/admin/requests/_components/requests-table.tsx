@@ -433,13 +433,15 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                 <DialogTitle className="text-xl font-semibold text-gray-900 mb-2">
                                     {confirmDialog.action === 'APPROVE' ? 'Quick Approve' : 'Quick Reject'} {confirmDialog.ids.length} Request{confirmDialog.ids.length > 1 ? 's' : ''}
                                 </DialogTitle>
-                                <DialogDescription className="text-sm text-gray-600 space-y-2">
-                                    <p className="font-medium text-orange-600">
-                                        ⚠️ This action will bypass the normal approval workflow.
-                                    </p>
-                                    <p>
-                                        The request{confirmDialog.ids.length > 1 ? 's' : ''} will be immediately {confirmDialog.action === 'APPROVE' ? 'approved' : 'rejected'} and a notice will be added to the discussion thread.
-                                    </p>
+                                <DialogDescription asChild className="text-sm text-gray-600 space-y-2">
+                                    <div className="space-y-2">
+                                        <div className="font-medium text-orange-600">
+                                            ⚠️ This action will bypass the normal approval workflow.
+                                        </div>
+                                        <div>
+                                            The request{confirmDialog.ids.length > 1 ? 's' : ''} will be immediately {confirmDialog.action === 'APPROVE' ? 'approved' : 'rejected'} and a notice will be added to the discussion thread.
+                                        </div>
+                                    </div>
                                 </DialogDescription>
                             </div>
                         </div>

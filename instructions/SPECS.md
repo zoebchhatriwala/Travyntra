@@ -229,7 +229,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Currency Conversion**: Automatic conversion for Agents using `fxratesapi.com` (1-hour cache).
 - [x] **Payment Tracking**: Mark invoices as paid/pending.
 - [x] **Budget Analytics**: Spending trends and forecasts. (Implemented Jan 16)
-- [ ] **Expense Reports**: Per-request and per-employee breakdowns - Analytics Page.
+- [x] **Expense Reports**: Per-request and per-employee breakdowns - Analytics Page.
 
 ### Phase 11: Subscription & Super Admin Refinement 🛠️ PLANNED
 - [ ] **Plan Architecture**: Define capability-based plans (Starter, Growth, Enterprise).
@@ -411,6 +411,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
           // Reading
           const taxes = (record.taxes as unknown as TaxItem[])
           ```
+
+- **Timezone Protocol**:
+    - **Single Source of Truth**: The company's timezone is defined in the `Company.timezone` field.
+    - **Date Filtering**: Users perceive dates (e.g., "Last 30 Days", "Jan 1st to Jan 31st") in *their* company's local time.
+    - **UTC Conversion**: Before querying the database, all date inputs MUST be converted to UTC relative to the company's timezone (`toZonedTime` -> UTC).
+    - **Reporting**: Reports and charts must group data by local time months/days (e.g., A request on Feb 1st 1 AM Tokyo time is Feb 1st in the Tokyo report, even if it's Jan 31st UTC).
 
 **AI Assistant Protocol**:
 - **Continuous Documentation**: The AI assistant MUST revisit `SPECS.md` after completing any task to update task statuses (`[x]`), mark phases as completed, and refresh the "Current Sprint Focus" section. This ensures the roadmap is the single source of truth.
