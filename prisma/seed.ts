@@ -1,101 +1,43 @@
-
-import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, ApprovalStatus, BidStatus, WorkflowActionType } from "@prisma/client";
+import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, BidStatus, InvoiceStatus } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 /**
  * Creates a Money object containing the amount in the smallest unit and the currency code.
- * 
- * @param {number} amount - The decimal amount (e.g., 10.50).
- * @param {string} [currencyCode="USD"] - ISO 4217 currency code.
- * @param {number} [multiplier=100] - Multiplier for smallest unit calculation.
- * @returns {Object} The Money object structure.
  */
 function createMoney(amount: number, currencyCode: string = "USD", multiplier: number = 100) {
-    // Calculate the integer representative by multiplying the decimal by the multiplier
     const scaledAmount = amount * multiplier;
-
-    // Round the scaled amount to the nearest integer
     const roundedAmount = Math.round(scaledAmount);
-
-    // Return the resulting Money object
-    const result = {
+    return {
         amount: roundedAmount,
         currencyCode: currencyCode,
         multiplier: multiplier
     };
-
-    return result;
 }
 
-/**
- * Constructs the database connection string from environment variables or defaults.
- * 
- * @returns {string} The PostgreSQL connection string.
- */
 const getDatabaseUrl = (): string => {
-    // Retrieve the DATABASE_URL from environment variables
     const envUrl = process.env.DATABASE_URL;
-
-    // If environment URL exists
-    if (envUrl) {
-        // Return the existing connection string
-        return envUrl;
-    }
-
-    // Retrieve database configuration portions or use defaults
+    if (envUrl) return envUrl;
     const host = process.env.DB_HOST || "localhost";
     const port = process.env.DB_PORT || "5432";
     const user = process.env.DB_USER || "postgres";
     const password = process.env.DB_PASSWORD || "password";
     const dbName = process.env.DB_NAME || "travel_portal";
-
-    // Combine parameters into a standard PostgreSQL connection string
-    const connectionString = `postgresql://${user}:${password}@${host}:${port}/${dbName}`;
-
-    // Return the constructed string
-    return connectionString;
+    return `postgresql://${user}:${password}@${host}:${port}/${dbName}`;
 };
 
-// Retrieve the database connection URL
 const dbUrl = getDatabaseUrl();
-
-// Configuration for the PostgreSQL pool
-const poolConfig = {
-    connectionString: dbUrl
-};
-
-// Initialize the PostgreSQL connection pool
-const pool = new Pool(poolConfig);
-
-// Create the Prisma PostgreSQL adapter
+const pool = new Pool({ connectionString: dbUrl });
 const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
-// Configuration for the Prisma client
-const prismaConfig = {
-    adapter: adapter
-};
-
-// Initialize the Prisma Client instance
-const prisma = new PrismaClient(prismaConfig);
-
-// Define the style for person avatars from DiceBear
 const DICEBEAR_AVATAR_STYLE = "avataaars";
-
-// Define the style for company logos from DiceBear
 const DICEBEAR_COMPANY_STYLE = "identicon";
 
-/**
- * Main execution function for seeding the database with initial data.
- */
 async function main() {
-    // Log the initiation of the clearing process
-    const clearMsg = "💣 Clearing database...";
-    console.log(clearMsg);
-
+    console.log("💣 Clearing database...");
     try {
-        // Sequentially delete records from dependent tables to avoid foreign key constraints issues
         await prisma.notification.deleteMany();
         await prisma.activityLog.deleteMany();
         await prisma.message.deleteMany();
@@ -114,27 +56,16 @@ async function main() {
         await prisma.user.deleteMany();
         await prisma.company.deleteMany();
     } catch (e) {
-        // Log a warning if the database clearing fails
-        const warningMsg = "Error clearing db:";
-        console.warn(warningMsg, e);
+        console.warn("Error clearing db:", e);
     }
 
-    // Log the start of the seeding process
-    const seedStartMsg = "🌱 Database cleared. Starting seed...";
-    console.log(seedStartMsg);
+    console.log("🌱 Database cleared. Starting seed...");
 
-    // Default password string for all seeded users
     const defaultPassword = "password";
-    // Number of salt rounds for bcrypt hashing
-    const saltRounds = 10;
-    // Generate the password hash
-    const passwordHash = await hash(defaultPassword, saltRounds);
+    const passwordHash = await hash(defaultPassword, 10);
 
-    // --- 1. CREATE AGENCY ---
-    const agencyCreationMsg = "Creating Agency (UK Based)...";
-    console.log(agencyCreationMsg);
-
-    // Seed the primary travel agency - UK Based
+    // --- 1. CREATE AGENCY (UK, GBP, Europe/London) ---
+    console.log("Creating Agency (UK Based)...");
     const agency = await prisma.company.create({
         data: {
             name: "Global Voyage Partners",
@@ -145,42 +76,32 @@ async function main() {
             plan: SubscriptionPlan.ENTERPRISE,
             country: "UK",
             currency: "GBP",
+            timezone: "Europe/London",
             logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=global-voyage`,
         }
     });
 
-    // Define the list of agents to create
     const agentsToCreate = [
-        { name: "Emma Thompson", email: "emma@globalvoyage.com", role: UserRole.TRAVEL_AGENT }, // Owner/Admin
-        { name: "Liam Sterling", email: "liam@globalvoyage.com", role: UserRole.TRAVEL_AGENT }, // Admin
-        { name: "Sophie Staff", email: "sophie@globalvoyage.com", role: UserRole.AGENCY_EMPLOYEE }, // Staff member (new role)
+        { name: "Emma Thompson", email: "emma@globalvoyage.com", role: UserRole.TRAVEL_AGENT },
+        { name: "Liam Sterling", email: "liam@globalvoyage.com", role: UserRole.TRAVEL_AGENT },
     ];
 
-    // Iterate through given agents to create user records
     for (const agentData of agentsToCreate) {
-        // Extract properties from agent data
-        const agentName = agentData.name;
-        const agentEmail = agentData.email;
-
-        // Construct the avatar URL using DiceBear
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${agentName}`;
-
-        // Create the user record for the agent
         await prisma.user.create({
             data: {
-                name: agentName,
-                email: agentEmail,
+                name: agentData.name,
+                email: agentData.email,
                 password: passwordHash,
                 role: agentData.role,
                 companyId: agency.id,
                 isActive: true,
-                avatarUrl: avatarUrl,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${agentData.name}`,
             }
         });
     }
 
-    // --- 2. CREATE CLIENT COMPANY ---
-    // Seed the enterprise client company
+    // --- 2. CREATE CLIENT COMPANY (US, USD, America/New_York) ---
+    console.log("Creating Client Company (US Based)...");
     const clientCompany = await prisma.company.create({
         data: {
             name: "Nebula Innovations",
@@ -191,6 +112,7 @@ async function main() {
             plan: SubscriptionPlan.ENTERPRISE,
             country: "US",
             currency: "USD",
+            timezone: "America/New_York",
             logoUrl: `https://api.dicebear.com/9.x/${DICEBEAR_COMPANY_STYLE}/png?seed=nebula`,
             policyThreshold: {
                 enabled: true,
@@ -215,58 +137,52 @@ async function main() {
         }
     });
 
-    // Define the list of company administrators
     const adminsToCreate = [
         { name: "Marcus Chen", email: "marcus@nebula.tech" },
         { name: "Sarah Connor", email: "sarah@nebula.tech" },
     ];
 
-    // Iterate through admins list to create records
-    for (const adminData of adminsToCreate) {
-        const adminName = adminData.name;
-        const adminEmail = adminData.email;
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${adminName}`;
-
-        await prisma.user.create({
-            data: {
-                name: adminName,
-                email: adminEmail,
-                password: passwordHash,
-                role: UserRole.COMPANY_ADMIN,
-                companyId: clientCompany.id,
-                isActive: true,
-                avatarUrl: avatarUrl,
-            }
-        });
-    }
-
-    // Define the list of company employees
     const employeesToCreate = [
         { name: "David Miller", email: "david@nebula.tech" },
         { name: "Jessica Wu", email: "jessica@nebula.tech" },
         { name: "Raj Patel", email: "raj@nebula.tech" },
+        { name: "Sophie Turner", email: "sophie@nebula.tech" },
+        { name: "Alex Johnson", email: "alex@nebula.tech" },
     ];
 
-    // Iterate through employees list to create records
-    for (const employeeData of employeesToCreate) {
-        const empName = employeeData.name;
-        const empEmail = employeeData.email;
-        const avatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${empName}`;
+    const companyUsers: any[] = [];
 
-        await prisma.user.create({
+    for (const adminData of adminsToCreate) {
+        const u = await prisma.user.create({
             data: {
-                name: empName,
-                email: empEmail,
+                name: adminData.name,
+                email: adminData.email,
+                password: passwordHash,
+                role: UserRole.COMPANY_ADMIN,
+                companyId: clientCompany.id,
+                isActive: true,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${adminData.name}`,
+            }
+        });
+        companyUsers.push(u);
+    }
+
+    for (const empData of employeesToCreate) {
+        const u = await prisma.user.create({
+            data: {
+                name: empData.name,
+                email: empData.email,
                 password: passwordHash,
                 role: UserRole.EMPLOYEE,
                 companyId: clientCompany.id,
                 isActive: true,
-                avatarUrl: avatarUrl,
+                avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=${empData.name}`,
             }
         });
+        companyUsers.push(u);
     }
 
-    // Link the client company to the agency through an integration
+    // Link Agency
     await prisma.agencyIntegration.create({
         data: {
             companyId: clientCompany.id,
@@ -275,7 +191,7 @@ async function main() {
         }
     });
 
-    // Create the primary approval workflow for the client company
+    // Create Workflow
     const workflow = await prisma.approvalWorkflow.create({
         data: {
             name: "Standard Travel Workflow",
@@ -284,388 +200,183 @@ async function main() {
         }
     });
 
-    // Fetch the recently created admin users to assign them as workflow approvers
-    const adminUsers = await prisma.user.findMany({
-        where: {
-            companyId: clientCompany.id,
-            role: UserRole.COMPANY_ADMIN
-        }
-    });
+    const adminUser = companyUsers.find(u => u.role === UserRole.COMPANY_ADMIN);
 
-    // Transform admin users into a format suitable for Prisma connection
-    const approverConnections = adminUsers.map((admin) => {
-        return {
-            id: admin.id
-        };
-    });
-
-    // Create the first step of the workflow: Manager Approval
+    // Simple 1-step workflow for seed simplicity
     await prisma.workflowStep.create({
         data: {
             workflowId: workflow.id,
             name: "Manager Approval",
             order: 1,
             type: ApprovalType.ANY,
-            approvers: {
-                connect: approverConnections
-            }
+            approvers: { connect: { id: adminUser.id } }
         }
     });
 
-    // Create the second step of the workflow: Finance Approval
-    await prisma.workflowStep.create({
-        data: {
-            workflowId: workflow.id,
-            name: "Finance Approval",
-            order: 2,
-            type: ApprovalType.ALL,
-            approvers: {
-                connect: approverConnections
-            }
-        }
-    });
+    // --- 3. GENERATE HISTORICAL ANALYTICS DATA ---
+    console.log("Generating 13 months of historical data...");
 
-    // --- 3. CREATE REQUESTS & OTHER DATA ---
-    const genericSeedMsg = "Generating Requests and interactions...";
-    console.log(genericSeedMsg);
+    const CITIES = [
+        { name: "London", country: "UK", currency: "GBP" },
+        { name: "Paris", country: "France", currency: "EUR" },
+        { name: "Tokyo", country: "Japan", currency: "JPY" },
+        { name: "Singapore", country: "Singapore", currency: "SGD" },
+        { name: "New York", country: "US", currency: "USD" },
+        { name: "Berlin", country: "Germany", currency: "EUR" },
+        { name: "Dubai", country: "UAE", currency: "AED" }
+    ];
 
-    // List of placeholder cities for trip requests
-    const CITIES = ["New York", "London", "Paris", "Tokyo", "Singapore", "Dublin", "Sydney", "Berlin", "Mumbai", "San Francisco"];
+    const TRIP_PURPOSES = ["Client Meeting", "Conference", "Training", "Project Launch", "Site Visit"];
 
-    // List of placeholder titles for trips
-    const TRIP_TITLES = ["Client QBR", "Tech Summit", "Product Launch", "Partner Negotiations", "Sales Roadshow"];
+    const now = new Date();
+    // Go back 13 months
+    for (let i = 12; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        // Generate 3-8 trips per month
+        const numTrips = Math.floor(Math.random() * 6) + 3;
 
-    /**
-     * Selects a random item from an array.
-     */
-    const getRandomItem = <T>(arr: T[]): T => {
-        const index = Math.floor(Math.random() * arr.length);
-        return arr[index];
-    };
+        for (let j = 0; j < numTrips; j++) {
+            const requester = employeesToCreate[Math.floor(Math.random() * employeesToCreate.length)];
+            const userRecord = companyUsers.find(u => u.email === requester.email);
+            const destination = CITIES[Math.floor(Math.random() * CITIES.length)];
 
-    /**
-     * Generates a random Date within a given range from a start date.
-     */
-    const getRandomDate = (start: Date, maxDays: number): Date => {
-        const date = new Date(start);
-        const randomDays = Math.floor(Math.random() * maxDays);
-        date.setDate(date.getDate() + randomDays);
-        return date;
-    };
+            // Random day in the month
+            const day = Math.floor(Math.random() * 28) + 1;
+            const tripCreatedDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day, 10, 0, 0); // 10 AM local rough time
 
-    // Retrieve all newly created employees from the database
-    const employeeRecords = await prisma.user.findMany({
-        where: {
-            companyId: clientCompany.id,
-            role: UserRole.EMPLOYEE
-        }
-    });
+            // Determine status - mostly COMPLETED for past months, PENDING for current
+            let status: RequestStatus = RequestStatus.COMPLETED;
+            let invoiceStatus: InvoiceStatus = InvoiceStatus.PAID;
 
-    // Loop through each employee to generate trip requests
-    for (const employee of employeeRecords) {
-        // determine the number of requests to generate (2 or 3)
-        const randomModifier = Math.floor(Math.random() * 2);
-        const numToGenerate = 2 + randomModifier;
+            if (i === 0) { // Current month
+                const rand = Math.random();
+                if (rand > 0.6) status = RequestStatus.PENDING_COMPANY_APPROVAL;
+                else if (rand > 0.3) status = RequestStatus.BOOKED; // Invoice pending
+                else status = RequestStatus.COMPLETED;
 
-        // Generate the requests
-        for (let i = 0; i < numToGenerate; i++) {
-            // Select a random destination city
-            const destinationCity = getRandomItem(CITIES);
-            const titlePrefix = getRandomItem(TRIP_TITLES);
-            const fullTitle = `${titlePrefix} - ${destinationCity}`;
-
-            // Get current date
-            const nowTime = new Date();
-            const startDateResult = getRandomDate(nowTime, 45);
-            const endDateResult = getRandomDate(startDateResult, 7);
-
-            // determine a status for the request based on the loop index
-            let status: RequestStatus = RequestStatus.DRAFT;
-            const isFirst = i === 0;
-            const isSecond = i === 1;
-
-            if (isFirst) {
-                status = RequestStatus.PENDING_AGENT_ACTION;
-            } else if (isSecond) {
-                status = RequestStatus.BOOKED;
+                if (status === RequestStatus.BOOKED) invoiceStatus = InvoiceStatus.PENDING;
             }
 
-            // Define the destination object structure
-            const destinationObj = {
-                city: destinationCity,
-                country: "US",
-                formatted: destinationCity
-            };
+            const estimatedBudget = Math.floor(Math.random() * 3000) + 1000;
+            const actualCost = estimatedBudget * (0.8 + Math.random() * 0.4); // +/- 20% variance mostly
 
-            // Define the budget Money object
-            const budgetGenericValue = 2500;
-            const budgetMoney = createMoney(budgetGenericValue, "USD");
-
-            // Define user preferences
-            const tripPreferences = {
-                flight: "Economy Plus",
-                hotel: "4-star minimum, near city center"
-            };
-
-            // Create the trip request record
-            const tripRequest = await prisma.tripRequest.create({
+            // Create Request
+            const request = await prisma.tripRequest.create({
                 data: {
-                    userId: employee.id,
+                    userId: userRecord.id,
                     companyId: clientCompany.id,
-                    title: fullTitle,
-                    destination: destinationObj,
-                    startDate: startDateResult,
-                    endDate: endDateResult,
+                    title: `${TRIP_PURPOSES[Math.floor(Math.random() * TRIP_PURPOSES.length)]} - ${destination.name}`,
+                    destination: { city: destination.name, country: destination.country },
+                    startDate: new Date(tripCreatedDate.getTime() + 86400000 * 10), // 10 days later
+                    endDate: new Date(tripCreatedDate.getTime() + 86400000 * 14),
                     status: status,
-                    purpose: `Business travel for ${fullTitle}`,
-                    budget: budgetMoney,
-                    preferences: tripPreferences
+                    purpose: "Business travel",
+                    budget: createMoney(estimatedBudget, "USD"), // Budget in Company Currency
+                    preferences: { flight: "Economy", hotel: "City Center" },
+                    createdAt: tripCreatedDate,
+                    updatedAt: tripCreatedDate
                 }
             });
 
-            // check if the request is beyond the draft stage
-            const currentRequestStatus = status;
-            const isNonDraft = currentRequestStatus !== RequestStatus.DRAFT;
+            // If it went to agency (Booked/Completed)
+            if (status === RequestStatus.BOOKED || status === RequestStatus.COMPLETED) {
+                // Link Agent
+                await prisma.tripRequest.update({ where: { id: request.id }, data: { assignedAgentId: agency.id } });
 
-            // If the request requires agent interaction
-            if (isNonDraft) {
-                // Assign the agency to the request
-                await prisma.tripRequest.update({
-                    where: {
-                        id: tripRequest.id
-                    },
-                    data: {
-                        assignedAgentId: agency.id
-                    }
-                });
+                // Bid in Agent Currency (GBP) or Destination Currency (e.g. EUR)
+                // Let's mix it up. 70% Agent Currency.
+                const isAgentCurrency = Math.random() > 0.3;
+                const bidCurrency = isAgentCurrency ? "GBP" : destination.currency;
 
-                // determine the bid status based on the request status
-                let bidStatus: BidStatus = BidStatus.PENDING;
-                const isBookedRequest = status === RequestStatus.BOOKED;
-                if (isBookedRequest) {
-                    bidStatus = BidStatus.ACCEPTED;
-                }
+                // Approximate exchange rates for seed realism
+                const rates: any = { "GBP": 0.78, "EUR": 0.92, "JPY": 145, "SGD": 1.34, "AED": 3.67, "USD": 1 };
+                const rate = rates[bidCurrency] || 1;
+                const bidAmount = Math.round(actualCost * rate);
 
-                // Define the bid amount
-                const bidVal = 2200;
-                const bidMoneyValue = createMoney(bidVal, "GBP"); // Quote in GBP since agent is UK based
-
-                // Create a bid from the agency for the request
-                await prisma.agentBid.create({
-                    data: {
-                        requestId: tripRequest.id,
-                        agentId: agency.id,
-                        amount: bidMoneyValue,
-                        message: "We have composed an itinerary that matches your preferences perfectly.",
-                        status: bidStatus
-                    }
-                });
-
-                // Add an initial message from the employee
+                // Create Discussion Thread
+                // 1. Employee asks
                 await prisma.message.create({
                     data: {
-                        requestId: tripRequest.id,
-                        senderId: employee.id,
-                        content: "Hi, prefer aisle seats if possible."
+                        requestId: request.id,
+                        senderId: userRecord.id,
+                        content: `Hi, I need to be near the convention center in ${destination.name}.`,
+                        createdAt: new Date(tripCreatedDate.getTime() + 3600000) // 1 hr later
                     }
                 });
 
-                // identify which agent will respond
-                const respondersEmailAddr = "emma@globalvoyage.com";
-                const responderUserRecord = await prisma.user.findUnique({
-                    where: {
-                        email: respondersEmailAddr
+                // 2. Agent replies
+                const agentUser = await prisma.user.findFirst({ where: { email: "emma@globalvoyage.com" } });
+                await prisma.message.create({
+                    data: {
+                        requestId: request.id,
+                        senderId: agentUser!.id,
+                        content: "Understood. I've attached a proposal with 3 hotel options nearby.",
+                        createdAt: new Date(tripCreatedDate.getTime() + 7200000) // 2 hrs later
                     }
                 });
 
-                // Get the ID of the available agent
-                const responderAgentId = responderUserRecord?.id;
+                // Create Bid
+                await prisma.agentBid.create({
+                    data: {
+                        requestId: request.id,
+                        agentId: agency.id,
+                        amount: createMoney(bidAmount, bidCurrency),
+                        status: BidStatus.ACCEPTED,
+                        message: "Standard package negotiation final.",
+                        createdAt: new Date(tripCreatedDate.getTime() + 7200000)
+                    }
+                });
 
-                // Add a response message from an agent if they exist
-                if (responderAgentId) {
-                    await prisma.message.create({
-                        data: {
-                            requestId: tripRequest.id,
-                            senderId: responderAgentId,
-                            content: "Noted regarding the aisle seat. We found a great hotel 10 mins from the venue."
-                        }
-                    });
-                }
-
-                // If the trip is already booked, create fulfillment items
-                if (isBookedRequest) {
-                    // Define the set of fulfillment items to create
-                    const fulfillmentItemsData = [
-                        { requestId: tripRequest.id, title: "British Airways Confirmation.pdf", isCompleted: true, order: 1 },
-                        { requestId: tripRequest.id, title: "Hilton Hotel Voucher.pdf", isCompleted: true, order: 2 },
-                        { requestId: tripRequest.id, title: "Travel Insurance Policy.pdf", isCompleted: true, order: 3 }
-                    ];
-
-                    // Batch create the fulfillment items
-                    await prisma.fulfillmentItem.createMany({
-                        data: fulfillmentItemsData
-                    });
-                }
+                // Create Invoice
+                await prisma.invoice.create({
+                    data: {
+                        requestId: request.id,
+                        companyId: clientCompany.id,
+                        agencyId: agency.id,
+                        amount: bidAmount, // Decimal for invoice
+                        currency: bidCurrency,
+                        status: invoiceStatus,
+                        dueDate: new Date(tripCreatedDate.getTime() + 86400000 * 30),
+                        createdAt: new Date(tripCreatedDate.getTime() + 86400000 * 2) // Invoice 2 days later
+                    }
+                });
             }
         }
     }
-
-    // --- 3.5. CREATE A TEST REQUEST WITH PENDING APPROVAL ---
-    const testRequestCreationLogMsg = "Creating test request with pending approval...";
-    console.log(testRequestCreationLogMsg);
-
-    const testEmployeeUser = employeeRecords[0];
-
-    // calculate dates for the test request (14 days from now)
-    const millisecondsInDay = 24 * 60 * 60 * 1000;
-    const testStartTime = Date.now() + (14 * millisecondsInDay);
-    const testEndTime = Date.now() + (18 * millisecondsInDay);
-    const testStartDateObj = new Date(testStartTime);
-    const testEndDateObj = new Date(testEndTime);
-
-    const testBudgetRawValue = 3500;
-    const testBudgetMoneyObj = createMoney(testBudgetRawValue, "USD");
-
-    const testTripRequest = await prisma.tripRequest.create({
-        data: {
-            userId: testEmployeeUser.id,
-            companyId: clientCompany.id,
-            title: "CES 2026 - Las Vegas",
-            destination: {
-                city: "Las Vegas",
-                country: "US",
-            },
-            startDate: testStartDateObj,
-            endDate: testEndDateObj,
-            status: RequestStatus.PENDING_COMPANY_APPROVAL,
-            purpose: "Exhibiting our new product line at CES.",
-            budget: testBudgetMoneyObj,
-            preferences: { flight: "Business Class", hotel: "The Venetian or nearby" }
-        }
-    });
-
-    const relevantWorkflowSteps = await prisma.workflowStep.findMany({
-        where: {
-            workflowId: workflow.id,
-            deletedAt: null
-        },
-        orderBy: {
-            order: 'asc'
-        }
-    });
-
-    for (let stepIdx = 0; stepIdx < relevantWorkflowSteps.length; stepIdx++) {
-        const stepDefObj = relevantWorkflowSteps[stepIdx];
-        let startingStatus: ApprovalStatus = ApprovalStatus.WAITING;
-        const isTheFirstStep = stepIdx === 0;
-        if (isTheFirstStep) {
-            startingStatus = ApprovalStatus.PENDING;
-        }
-
-        await prisma.requestApprovalStep.create({
-            data: {
-                requestId: testTripRequest.id,
-                stepId: stepDefObj.id,
-                status: startingStatus
-            }
-        });
-    }
-
-    const testWorkflowStepCount = relevantWorkflowSteps.length;
-    const testSummaryConclusionMsg = `✓ Created test request "${testTripRequest.title}" with ${testWorkflowStepCount} approval steps`;
-    console.log(testSummaryConclusionMsg);
-
-    // --- 3.6. CREATE AN AUTO-APPROVED REQUEST ---
-    const autoApprovedRequestMsg = "Creating an auto-approved request (Domestic trip)...";
-    console.log(autoApprovedRequestMsg);
-
-    const autoApprovedTrip = await prisma.tripRequest.create({
-        data: {
-            userId: testEmployeeUser.id,
-            companyId: clientCompany.id,
-            title: "Internal Strategy Meeting",
-            destination: { city: "New York", country: "US", },
-            startDate: new Date(Date.now() + (30 * millisecondsInDay)),
-            endDate: new Date(Date.now() + (32 * millisecondsInDay)),
-            status: RequestStatus.PENDING_AGENT_ACTION,
-            purpose: "Q1 Strategy planning with NYC team.",
-            budget: createMoney(500, "USD"),
-            preferences: { flight: "Economy", hotel: "Near NYC office" }
-        }
-    });
-
-    for (const step of relevantWorkflowSteps) {
-        await prisma.requestApprovalStep.create({
-            data: {
-                requestId: autoApprovedTrip.id,
-                stepId: step.id,
-                status: ApprovalStatus.APPROVED,
-                metadata: {
-                    autoApproved: true,
-                    ruleType: "DOMESTIC_TRIP",
-                    ruleConfig: { enabled: true },
-                    reason: "Domestic trip (USA) auto-approved by policy."
-                }
-            }
-        });
-    }
-
-    await prisma.workflowAction.create({
-        data: {
-            requestId: autoApprovedTrip.id,
-            actorId: testEmployeeUser.id,
-            action: WorkflowActionType.AUTO_APPROVED,
-            comment: "✅ Trip request auto-approved based on Domestic Trip policy."
-        }
-    });
 
     // --- 4. SUPER ADMIN ---
-    const superAdminEmail = "admin@travyntra.com";
-    const superAdminName = "Zoeb Chhatriwala";
-    const superAdminAvatarUrl = `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=Zoeb`;
-
+    console.log("Creating Super Admin...");
     await prisma.user.create({
         data: {
-            email: superAdminEmail,
-            name: superAdminName,
+            email: "admin@travyntra.com",
+            name: "Zoeb Chhatriwala",
             password: passwordHash,
             role: UserRole.SUPER_ADMIN,
             isActive: true,
-            avatarUrl: superAdminAvatarUrl
+            avatarUrl: `https://api.dicebear.com/9.x/${DICEBEAR_AVATAR_STYLE}/png?seed=Zoeb`
         }
     });
 
     console.log("");
-    console.log("✅ Seed Completed!");
+    console.log("✅ Seed Completed Successfully!");
     console.log("------------------------------------------------");
-    console.log("1. AGENCY: Global Voyage Partners (UK, GBP)");
-    console.log("   - Admins: emma@globalvoyage.com, liam@globalvoyage.com");
-    console.log("   - Staff:  sophie@globalvoyage.com (Role: AGENCY_EMPLOYEE)");
+    console.log("1. AGENCY: Global Voyage Partners (UK, GBP, London Time)");
+    console.log("   - User: emma@globalvoyage.com");
     console.log("");
-    console.log("2. COMPANY: Nebula Innovations (USA, USD)");
-    console.log("   - Admins: marcus@nebula.tech, sarah@nebula.tech");
-    console.log("   - Staff:  david@nebula.tech, jessica@nebula.tech, raj@nebula.tech");
+    console.log("2. COMPANY: Nebula Innovations (USA, USD, NYC Time)");
+    console.log("   - Admin: marcus@nebula.tech");
+    console.log("   - Review 'Financial Analytics' for historical data.");
     console.log("");
     console.log("3. SUPER ADMIN: admin@travyntra.com");
     console.log("------------------------------------------------");
-    console.log("Password for all users: 'password'");
-    console.log("------------------------------------------------");
 }
 
-// Execute the main seeding function
-const mainExecution = main();
-
-// Handle completion and errors
-mainExecution
-    .catch((error) => {
-        // Log the exception
-        console.error("❌ Seed error:", error);
-        // Exit the process with failure code
+main()
+    .catch((e) => {
+        console.error(e);
         process.exit(1);
     })
     .finally(async () => {
-        // Terminate the Prisma connection
         await prisma.$disconnect();
-        // Terminate the PostgreSQL pool connection
         await pool.end();
     });
