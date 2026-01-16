@@ -18,7 +18,7 @@ import {
     AlertTriangle
 } from "lucide-react";
 import { Prisma } from "@prisma/client";
-import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
+import { parseMoney, moneyToDecimal, createMoney } from "@/lib/utils/money";
 import {
     Card,
     CardContent,

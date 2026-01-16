@@ -4,14 +4,7 @@ import { countries, getEmojiFlag } from "countries-list";
 /**
  * Interface representing a country with its name, ISO code, and emoji flag.
  */
-export interface Country {
-    /** The full name of the country */
-    name: string;
-    /** The ISO 3166-1 alpha-2 country code */
-    code: string;
-    /** The emoji character representing the country's flag */
-    emoji: string;
-}
+import { type Country } from "@/types/common/geography";
 
 /**
  * Transforms the raw data from the countries-list package into a standardized list of Country objects.

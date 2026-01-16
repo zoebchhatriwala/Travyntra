@@ -33,13 +33,7 @@ import { saveWorkflowConfig } from "../actions";
 import { createTestRequest, approveTestStep, rejectTestStep } from "../test-actions";
 import { ApprovalType } from "@prisma/client";
 
-interface WorkflowStep {
-    id?: string;
-    name: string;
-    order: number;
-    type: ApprovalType;
-    approverIds: string[];
-}
+import { type WorkflowStepConfig as WorkflowStep } from "@/types/workflow/step";
 
 interface WorkflowBuilderProps {
     slug: string;

@@ -3,25 +3,9 @@
  */
 
 import { countries } from "countries-list";
+import { type Address, type PartialAddress } from "@/types/common/address";
+export { type Address, type PartialAddress };
 
-/**
- * Full address with all required fields (used for manual address entry)
- */
-export interface Address {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipcode: string;
-    latitude?: string;
-    longitude?: string;
-    formatted?: string;
-}
-
-/**
- * Partial address for flexible use (destination display, etc.)
- */
-export type PartialAddress = Partial<Address>;
 
 /**
  * Format options for address display

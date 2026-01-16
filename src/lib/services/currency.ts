@@ -1,5 +1,6 @@
 
-import { Money, createMoney } from "../types/money";
+import { Money } from "@/types/finance/money";
+import { createMoney } from "@/lib/utils/money";
 
 // The duration for which the exchange rates are cached in memory (1 hour in milliseconds)
 const CACHE_DURATION = 60 * 60 * 1000;

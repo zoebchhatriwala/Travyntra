@@ -6,11 +6,12 @@ import { Prisma, UserRole, RequestStatus, BidStatus, NotificationType } from "@p
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { ActivityLogAction } from "@/lib/enums";
-import { createMoney, formatMoney, parseMoney, moneyToDecimal, type Money } from "@/lib/types/money";
+import { ActivityLogAction } from "@/types/common/enums";
+import { type Money } from "@/types/finance/money";
+import { createMoney, formatMoney, parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
-import { type ApprovalStepMetadata, type CombinedConfig, type BudgetThresholdConfig, AutoApprovalRuleType } from "@/lib/types/auto-approval-policy";
+import { type ApprovalStepMetadata, type CombinedConfig, type BudgetThresholdConfig, AutoApprovalRuleType } from "@/types/workflow/auto-approval-policy";
 import { AutoApprovalEngine } from "@/lib/auto-approval-engine";
 
 interface BidTax {

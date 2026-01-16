@@ -7,17 +7,12 @@ import { authOptions } from "@/lib/auth-options";
 import { ApprovalStatus, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
-import { type ApprovalStepMetadata } from "@/lib/types/auto-approval-policy";
+import { type ApprovalStepMetadata } from "@/types/workflow/auto-approval-policy";
 
 /**
  * Interface representing a geographic location.
  */
-interface Location {
-    /** The city name */
-    city?: string;
-    /** The fully formatted address string */
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 /**
  * Interface representing the structure of a pending approval result.
@@ -692,31 +687,12 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
     }
 }
 
+import { type WorkflowProgressStep } from "@/types/workflow/step";
+
 /**
  * Interface representing the progress of an individual approval step.
  */
-export interface ApprovalProgressStep {
-    /** Unique ID of the step instance */
-    id: string;
-    /** Human-readable name of the step */
-    stepName: string;
-    /** Numeric order of the step */
-    stepOrder: number;
-    /** Logic type: ANY or ALL */
-    stepType: string;
-    /** Current aggregate status of the step */
-    status: ApprovalStatus;
-    /** List of assigned approvers for this step */
-    approvers: { id: string; name: string | null; avatarUrl: string | null; role: string }[];
-    /** List of individual decisions submitted for this step */
-    approvals: { userId: string; userName: string | null; userAvatar: string | null; status: ApprovalStatus; comment: string | null; updatedAt: Date }[];
-    /** Creation timestamp */
-    createdAt: Date;
-    /** Last update timestamp */
-    updatedAt: Date;
-    /** Metadata for audit trail (e.g. auto-approval details) */
-    metadata?: ApprovalStepMetadata;
-}
+export type ApprovalProgressStep = WorkflowProgressStep;
 
 /**
  * Gathers and formats the full approval workflow history and progress for a specific trip request.
@@ -748,6 +724,7 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
                             select: {
                                 id: true,
                                 name: true,
+                                email: true,
                                 avatarUrl: true,
                                 role: true
                             }
@@ -791,10 +768,19 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
                     userName: decUser.name,
                     userAvatar: decUser.avatarUrl,
                     status: a.status,
-                    comment: a.comment,
+                    comment: a.comment || null, // ensure null if undefined
                     updatedAt: a.updatedAt
                 };
             });
+
+            // Map approvers to match UserProfile structure
+            const mappedApprovers = definitionApprovers.map(a => ({
+                id: a.id,
+                name: a.name,
+                email: a.email,
+                avatarUrl: a.avatarUrl,
+                role: a.role
+            }));
 
             // construct the progress record
             const result: ApprovalProgressStep = {
@@ -803,26 +789,26 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
                 stepOrder: stepDefinition.order,
                 stepType: stepDefinition.type,
                 status: step.status,
-                approvers: definitionApprovers,
+                approvers: mappedApprovers,
                 approvals: individualDecisions,
                 createdAt: step.createdAt,
                 updatedAt: step.updatedAt,
-                metadata: step.metadata as unknown as ApprovalStepMetadata
+                metadata: (step.metadata as unknown as ApprovalStepMetadata) || undefined
             };
 
             return result;
         };
 
-        // Transform the entire collection
-        const finalProgressList = rawStepsCollection.map(mapToProgressStep);
+        // Process all retrieved records through the mapper
+        const finalizedStepsList = rawStepsCollection.map(mapToProgressStep);
 
-        // Return the gathered results
-        return finalProgressList;
-    } catch (fetchError) {
+        // Return the mapped list
+        return finalizedStepsList;
+    } catch (error) {
         // define specific error log label
         const progressErrorLabel = "Error fetching approval progress:";
         // Log the exception
-        console.error(progressErrorLabel, fetchError);
+        console.error(progressErrorLabel, error);
 
         // Return null to signal a failure to retrieve progress
         return null;

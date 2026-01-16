@@ -7,7 +7,7 @@ import {
     type AutoApprovalPolicy,
     type AutoApprovalRule,
     AutoApprovalRuleType,
-} from "@/lib/types/auto-approval-policy";
+} from "@/types/workflow/auto-approval-policy";
 import { getAutoApprovalPolicy, updateAutoApprovalPolicy } from "./actions";
 import { countries } from "countries-list";
 

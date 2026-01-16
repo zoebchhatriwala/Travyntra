@@ -9,10 +9,7 @@ import { authOptions } from "@/lib/auth-options";
 import { UserRole } from "@prisma/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Location {
-    city?: string;
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 export default async function AgencyDashboard() {
     const session = await getServerSession(authOptions);

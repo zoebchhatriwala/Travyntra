@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plane, Calendar, MapPin, DollarSign, FileText, Building2 } from "lucide-react";
 import { format } from "date-fns";
-import { TripPreferences } from "@/lib/types/trip-preferences";
-import { Money, formatMoney } from "@/lib/types/money";
+import { TripPreferences } from "@/types/request/trip-preferences";
+import { Money } from "@/types/finance/money";
+import { formatMoney } from "@/lib/utils/money";
 import { Prisma } from "@prisma/client";
 import { formatAddressShort, normalizeAddress } from "@/lib/utils/address";
 
@@ -16,7 +17,7 @@ interface RequestInfoProps {
         startDate: Date | string;
         endDate: Date | string;
         purpose?: string | null;
-        preferences?: Prisma.JsonValue;
+        preferences?: Prisma.JsonValue | TripPreferences;
     };
     currency: string;
 }

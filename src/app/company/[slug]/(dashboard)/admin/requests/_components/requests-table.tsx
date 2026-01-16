@@ -30,20 +30,7 @@ import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests, getExpo
 import { generatePDF } from "@/lib/utils/export";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Request {
-    id: string;
-    title: string;
-    userName: string;
-    userAvatar: string | null;
-    status: string;
-    createdAt: Date;
-    budget: number;
-    cost?: number | null;
-    currency: string;
-    destination: string;
-    startDate: Date;
-    endDate: Date;
-}
+import { type TripRequestSummary as Request } from "@/types/request/summary";
 
 interface RequestsTableProps {
     slug: string;

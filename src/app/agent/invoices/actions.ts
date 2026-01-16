@@ -5,9 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { Prisma, RequestStatus, InvoiceStatus, UserRole } from "@prisma/client";
-import { ActivityLogAction } from "@/lib/enums";
+import { ActivityLogAction } from "@/types/common/enums";
 import { createNotification } from "@/lib/notifications";
-import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertCurrency } from "@/lib/services/currency";
 import { uploadFile } from "@/lib/storage";
 

@@ -9,15 +9,12 @@ import Link from "next/link";
 import { FulfillmentChecklist } from "./_components/fulfillment-checklist";
 import { StatusActions } from "./_components/status-actions";
 import { RecentMessages } from "./_components/recent-messages";
-import { parseMoney, formatMoney } from "@/lib/types/money";
+import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Location {
-    city?: string;
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 export default async function FulfillmentDetailPage({
     params,

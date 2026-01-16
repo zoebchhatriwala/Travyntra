@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 /**
@@ -26,11 +25,6 @@ export const FlightPreferenceSchema = z.object({
 });
 
 /**
- * TypeScript type inferred from the FlightPreferenceSchema.
- */
-export type FlightPreference = z.infer<typeof FlightPreferenceSchema>;
-
-/**
  * Zod schema defining a geographic address structure, including coordinates and formatted strings.
  */
 export const AddressSchema = z.object({
@@ -53,11 +47,6 @@ export const AddressSchema = z.object({
 });
 
 /**
- * TypeScript type inferred from the AddressSchema.
- */
-export type Address = z.infer<typeof AddressSchema>;
-
-/**
  * Zod schema defining the structure for car rental or transport preferences.
  */
 export const CarPreferenceSchema = z.object({
@@ -72,11 +61,6 @@ export const CarPreferenceSchema = z.object({
     /** Detailed structured address for the drop-off location */
     dropoffDetails: AddressSchema.optional(),
 });
-
-/**
- * TypeScript type inferred from the CarPreferenceSchema.
- */
-export type CarPreference = z.infer<typeof CarPreferenceSchema>;
 
 /**
  * Master Zod schema aggregating all travel-related preferences for a trip request.
@@ -95,8 +79,3 @@ export const TripPreferencesSchema = z.object({
     /** Detailed structured address for the primary trip destination */
     destinationDetails: AddressSchema.optional(),
 });
-
-/**
- * TypeScript type inferred from the TripPreferencesSchema.
- */
-export type TripPreferences = z.infer<typeof TripPreferencesSchema>;

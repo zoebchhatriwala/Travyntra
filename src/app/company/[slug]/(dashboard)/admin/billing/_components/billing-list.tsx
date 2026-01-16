@@ -41,26 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 
-interface Tax {
-    label: string;
-    value: number;
-    type: string;
-    calculatedAmount: number;
-}
-
-interface Invoice {
-    id: string;
-    amount: number;
-    subtotal?: number;
-    taxes?: Tax[];
-    currency: string;
-    date: Date;
-    status: InvoiceStatus;
-    description: string;
-    recipient: string;
-    requestId: string;
-    pdfUrl?: string | null;
-}
+import { type Invoice } from "@/types/finance/invoice";
 
 interface BillingListProps {
     invoices: Invoice[];

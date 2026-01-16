@@ -13,13 +13,10 @@ import { SearchInput } from "@/components/ui/search-input";
 import { BidsFilter } from "./_components/bids-filter";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { getIntegratedCompanies } from "./actions";
-import { parseMoney, formatMoney } from "@/lib/types/money";
+import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Location {
-    city?: string;
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 interface PageProps {
     searchParams: Promise<{

@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
 import { RequestStatus, ApprovalType, ApprovalStatus, Prisma, WorkflowActionType, NotificationType, BidStatus } from "@prisma/client";
 import { AutoApprovalEngine } from "./auto-approval-engine";
-import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "./types/auto-approval-policy";
+import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "@/types/workflow/auto-approval-policy";
 import { createNotification } from "./notifications";
 import { UserRole } from "./constants/roles";
 

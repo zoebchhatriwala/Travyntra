@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { RequestStatus, UserRole, Prisma } from "@prisma/client";
-import { ActivityLogAction } from "@/lib/enums";
+import { ActivityLogAction } from "@/types/common/enums";
 import { createNotification } from "@/lib/notifications";
 
 /**

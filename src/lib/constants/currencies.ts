@@ -1,10 +1,7 @@
 
 import { countries } from "countries-list";
 
-export interface Currency {
-    code: string;
-    name: string;
-}
+import { type Currency } from "@/types/common/geography";
 
 function initializeCurrenciesList(): Currency[] {
     const currencyCodes = new Set<string>();

@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
-import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 import { formatStatus } from "@/lib/utils";
 
@@ -126,10 +126,7 @@ export async function getCompanyDashboardStats(slug: string, userId?: string) {
 }
 
 
-interface Location {
-    city?: string;
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 export async function getCompanyRequests(slug: string, options: {
     page?: number;

@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { logActivity } from "@/lib/activity";
 
-import { ActivityLogAction } from "@/lib/enums";
+import { ActivityLogAction } from "@/types/common/enums";
 
 export async function getAgencySettings() {
     try {

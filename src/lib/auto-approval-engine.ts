@@ -1,12 +1,13 @@
 import { prisma } from "./prisma";
-import { moneyToDecimal, type Money } from "./types/money";
+import { type Money } from "@/types/finance/money";
+import { moneyToDecimal } from "@/lib/utils/money";
 import {
     type AutoApprovalEvaluation,
     type AutoApprovalRule,
     type RequestForEvaluation,
     AutoApprovalRuleType,
-    parseAutoApprovalPolicy,
-} from "./types/auto-approval-policy";
+} from "@/types/workflow/auto-approval-policy";
+import { parseAutoApprovalPolicy } from "@/lib/utils/auto-approval-policy";
 import { Address } from "./utils/address";
 
 /**

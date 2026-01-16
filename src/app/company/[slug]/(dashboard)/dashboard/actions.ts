@@ -5,8 +5,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { TripPreferences, TripPreferencesSchema } from "@/lib/types/trip-preferences";
-import { type Money, parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { TripPreferences } from "@/types/request/trip-preferences";
+import { TripPreferencesSchema } from "@/lib/schemas/trip-preferences";
+import { type Money } from "@/types/finance/money";
+import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 import { type PartialAddress, formatAddressShort } from "@/lib/utils/address";
 
@@ -379,7 +381,7 @@ export async function createTripRequest(data: {
                 endDate: data.endDate,
                 purpose: data.purpose,
                 budget: data.budget ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
-                preferences: data.preferences ?? {},
+                preferences: (data.preferences ?? {}) as unknown as Prisma.InputJsonValue,
                 isGroup: data.isGroup || false,
                 parentTripId: data.parentTripId || null,
                 status: 'DRAFT', // WorkflowEngine will update this
@@ -508,7 +510,7 @@ export async function getTripRequest(requestId: string) {
 
                 // Create a temporary Money object for the total to convert
                 // We use the same currency code as the base amount
-                const { createMoney } = await import("@/lib/types/money");
+                const { createMoney } = await import("@/lib/utils/money");
                 totalAmount = createMoney(totalDecimal, amount.currencyCode);
 
                 if (amount.currencyCode !== companyCurrency) {
@@ -860,7 +862,7 @@ export async function updateTripRequest(requestId: string, data: {
                 endDate: data.endDate,
                 purpose: data.purpose,
                 budget: data.budget !== undefined ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
-                preferences: data.preferences ?? (request.preferences || {}),
+                preferences: (data.preferences ?? (request.preferences || {})) as unknown as Prisma.InputJsonValue,
                 isGroup: data.isGroup !== undefined ? data.isGroup : undefined,
                 parentTripId: data.parentTripId !== undefined ? (data.parentTripId === "none" ? null : data.parentTripId) : undefined,
                 updatedAt: new Date()

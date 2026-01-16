@@ -9,10 +9,11 @@ import { BidForm } from "./_components/bid-form";
 import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
 import { Calendar, MapPin, Building2, User } from "lucide-react";
 import { format } from "date-fns";
-import { TripPreferences } from "@/lib/types/trip-preferences";
-import { parseMoney, moneyToDecimal } from "@/lib/types/money";
+import { TripPreferences } from "@/types/request/trip-preferences";
+import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { type PartialAddress as Location } from "@/types/common/address";
 
 interface TaxItem {
     label: string;
@@ -73,10 +74,7 @@ export default async function RequestDetailsPage({
     const agentCurrency = agentCompany?.currency || "USD";
     const requestCurrency = budget?.currencyCode || request.company.currency || "USD";
 
-    interface Location {
-        city?: string;
-        formatted?: string;
-    }
+
 
     // Available users for mentions (Request Creator)
     const availableUsers = [

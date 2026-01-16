@@ -6,9 +6,11 @@ import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import {
     type AutoApprovalPolicy,
+} from "@/types/workflow/auto-approval-policy";
+import {
     parseAutoApprovalPolicy,
     createDefaultPolicy,
-} from "@/lib/types/auto-approval-policy";
+} from "@/lib/utils/auto-approval-policy";
 import { Prisma } from "@prisma/client";
 
 /**

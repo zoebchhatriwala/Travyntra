@@ -19,8 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LocationSelector } from "@/components/location-selector";
 import { ManualAddressDialog, type Address } from "@/components/manual-address-dialog";
 import { MapPin, Pencil } from "lucide-react";
-import { TripPreferences } from "@/lib/types/trip-preferences";
-import { type Money, createMoney, moneyToDecimal } from "@/lib/types/money";
+import { TripPreferences } from "@/types/request/trip-preferences";
+import { type Money } from "@/types/finance/money";
+import { createMoney, moneyToDecimal } from "@/lib/utils/money";
 import { formatAddress } from "@/lib/utils/address";
 
 

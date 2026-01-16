@@ -4,19 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 
-/**
- * Interface representing a location item (airport or station).
- */
-export interface LocationItem {
-    /** The unique code identifying the location */
-    code: string;
-    /** The full name of the location */
-    name: string;
-    /** The city the location is in */
-    city: string;
-    /** The country the location is in */
-    country: string;
-}
+import { type LocationItem } from "@/types/common/location";
 
 /**
  * In-memory cache for airport location items to avoid redundant file operations.

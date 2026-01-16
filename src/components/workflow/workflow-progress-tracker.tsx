@@ -4,32 +4,9 @@ import Image from "next/image";
 import { Check, Clock, X, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { type ApprovalStepMetadata } from "@/lib/types/auto-approval-policy";
 
-interface ApprovalStep {
-    id: string;
-    stepName: string;
-    stepOrder: number;
-    stepType: string;
-    status: string;
-    approvers: Array<{
-        id: string;
-        name: string | null;
-        avatarUrl: string | null;
-        role: string;
-    }>;
-    approvals: Array<{
-        userId: string;
-        userName: string | null;
-        userAvatar: string | null;
-        status: string;
-        comment: string | null;
-        updatedAt: Date;
-    }>;
-    createdAt: Date;
-    updatedAt: Date;
-    metadata?: ApprovalStepMetadata;
-}
+
+import { type WorkflowProgressStep as ApprovalStep } from "@/types/workflow/step";
 
 interface WorkflowProgressTrackerProps {
     steps: ApprovalStep[];

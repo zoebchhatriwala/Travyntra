@@ -323,6 +323,7 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Settings menu with card-based navigation
    - ✅ Better message formatting with tax details
    - ✅ Auto-approval settings page with modern design
+   - ✅ Type Streamlining: Centralized `src/types` with module-based structure (finance, workflow, request, common, auth).
 
 ---
 ---

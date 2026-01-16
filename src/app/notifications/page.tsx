@@ -42,15 +42,7 @@ function GoBackLink() {
     );
 }
 
-interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    type: string | null;
-    link: string | null;
-    read: boolean;
-    createdAt: string | Date;
-}
+import { type Notification } from "@/types/common/notification";
 
 function NotificationsContent() {
     const router = useRouter();

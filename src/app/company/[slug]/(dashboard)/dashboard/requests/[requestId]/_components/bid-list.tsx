@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { approveBid, unapproveBid } from "@/app/agent/bids/[requestId]/actions";
 import { Loader2, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import Image from "next/image";
-import { type Money, formatMoney } from "@/lib/types/money";
+import { type Money } from "@/types/finance/money";
+import { formatMoney } from "@/lib/utils/money";
 import { useConfirm } from "@/lib/hooks/use-confirm";
 
 interface Bid {

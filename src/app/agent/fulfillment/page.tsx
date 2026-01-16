@@ -12,13 +12,10 @@ import { SearchInput } from "@/components/ui/search-input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 import { Prisma, RequestStatus } from "@prisma/client";
-import { parseMoney, formatMoney } from "@/lib/types/money";
+import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Location {
-    city?: string;
-    formatted?: string;
-}
+import { type LocationDisplay as Location } from "@/types/common/location";
 
 interface PageProps {
     searchParams: Promise<{

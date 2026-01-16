@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
-import { parseMoney, moneyToDecimal, createMoney } from "@/lib/types/money";
+import { parseMoney, moneyToDecimal, createMoney } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 
 export async function getAnalyticsData() {
