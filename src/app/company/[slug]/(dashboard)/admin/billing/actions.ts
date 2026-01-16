@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createNotification } from "@/lib/notifications";
+import { fromZonedTime } from "date-fns-tz";
 
 export async function getCompanyInvoices(
     slug: string,
@@ -32,7 +33,8 @@ export async function getCompanyInvoices(
             where: { slug },
             select: {
                 id: true,
-                currency: true
+                currency: true,
+                timezone: true
             }
         });
 
@@ -55,16 +57,30 @@ export async function getCompanyInvoices(
 
         if (startDate || endDate) {
             const createdAt: Prisma.DateTimeFilter = {};
-            if (startDate) createdAt.gte = new Date(startDate);
-            if (endDate) createdAt.lte = new Date(endDate);
+            const timeZone = company.timezone || "UTC";
+
+            if (startDate) {
+                // "2026-01-20" -> 00:00 Company Time -> UTC
+                createdAt.gte = fromZonedTime(startDate, timeZone);
+            }
+            if (endDate) {
+                // "2026-01-20" -> 23:59:59.999 Company Time -> UTC
+                createdAt.lte = fromZonedTime(`${endDate} 23:59:59.999`, timeZone);
+            }
             where.createdAt = createdAt;
         }
 
         const statsWhere: Prisma.InvoiceWhereInput = { companyId: company.id };
         if (startDate || endDate) {
             const createdAt: Prisma.DateTimeFilter = {};
-            if (startDate) createdAt.gte = new Date(startDate);
-            if (endDate) createdAt.lte = new Date(endDate);
+            const timeZone = company.timezone || "UTC";
+
+            if (startDate) {
+                createdAt.gte = fromZonedTime(startDate, timeZone);
+            }
+            if (endDate) {
+                createdAt.lte = fromZonedTime(`${endDate} 23:59:59.999`, timeZone);
+            }
             statsWhere.createdAt = createdAt;
         }
 

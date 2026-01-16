@@ -37,6 +37,7 @@
     "cmdk": "^1.1.1",
     "countries-list": "^3.2.2",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.562.0",

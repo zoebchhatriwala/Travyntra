@@ -2,6 +2,8 @@
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { startOfDay, subDays } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 export type ActivityLogFilter = {
     days?: number;
@@ -12,7 +14,7 @@ export type ActivityLogFilter = {
 export async function getCompanyActivities(slug: string, filter?: ActivityLogFilter) {
     const company = await prisma.company.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true, timezone: true }
     });
 
     if (!company) {
@@ -24,10 +26,14 @@ export async function getCompanyActivities(slug: string, filter?: ActivityLogFil
     };
 
     if (filter?.days) {
-        const date = new Date();
-        date.setDate(date.getDate() - filter.days);
+        const timeZone = company.timezone || 'UTC';
+        // Calculate cutoff: Start of day, N days ago, in Company Time
+        const nowZoned = toZonedTime(new Date(), timeZone);
+        const cutoffZoned = startOfDay(subDays(nowZoned, filter.days));
+        const cutoffUTC = fromZonedTime(cutoffZoned, timeZone);
+
         where.createdAt = {
-            gte: date
+            gte: cutoffUTC
         };
     }
 

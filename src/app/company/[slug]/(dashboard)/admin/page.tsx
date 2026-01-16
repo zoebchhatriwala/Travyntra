@@ -171,6 +171,12 @@ export default async function CompanyAdminPage({
                             icon={<Building2 className="text-primary" />}
                             href={`/company/${slug}/admin/settings`}
                         />
+                        <ActionCard
+                            title="Financial Analytics"
+                            desc="View spending trends, budget utilization, and trip costs."
+                            icon={<TrendingUp className="text-emerald-600" />}
+                            href={`/company/${slug}/admin/analytics`}
+                        />
                     </div>
                 </div>
 

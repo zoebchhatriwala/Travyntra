@@ -34,7 +34,7 @@ export default function NotFound() {
                     </h1>
 
                     <p className="text-lg text-slate-600 max-w-md mx-auto leading-relaxed">
-                        We couldn't locate the flight path for <span className="font-mono text-indigo-600 bg-indigo-50 px-2 py-1 rounded">this page</span>.
+                        We couldn&apos;t locate the flight path for <span className="font-mono text-indigo-600 bg-indigo-50 px-2 py-1 rounded">this page</span>.
                         It might have been delayed, cancelled, or never existed in the first place.
                     </p>
 

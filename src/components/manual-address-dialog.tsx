@@ -34,6 +34,7 @@ export function ManualAddressDialog({ open, onOpenChange, onSave, initialValue }
     // Reset state when dialog opens
     useEffect(() => {
         if (open) {
+            // eslint-disable-next-line
             setAddress(initialValue || {
                 street: "",
                 city: "",

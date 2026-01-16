@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, User } from "lucide-react";
 import { format } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 import { redirect } from "next/navigation";
 import { SearchInput } from "@/components/ui/search-input";
 import { BidsFilter } from "./_components/bids-filter";
@@ -41,7 +42,15 @@ export default async function BidsPage({ searchParams }: PageProps) {
     const page = Number(params.page) || 1;
     const PAGE_SIZE = 10;
 
-    const integratedCompanies = await getIntegratedCompanies();
+    const [integratedCompanies, agentCompany] = await Promise.all([
+        getIntegratedCompanies(),
+        prisma.company.findUnique({
+            where: { id: agencyId },
+            select: { timezone: true }
+        })
+    ]);
+
+    const agentTimeZone = agentCompany?.timezone || "UTC";
 
     // Base filter: Must be from integrated company AND (Approved OR Has non-accepted bid)
     // Exclude requests where agency has already WON the bid (those go to Fulfillment Console)
@@ -109,8 +118,23 @@ export default async function BidsPage({ searchParams }: PageProps) {
     // Apply Date Filter (Trip Start Date)
     if (startDate || endDate) {
         const dateFilter: Prisma.DateTimeFilter = {};
-        if (startDate) dateFilter.gte = new Date(startDate);
-        if (endDate) dateFilter.lte = new Date(endDate);
+
+        if (startDate) {
+            // Parse YYYY-MM-DD as midnight in Agent's Timezone
+            // e.g. "2026-01-20" -> 2026-01-20 00:00:00 AgentTime -> UTC Equivalent
+            // date-fns-tz fromZonedTime takes a string date "2026-01-20" and a timezone.
+            // It assumes 00:00 if no time given.
+            dateFilter.gte = fromZonedTime(startDate, agentTimeZone);
+        }
+
+        if (endDate) {
+            // We want to capture the whole day in Agent's timezone, up to 23:59:59.999
+            // Take the string "2026-01-20", make it a Date (00:00), find End of Day, then convert that to UTC from Agent Zone.
+            // Better: Construct the string "YYYY-MM-DD 23:59:59.999" then fromZonedTime.
+            const endString = `${endDate} 23:59:59.999`;
+            dateFilter.lte = fromZonedTime(endString, agentTimeZone);
+        }
+
         whereCondition.startDate = dateFilter;
     }
 
@@ -118,7 +142,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
         prisma.tripRequest.findMany({
             where: whereCondition,
             include: {
-                company: { select: { name: true, logoUrl: true, currency: true } },
+                company: { select: { name: true, logoUrl: true, currency: true, timezone: true } },
                 user: { select: { name: true } },
                 bids: {
                     where: { agentId: agencyId },
@@ -215,6 +239,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
                                                             <Calendar size={14} />
                                                         </div>
                                                         {format(new Date(req.startDate), "MMM d, yyyy")}
+                                                        <span className="text-xs text-gray-400 font-normal ml-1">({req.company.timezone || "UTC"})</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500">

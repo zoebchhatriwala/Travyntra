@@ -14,15 +14,10 @@ import { format } from "date-fns";
 import {
     Card,
     CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription
 } from "@/components/ui/card";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InvoiceStatus } from "@prisma/client";
-import { SpendingChart } from "./spending-chart";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { exportToCSV, generatePDF } from "@/lib/utils/export";
@@ -40,7 +35,6 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
-
 import { type Invoice } from "@/types/finance/invoice";
 
 interface BillingListProps {
@@ -58,14 +52,6 @@ interface BillingListProps {
     };
 }
 
-const MOCK_CHART_DATA = [
-    { month: "AUG", amount: 4500 },
-    { month: "SEP", amount: 3200 },
-    { month: "OCT", amount: 7800 },
-    { month: "NOV", amount: 5100 },
-    { month: "DEC", amount: 9400 },
-    { month: "JAN", amount: 2500 }
-];
 
 const getStatusStyles = (status: InvoiceStatus) => {
     switch (status) {
@@ -203,21 +189,6 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Audit Status</p>
                             <p className="text-xl font-black text-gray-900">Compliant</p>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Expenditure Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-1">
-                <Card className="lg:col-span-2 border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
-                    <CardHeader className="p-8 pb-0">
-                        <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
-                            <TrendingUp size={20} className="text-indigo-600" /> Spending Trend
-                        </CardTitle>
-                        <CardDescription className="text-gray-500 font-medium text-xs">Monthly corporate expenditure overview.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-8 pt-4">
-                        <SpendingChart data={MOCK_CHART_DATA} />
                     </CardContent>
                 </Card>
             </div>

@@ -37,7 +37,7 @@ export default async function RequestDetailsPage({
     const request = await prisma.tripRequest.findUnique({
         where: { id: requestId },
         include: {
-            company: { select: { name: true, logoUrl: true, slug: true, currency: true } },
+            company: { select: { name: true, logoUrl: true, slug: true, currency: true, timezone: true } },
             user: { select: { id: true, name: true, email: true, avatarUrl: true, role: true } },
             bids: {
                 where: { agentId: session.user.companyId }
@@ -139,6 +139,7 @@ export default async function RequestDetailsPage({
                             <div className="flex items-center gap-2 text-gray-900 font-medium">
                                 <Calendar size={18} className="text-indigo-500" />
                                 {format(new Date(request.startDate), "MMM d")} - {format(new Date(request.endDate), "MMM d, yyyy")}
+                                <span className="text-xs text-gray-500 font-normal ml-1">({request.company.timezone || "UTC"})</span>
                             </div>
                         </div>
                     </div>
