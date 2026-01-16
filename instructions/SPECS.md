@@ -367,6 +367,13 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
     - **Caching**: Exchange rates MUST be cached for 1 hour to optimize performance and ensure billing consistency.
     - **Base Reference**: Use USD as the pivot base for all cross-currency calculations where direct pairs are unavailable.
 
+- **Subscription & Quota Protocol (Scalable Enforcement)**:
+    - **Binary Access (Middleware)**: Use `middleware.ts` for "Gatekeeping" (e.g., `PlanStatus: EXPIRED` | `SUSPENDED`). This data MUST be present in the NextAuth Session token to avoid DB calls on edge.
+    - **Quota Limits (Feature Guard)**:
+        - **Do NOT** scatter limit checks (e.g. `if (users > 10)`) inside individual actions.
+        - **Do** use a centralized `PlanGuard` (e.g. `await PlanGuard.checkUsage(companyId, 'create_request')`).
+        - The `PlanGuard` can use a **Central Config Object** (hardcoded constants) or DB. This ensures you only update ONE file to change plan limits across the entire app.
+
 - **TypeScript Strict Typing**:
     - **No `any` Type**: The use of `any` type is STRICTLY PROHIBITED except for:
         - Third-party library compatibility issues (must be documented with a comment explaining why)
