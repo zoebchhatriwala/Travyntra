@@ -12,7 +12,7 @@ export default async function AgencyConfigurationPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-md">Console</span>
+                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-corner-sm">Console</span>
                         </div>
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight">
                             Settings / <span className="text-indigo-600 uppercase">Configuration</span>

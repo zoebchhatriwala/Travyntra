@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { format } from "date-fns";
 import { authOptions } from "@/lib/auth-options";
 import { getServerSession } from "next-auth";
@@ -37,7 +38,7 @@ export default async function CompanyAdminPage({
             {/* Welcome Section */}
             <div>
                 <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-2">
-                    Console / <span className="text-indigo-600 uppercase">{slug}</span>
+                    Console / <span className="text-primary uppercase">{slug}</span>
                 </h1>
                 <p className="text-gray-500 font-medium">
                     Manage your corporate workspace, approve staff, and oversee travel operations.
@@ -66,7 +67,7 @@ export default async function CompanyAdminPage({
                     title="My Approvals"
                     value={stats.pendingApprovalsCount}
                     change={stats.pendingApprovalsCount > 0 ? "Pending Action" : "Up to Date"}
-                    icon={<CheckCircle2 className="text-indigo-600" />}
+                    icon={<CheckCircle2 className="text-primary" />}
                     color="bg-indigo-50"
                     isAlert={stats.pendingApprovalsCount > 0}
                     href={`/company/${slug}/dashboard/approvals`}
@@ -91,11 +92,11 @@ export default async function CompanyAdminPage({
                 {/* Main Action Areas */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Recent Activity */}
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                    <Card className="border-none shadow-joy rounded-corner-xl overflow-hidden bg-white">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-xl font-black text-gray-900">Recent Trip Requests</h3>
-                                <Button variant="ghost" asChild className="text-xs font-black text-indigo-600 uppercase tracking-widest">
+                                <Button variant="ghost" asChild className="text-xs font-black text-primary uppercase tracking-widest">
                                     <Link href={`/company/${slug}/admin/requests`}>
                                         View All <ArrowUpRight size={14} className="ml-1" />
                                     </Link>
@@ -112,9 +113,9 @@ export default async function CompanyAdminPage({
                                 <div className="space-y-4 flex flex-col">
                                     {stats.recentRequests.map((req) => (
                                         <Link key={req.id} href={`/company/${slug}/dashboard/requests/${req.id}`}>
-                                            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-sm transition-all cursor-pointer">
+                                            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-corner-lg border border-gray-100 group hover:bg-white hover:shadow-sm transition-all cursor-pointer">
                                                 <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-gray-100 group-hover:scale-110 transition-transform overflow-hidden shrink-0">
+                                                    <div className="w-10 h-10 bg-white rounded-corner-md flex items-center justify-center text-primary shadow-joy group-hover:scale-110 transition-transform overflow-hidden shrink-0">
                                                         {req.userAvatar ? (
                                                             <Image src={req.userAvatar} alt={req.userName} width={40} height={40} className="w-full h-full object-cover" />
                                                         ) : (
@@ -138,11 +139,8 @@ export default async function CompanyAdminPage({
                                                         <p className="text-xs font-black text-gray-900">{req.currency} {req.budget.toLocaleString()}</p>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Budget</p>
                                                     </div>
-                                                    <Badge className={`rounded-lg px-2 py-0.5 font-bold text-[9px] border-none ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                                                        req.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                                            'bg-amber-100 text-amber-700'
-                                                        }`}>
-                                                        {req.status}
+                                                    <Badge variant={getStatusColor(req.status)}>
+                                                        {formatStatus(req.status)}
                                                     </Badge>
                                                 </div>
                                             </div>
@@ -158,13 +156,13 @@ export default async function CompanyAdminPage({
                         <ActionCard
                             title="Approval Workflow"
                             desc="Configure the chain of command for journey approvals."
-                            icon={<CheckCircle2 className="text-indigo-600" />}
+                            icon={<CheckCircle2 className="text-primary" />}
                             href={`/company/${slug}/admin/workflow`}
                         />
                         <ActionCard
                             title="Domain Setup"
                             desc="Verify corporate domains for automatic staff association."
-                            icon={<Building2 className="text-indigo-600" />}
+                            icon={<Building2 className="text-primary" />}
                             href={`/company/${slug}/admin/settings`}
                         />
                     </div>
@@ -173,13 +171,13 @@ export default async function CompanyAdminPage({
                 {/* Sidebar Areas */}
                 <div className="space-y-8">
                     {/* Pending Verification Module */}
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] bg-white overflow-hidden">
+                    <Card className="border-none shadow-joy rounded-corner-xl bg-white overflow-hidden">
                         <CardContent className="p-8">
                             <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
                                 <AlertCircle size={20} className="text-amber-500" /> Vetting Queue
                             </h3>
                             {stats.pendingStaff === 0 ? (
-                                <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 text-center">
+                                <div className="p-6 bg-emerald-50 rounded-corner-lg border border-emerald-100 text-center">
                                     <p className="text-xs font-black text-emerald-700 uppercase tracking-widest leading-none">All clear</p>
                                     <p className="text-[10px] font-bold text-emerald-600 mt-2 opacity-80 leading-relaxed">No staff registrations pending verification.</p>
                                 </div>
@@ -188,7 +186,7 @@ export default async function CompanyAdminPage({
                                     <p className="text-xs font-bold text-gray-400 leading-relaxed">
                                         There are <span className="text-amber-600 font-black">{stats.pendingStaff}</span> staff members awaiting portal access.
                                     </p>
-                                    <Button asChild className="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02]">
+                                    <Button asChild className="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-corner-lg font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02]">
                                         <Link href={`/company/${slug}/admin/staff`}>
                                             Manage Queue
                                         </Link>
@@ -207,7 +205,7 @@ function StatCard({ title, value, change, icon, color, isAlert, href }: { title:
     const content = (
         <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-2xl ${color} group-hover:scale-110 transition-transform`}>
+                <div className={`p-3 rounded-corner-lg ${color} group-hover:scale-110 transition-transform`}>
                     {icon}
                 </div>
                 {isAlert && <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
@@ -223,7 +221,7 @@ function StatCard({ title, value, change, icon, color, isAlert, href }: { title:
     );
 
     return (
-        <Card className={`border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden group hover:ring-indigo-100 transition-all duration-300 ${href ? 'cursor-pointer' : ''}`}>
+        <Card className={`border-none shadow-joy rounded-corner-xl overflow-hidden group hover:ring-indigo-100 transition-all duration-300 ${href ? 'cursor-pointer' : ''}`}>
             {href ? <Link href={href}>{content}</Link> : content}
         </Card>
     );
@@ -233,9 +231,9 @@ function StatCard({ title, value, change, icon, color, isAlert, href }: { title:
 function ActionCard({ title, desc, icon, href }: { title: string, desc: string, icon: React.ReactNode, href: string }) {
     return (
         <Link href={href}>
-            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] hover:ring-indigo-200 transition-all cursor-pointer group h-full">
+            <Card className="border-none shadow-joy rounded-corner-xl hover:ring-indigo-200 transition-all cursor-pointer group h-full">
                 <CardContent className="p-8">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         {icon}
                     </div>
                     <h4 className="text-lg font-black text-gray-900 mb-2 leading-none">{title}</h4>

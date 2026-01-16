@@ -164,7 +164,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
     }
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-corner-lg border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                     <div>
@@ -175,7 +175,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                         <Button
                             onClick={() => setIsAdding(true)}
                             size="sm"
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-md"
                         >
                             <Plus size={16} className="mr-1" />
                             Add Item
@@ -185,13 +185,13 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
 
                 {/* Add Item Form */}
                 {isAdding && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+                    <div className="mt-4 p-4 bg-gray-50 rounded-corner-md border border-gray-200 space-y-3">
                         <input
                             type="text"
                             value={newTitle}
                             onChange={(e) => setNewTitle(e.target.value)}
                             placeholder="Item title (e.g., Flight Ticket, Hotel Booking)"
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-corner-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                             autoFocus
                         />
                         <textarea
@@ -199,14 +199,14 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                             onChange={(e) => setNewDescription(e.target.value)}
                             placeholder="Description (optional)"
                             rows={2}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-corner-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none"
                         />
                         <div className="flex gap-2">
                             <Button
                                 onClick={handleAddItem}
                                 disabled={loadingItemId === 'adding'}
                                 size="sm"
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-sm"
                             >
                                 {loadingItemId === 'adding' ? (
                                     <Loader2 size={14} className="animate-spin mr-1" />
@@ -223,7 +223,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                 }}
                                 variant="ghost"
                                 size="sm"
-                                className="text-gray-500 hover:text-gray-700 rounded-lg"
+                                className="text-gray-500 hover:text-gray-700 rounded-corner-sm"
                             >
                                 Cancel
                             </Button>
@@ -236,7 +236,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             <div className="divide-y divide-gray-100">
                 {items.length === 0 ? (
                     <div className="p-8 text-center">
-                        <div className="w-12 h-12 bg-gray-100 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gray-100 rounded-corner-md mx-auto mb-3 flex items-center justify-center">
                             <Plus size={20} className="text-gray-400" />
                         </div>
                         <p className="text-sm font-medium text-gray-500">No checklist items yet</p>
@@ -249,12 +249,12 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                         return (
                             <div key={item.id} className="group">
                                 <div className="p-4 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-start gap-3">
+                                    <div className="flex items-start gap-4">
                                         {/* Checkbox */}
                                         <button
                                             onClick={() => !isCompleted && handleToggleItem(item.id, item.isCompleted)}
                                             disabled={isCompleted || loadingItemId === item.id}
-                                            className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all mt-0.5 ${item.isCompleted
+                                            className={`flex-shrink-0 w-6 h-6 rounded-corner-sm border-2 flex items-center justify-center transition-all mt-0.5 ${item.isCompleted
                                                 ? 'bg-emerald-500 border-emerald-500 text-white'
                                                 : 'border-gray-300 hover:border-indigo-400'
                                                 } ${isCompleted ? 'cursor-default' : 'cursor-pointer'}`}
@@ -293,7 +293,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                                         onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-8 px-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                                                        className="h-8 px-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-corner-sm"
                                                     >
                                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     </Button>
@@ -302,7 +302,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                                         disabled={loadingItemId === item.id}
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-8 px-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                                        className="h-8 px-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm"
                                                     >
                                                         <Trash2 size={16} />
                                                     </Button>
@@ -313,13 +313,13 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
 
                                     {/* Expanded: Documents & Upload */}
                                     {isExpanded && (
-                                        <div className="mt-4 ml-9 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="mt-4 ml-10 space-y-3 animate-in slide-in-from-top-2 duration-200">
                                             {/* Documents */}
                                             {item.documents.length > 0 && (
                                                 <div className="space-y-2">
                                                     {item.documents.map(doc => (
-                                                        <div key={doc.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg group/doc">
-                                                            <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                                        <div key={doc.id} className="flex items-center gap-4 p-2 bg-gray-50 rounded-corner-sm group/doc">
+                                                            <div className="w-8 h-8 bg-indigo-100 rounded-corner-sm flex items-center justify-center">
                                                                 <File size={14} className="text-indigo-600" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
@@ -332,14 +332,14 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                                                 <a
                                                                     href={doc.url}
                                                                     download={doc.name}
-                                                                    className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                                    className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-corner-sm transition-colors"
                                                                 >
                                                                     <Download size={14} />
                                                                 </a>
                                                                 <button
                                                                     onClick={() => handleDeleteDocument(doc.id)}
                                                                     disabled={deletingDocId === doc.id}
-                                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm transition-colors"
                                                                 >
                                                                     {deletingDocId === doc.id ? (
                                                                         <Loader2 size={14} className="animate-spin" />
@@ -356,7 +356,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                             {/* Upload Zone */}
                                             <div
                                                 onClick={() => fileInputRef.current?.click()}
-                                                className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-all"
+                                                className="border-2 border-dashed border-gray-200 rounded-corner-md p-4 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 transition-all"
                                             >
                                                 <input
                                                     ref={fileInputRef}

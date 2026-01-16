@@ -13,7 +13,7 @@ import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { type LocationDisplay as Location } from "@/types/common/location";
 
 export default async function FulfillmentDetailPage({
@@ -45,7 +45,7 @@ export default async function FulfillmentDetailPage({
                 <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
                     <Link
                         href="/agent/fulfillment"
-                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors shrink-0"
+                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-corner-md transition-colors shrink-0"
                     >
                         <ArrowLeft size={20} className="text-gray-600" />
                     </Link>
@@ -58,14 +58,9 @@ export default async function FulfillmentDetailPage({
                                 <p>{request.title}</p>
                             </TooltipContent>
                         </Tooltip>
-                        <div className="flex items-center gap-3 mt-1 min-w-0">
-                            <Badge variant="secondary" className={`
-                                ${request.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : ''}
-                                ${request.status === 'BOOKED' ? 'bg-blue-100 text-blue-800' : ''}
-                                ${request.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : ''}
-                                font-bold shrink-0
-                            `}>
-                                {request.status.replace(/_/g, ' ')}
+                        <div className="flex items-center gap-4 mt-1 min-w-0">
+                            <Badge variant={getStatusColor(request.status)}>
+                                {formatStatus(request.status)}
                             </Badge>
                             {myBid && (
                                 <span className="text-sm font-bold text-emerald-600 truncate">
@@ -91,12 +86,12 @@ export default async function FulfillmentDetailPage({
                 {/* Left Column: Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Trip Details Card */}
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl overflow-hidden">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-lg overflow-hidden">
                         <CardContent className="p-6">
                             <h3 className="font-semibold text-gray-900 mb-4">Trip Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-indigo-100 rounded-xl">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 bg-indigo-100 rounded-corner-md">
                                         <MapPin size={18} className="text-indigo-600" />
                                     </div>
                                     <div>
@@ -111,8 +106,8 @@ export default async function FulfillmentDetailPage({
                                         </Tooltip>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-purple-100 rounded-xl">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 bg-purple-100 rounded-corner-md">
                                         <Calendar size={18} className="text-purple-600" />
                                     </div>
                                     <div>
@@ -122,8 +117,8 @@ export default async function FulfillmentDetailPage({
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-amber-100 rounded-xl">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 bg-amber-100 rounded-corner-md">
                                         <User size={18} className="text-amber-600" />
                                     </div>
                                     <div>
@@ -132,8 +127,8 @@ export default async function FulfillmentDetailPage({
                                         <p className="text-xs text-gray-500">{request.user.email}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-emerald-100 rounded-xl">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 bg-emerald-100 rounded-corner-md">
                                         <Building2 size={18} className="text-emerald-600" />
                                     </div>
                                     <div>
@@ -162,7 +157,7 @@ export default async function FulfillmentDetailPage({
                 {/* Right Column: Sidebar */}
                 <div className="space-y-6">
                     {/* Progress Summary */}
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl overflow-hidden">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-lg overflow-hidden">
                         <CardContent className="p-6">
                             <h3 className="font-semibold text-gray-900 mb-4">Progress</h3>
                             <div className="space-y-4">

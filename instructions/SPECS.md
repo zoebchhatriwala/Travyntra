@@ -325,6 +325,16 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Auto-approval settings page with modern design
    - ✅ Type Streamlining: Centralized `src/types` with module-based structure (finance, workflow, request, common, auth).
 
+5. **Design System Overhaul (Corporate Joy) ✅ COMPLETED**
+   - ✅ Implemented `instructions/design.md` with Material Design 3 tokens.
+   - ✅ Refactored `globals.css` to use CSS Variables for MD3 Palette.
+   - ✅ Updated `tailwind.config.ts` to map MD3 tokens.
+   - ✅ Redesigned core components: Button (Pill shapes), Input (MD3 height/border), Card (Soft shadows).
+   - ✅ Replaced legacy `joy-*` classes with standardized palette.
+   - ✅ **Standardized Input Styling**: Refined `Input`, `Select`, and `Textarea` with unified background/focus states.
+   - ✅ **Bulk Radii Migration**: Successfully migrated all legacy `rounded-*` classes to `rounded-corner-*` tokens project-wide.
+   - ✅ **Standardized Spacing (8dp Grid)**: All margins, paddings, and gaps now adhere to a strict 8px rhythm for professional visual balance.
+
 ---
 ---
 **Build Protocol**: 

@@ -13,6 +13,7 @@ import { TripPreferences } from "@/types/request/trip-preferences";
 import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { type PartialAddress as Location } from "@/types/common/address";
 
 interface TaxItem {
@@ -89,7 +90,7 @@ export default async function RequestDetailsPage({
     return (
         <div className="p-8 grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
+                <div className="bg-white rounded-corner-md border border-gray-100 p-8 shadow-sm">
                     <div className="flex items-start justify-between mb-6 gap-4">
                         <div className="min-w-0 flex-1">
                             <Tooltip>
@@ -111,13 +112,13 @@ export default async function RequestDetailsPage({
                                 </span>
                             </div>
                         </div>
-                        <Badge variant="outline" className="text-sm px-3 py-1 shrink-0">
-                            {request.status}
+                        <Badge variant={getStatusColor(request.status)} className="shrink-0">
+                            {formatStatus(request.status)}
                         </Badge>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-6 mb-8">
-                        <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1 overflow-hidden">
+                        <div className="p-4 bg-indigo-50/50 rounded-corner-sm space-y-1 overflow-hidden">
                             <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Destination</span>
                             <div className="flex items-center gap-2 text-gray-900 font-medium min-w-0">
                                 <MapPin size={18} className="text-indigo-500 shrink-0" />
@@ -133,7 +134,7 @@ export default async function RequestDetailsPage({
                                 </Tooltip>
                             </div>
                         </div>
-                        <div className="p-4 bg-indigo-50/50 rounded-lg space-y-1">
+                        <div className="p-4 bg-indigo-50/50 rounded-corner-sm space-y-1">
                             <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Timeline</span>
                             <div className="flex items-center gap-2 text-gray-900 font-medium">
                                 <Calendar size={18} className="text-indigo-500" />
@@ -144,7 +145,7 @@ export default async function RequestDetailsPage({
 
                     <div className="space-y-4">
                         <h3 className="font-semibold text-gray-900">Trip Details & Preferences</h3>
-                        <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50 p-6 rounded-lg">
+                        <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50 p-6 rounded-corner-sm">
                             {request.purpose && (
                                 <p className="break-words whitespace-pre-wrap"><strong>Purpose:</strong> {request.purpose}</p>
                             )}

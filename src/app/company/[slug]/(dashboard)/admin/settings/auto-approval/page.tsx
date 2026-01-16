@@ -141,7 +141,7 @@ export default function AutoApprovalSettings() {
                 </div>
                 <button
                     onClick={() => router.back()}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-700 font-medium transition-all"
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-corner-md text-gray-700 font-medium transition-all"
                 >
                     ← Back
                 </button>
@@ -149,18 +149,18 @@ export default function AutoApprovalSettings() {
 
             {/* Alerts */}
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-corner-md text-red-700">
                     {error}
                 </div>
             )}
             {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-corner-md text-green-700">
                     {success}
                 </div>
             )}
 
             {/* Enable Toggle */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
+            <div className="bg-white border border-gray-200 rounded-corner-lg p-6 mb-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 mb-1">Enable Auto-Approval</h2>
@@ -183,14 +183,14 @@ export default function AutoApprovalSettings() {
             {/* Rules Section */}
             {policy.enabled && (
                 <>
-                    <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
+                    <div className="bg-white border border-gray-200 rounded-corner-lg p-6 mb-6">
                         <h2 className="text-xl font-semibold text-gray-900 mb-1">Approval Rules</h2>
                         <p className="text-sm text-gray-600 mb-6">
                             Add rules to define which requests should be auto-approved
                         </p>
 
                         {policy.rules.length === 0 && (
-                            <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-500">
+                            <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-corner-md text-gray-500">
                                 No rules configured. Add a rule to get started.
                             </div>
                         )}
@@ -206,17 +206,17 @@ export default function AutoApprovalSettings() {
                             />
                         ))}
 
-                        <div className="flex gap-3 mt-6 flex-wrap">
+                        <div className="flex gap-4 mt-6 flex-wrap">
                             <button
                                 onClick={() => addRule(AutoApprovalRuleType.BUDGET_THRESHOLD)}
-                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all"
+                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-corner-md text-gray-700 font-medium transition-all"
                             >
                                 + Budget Threshold
                             </button>
                             <button
                                 onClick={() => addRule(AutoApprovalRuleType.DOMESTIC_TRIP)}
                                 disabled={!companyCountry}
-                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-corner-md text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={!companyCountry ? "Set company country in settings first" : ""}
                             >
                                 + Domestic Trip
@@ -224,7 +224,7 @@ export default function AutoApprovalSettings() {
                             <button
                                 onClick={() => addRule(AutoApprovalRuleType.COMBINED)}
                                 disabled={!companyCountry}
-                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-xl text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 bg-white border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:text-indigo-600 rounded-corner-md text-gray-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={!companyCountry ? "Set company country in settings first" : ""}
                             >
                                 + Combined Rule
@@ -237,7 +237,7 @@ export default function AutoApprovalSettings() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-corner-md transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                         >
                             {saving ? "Saving..." : "Save Policy"}
                         </button>
@@ -259,7 +259,7 @@ interface RuleCardProps {
 function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }: RuleCardProps) {
     const country = countries[companyCountry as keyof typeof countries];
     return (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-4 hover:shadow-md transition-all">
+        <div className="bg-gray-50 border border-gray-200 rounded-corner-md p-6 mb-4 hover:shadow-md transition-all">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
                 <input
@@ -269,7 +269,7 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
                     className="flex-1 text-lg font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:border-b-2 focus:border-indigo-600 pb-1"
                     placeholder="Rule name"
                 />
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <label className="relative inline-block w-10 h-6">
                         <input
                             type="checkbox"
@@ -281,7 +281,7 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
                     </label>
                     <button
                         onClick={onDelete}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm transition-all"
                         title="Delete rule"
                     >
                         <Trash2 size={18} />
@@ -314,11 +314,11 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
                                     },
                                 })
                             }
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-corner-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50"
                             min="0"
                             step="1000"
                         />
-                        <span className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg min-w-[60px] text-center">
+                        <span className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-corner-sm min-w-[60px] text-center">
                             {companyCurrency}
                         </span>
                     </div>
@@ -326,7 +326,7 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
             )}
 
             {rule.type === AutoApprovalRuleType.DOMESTIC_TRIP && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
+                <div className="bg-blue-50 border border-blue-200 rounded-corner-sm p-3 text-sm text-gray-700">
                     Auto-approves trips within {country?.name || "your country"}
                 </div>
             )}
@@ -357,11 +357,11 @@ function RuleCard({ rule, companyCurrency, companyCountry, onUpdate, onDelete }:
                                         },
                                     })
                                 }
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-corner-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50"
                                 min="0"
                                 step="1000"
                             />
-                            <span className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg min-w-[60px] text-center">
+                            <span className="px-3 py-2 bg-gray-200 text-gray-700 font-semibold rounded-corner-sm min-w-[60px] text-center">
                                 {companyCurrency}
                             </span>
                         </div>

@@ -93,7 +93,7 @@ export function AgencySearch() {
             {!isLoading && results.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2">
                     {results.map((agency) => (
-                        <div key={agency.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                        <div key={agency.id} className="bg-white rounded-corner-md border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-12 w-12 border bg-gray-50">
                                     <AvatarImage src={agency.logoUrl || undefined} />

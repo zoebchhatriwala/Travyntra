@@ -25,7 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { cn, formatStatus, getStatusColor } from "@/lib/utils";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { getCompanyRequests, bulkProcessRequests, exportCompanyRequests, getExportData } from "../../actions";
 import { generatePDF } from "@/lib/utils/export";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -156,19 +156,19 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
     return (
         <div className="space-y-6">
             {/* Filters & Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-corner-xl border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
                 <div className="flex items-center gap-4 flex-1 max-w-2xl">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <Input
                             placeholder="Search requests or employees..."
-                            className="pl-12 h-12 rounded-2xl border-gray-100 focus:ring-indigo-500"
+                            className="pl-12 h-12 rounded-corner-lg border-gray-100 focus:ring-indigo-500"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <select
-                        className="h-12 px-4 rounded-2xl border-gray-100 bg-gray-50 text-sm font-bold text-gray-700 outline-none focus:ring-2 ring-indigo-500"
+                        className="h-12 px-4 rounded-corner-lg border-gray-100 bg-gray-50 text-sm font-bold text-gray-700 outline-none focus:ring-2 ring-indigo-500"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
@@ -185,14 +185,14 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                         <div className="flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
                             <Button
                                 onClick={() => handleBulkAction('APPROVE')}
-                                className="h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-6 font-black uppercase tracking-widest text-xs"
+                                className="h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-corner-lg px-6 font-black uppercase tracking-widest text-xs"
                             >
                                 Approve ({selectedIds.length})
                             </Button>
                             <Button
                                 onClick={() => handleBulkAction('REJECT')}
                                 variant="outline"
-                                className="h-12 border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl px-6 font-black uppercase tracking-widest text-xs"
+                                className="h-12 border-rose-200 text-rose-600 hover:bg-rose-50 rounded-corner-lg px-6 font-black uppercase tracking-widest text-xs"
                             >
                                 Reject
                             </Button>
@@ -203,23 +203,23 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="h-12 w-12 rounded-2xl border-gray-100 p-0 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                className="h-12 w-12 rounded-corner-lg border-gray-100 p-0 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                             >
                                 <Download size={18} />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
+                        <DropdownMenuContent align="end" className="rounded-corner-lg p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
                             <DropdownMenuLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 py-2">Export Data</DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={handleExportCSV}
-                                className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
+                                className="rounded-corner-md focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
                             >
                                 <Download size={16} />
                                 Export as CSV
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={handleExportPDF}
-                                className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
+                                className="rounded-corner-md focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer gap-2"
                             >
                                 <FileText size={16} />
                                 Export as PDF
@@ -232,14 +232,14 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
             {/* Table */}
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-xl shadow-gray-100/50 overflow-hidden ring-1 ring-gray-100/50">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse table-fixed">
+                    <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50/50">
                                 <th className="p-6 w-14">
                                     <Checkbox
                                         checked={selectedIds.length === requests.length && requests.length > 0}
                                         onCheckedChange={toggleSelectAll}
-                                        className="rounded-md border-gray-300"
+                                        className="rounded-corner-sm border-gray-300"
                                     />
                                 </th>
                                 <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest w-auto">Request Details</th>
@@ -277,12 +277,12 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             <Checkbox
                                                 checked={selectedIds.includes(req.id)}
                                                 onCheckedChange={() => toggleSelect(req.id)}
-                                                className="rounded-md border-gray-300"
+                                                className="rounded-corner-sm border-gray-300"
                                             />
                                         </td>
                                         <td className="p-6">
                                             <div className="flex items-center gap-4 min-w-0 flex-1 mr-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform overflow-hidden ring-2 ring-white shrink-0">
+                                                <div className="w-12 h-12 rounded-corner-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform overflow-hidden ring-2 ring-white shrink-0">
                                                     {req.userAvatar ? (
                                                         <Image src={req.userAvatar} alt="" width={48} height={48} className="w-full h-full object-cover" />
                                                     ) : (
@@ -292,7 +292,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                                 <div className="min-w-0 flex-1">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <h4 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors truncate">{req.title}</h4>
+                                                            <h4 className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors break-all">{req.title}</h4>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>{req.title}</p>
@@ -307,10 +307,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             </div>
                                         </td>
                                         <td className="p-6 text-center">
-                                            <Badge className={cn(
-                                                "rounded-full px-3 py-1 font-black text-[9px] border-none shadow-sm uppercase tracking-widest",
-                                                getStatusColor(req.status)
-                                            )}>
+                                            <Badge variant={getStatusColor(req.status)}>
                                                 {formatStatus(req.status)}
                                             </Badge>
                                         </td>
@@ -331,21 +328,21 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                             <div className="flex items-center justify-end gap-2">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button size="icon" variant="ghost" className="rounded-xl">
+                                                        <Button size="icon" variant="ghost" className="rounded-corner-md">
                                                             <MoreHorizontal size={18} />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="rounded-2xl p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
+                                                    <DropdownMenuContent align="end" className="rounded-corner-lg p-2 border-gray-100 shadow-xl ring-1 ring-gray-100">
                                                         <DropdownMenuLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 py-2">Quick Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem
                                                             onClick={() => handleRowAction(req.id, 'APPROVE')}
-                                                            className="rounded-xl focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer"
+                                                            className="rounded-corner-md focus:bg-indigo-50 focus:text-indigo-600 px-3 py-2 font-bold text-sm cursor-pointer"
                                                         >
                                                             Quick Approve
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             onClick={() => handleRowAction(req.id, 'REJECT')}
-                                                            className="rounded-xl focus:bg-rose-50 focus:text-rose-600 px-3 py-2 font-bold text-sm cursor-pointer border-t border-gray-50 mt-1"
+                                                            className="rounded-corner-md focus:bg-rose-50 focus:text-rose-600 px-3 py-2 font-bold text-sm cursor-pointer border-t border-gray-50 mt-1"
                                                         >
                                                             Reject Request
                                                         </DropdownMenuItem>
@@ -371,7 +368,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                             size="icon"
                             disabled={page === 1 || isLoading}
                             onClick={() => setPage(page - 1)}
-                            className="rounded-xl h-10 w-10 border-gray-100"
+                            className="rounded-corner-md h-10 w-10 border-gray-100"
                         >
                             <ChevronLeft size={18} />
                         </Button>
@@ -383,7 +380,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                         key={p}
                                         variant={page === p ? "default" : "outline"}
                                         onClick={() => setPage(p)}
-                                        className={`h-10 w-10 rounded-xl font-bold text-xs ${page === p ? 'bg-indigo-600 shadow-lg shadow-indigo-200 border-none' : 'border-gray-100'}`}
+                                        className={`h-10 w-10 rounded-corner-md font-bold text-xs ${page === p ? 'bg-indigo-600 shadow-lg shadow-indigo-200 border-none' : 'border-gray-100'}`}
                                     >
                                         {p}
                                     </Button>
@@ -395,7 +392,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                             size="icon"
                             disabled={page === totalPages || isLoading}
                             onClick={() => setPage(page + 1)}
-                            className="rounded-xl h-10 w-10 border-gray-100"
+                            className="rounded-corner-md h-10 w-10 border-gray-100"
                         >
                             <ChevronRight size={18} />
                         </Button>

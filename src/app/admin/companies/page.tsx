@@ -18,7 +18,7 @@ export default async function CompaniesPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                                <div className="p-2 bg-indigo-50 rounded-corner-md text-indigo-600">
                                     <Building2 size={20} />
                                 </div>
                                 <span className="text-sm font-semibold text-indigo-600 tracking-wide uppercase">Company Registry</span>

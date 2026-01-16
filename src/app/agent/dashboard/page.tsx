@@ -68,7 +68,7 @@ export default async function AgencyDashboard() {
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {opportunities.length === 0 ? (
-                            <div className="col-span-full p-8 text-center bg-white rounded-lg border border-dashed border-gray-300">
+                            <div className="col-span-full p-8 text-center bg-white rounded-corner-sm border border-dashed border-gray-300">
                                 <p className="text-gray-500">No new opportunities available at the moment.</p>
                             </div>
                         ) : (

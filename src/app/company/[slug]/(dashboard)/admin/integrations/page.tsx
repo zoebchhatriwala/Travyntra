@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DisconnectButton } from "./_components/disconnect-button";
+import { Badge } from "@/components/ui/badge";
+import { getStatusColor } from "@/lib/utils";
 
 export default async function IntegrationsPage() {
     const integratedAgencies = await getIntegratedAgencies();
@@ -21,7 +23,7 @@ export default async function IntegrationsPage() {
             </div>
 
             {/* Discovery Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 mb-12">
+            <div className="bg-white rounded-corner-lg shadow-sm border border-gray-100 p-8 md:p-12 mb-12">
                 <div className="max-w-2xl mx-auto text-center space-y-8">
                     <div className="space-y-2">
                         <h2 className="text-2xl font-semibold text-gray-900">Find a Partner</h2>
@@ -35,13 +37,13 @@ export default async function IntegrationsPage() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between border-b pb-4">
                     <h2 className="text-xl font-semibold text-gray-900">Your Active Connections</h2>
-                    <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <Badge variant="info">
                         {integratedAgencies.length} Active
-                    </span>
+                    </Badge>
                 </div>
 
                 {integratedAgencies.length === 0 ? (
-                    <div className="text-center py-16 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                    <div className="text-center py-16 bg-gray-50/50 rounded-corner-lg border border-dashed border-gray-200">
                         <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Building2 className="text-gray-400" size={32} />
                         </div>
@@ -62,10 +64,10 @@ export default async function IntegrationsPage() {
                                                 {int.agency.name.substring(0, 2).toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                        <Badge variant={getStatusColor("ACTIVE")}>
+                                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse mr-1" />
                                             Active
-                                        </span>
+                                        </Badge>
                                     </div>
 
                                     <div className="space-y-1 mb-4">

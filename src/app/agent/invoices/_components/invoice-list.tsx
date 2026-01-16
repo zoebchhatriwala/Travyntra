@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InvoiceStatus } from "@prisma/client";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { exportToCSV, generatePDF } from "@/lib/utils/export";
@@ -75,20 +76,6 @@ interface InvoiceListProps {
     };
 }
 
-const getStatusStyles = (status: InvoiceStatus) => {
-    switch (status) {
-        case InvoiceStatus.PAID:
-            return "bg-emerald-100 text-emerald-600 border-none px-3";
-        case InvoiceStatus.PENDING:
-            return "bg-amber-100 text-amber-600 border-none px-3";
-        case InvoiceStatus.OVERDUE:
-            return "bg-rose-100 text-rose-600 border-none px-3";
-        case InvoiceStatus.VOID:
-            return "bg-gray-100 text-gray-500 border-none px-3";
-        default:
-            return "bg-gray-100 text-gray-600";
-    }
-};
 
 export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: InvoiceListProps) {
     const [isMounted, setIsMounted] = useState(false);
@@ -170,7 +157,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Invoice Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
                         <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
                             <Receipt size={24} />
@@ -181,7 +168,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
                         <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
                             <Clock size={24} />
@@ -192,7 +179,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
                         <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                             <TrendingUp size={24} />
@@ -203,7 +190,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
                         <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
                             <CreditCard size={24} />
@@ -217,7 +204,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
             </div>
 
             {/* Invoices Table */}
-            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                 <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h3 className="text-xl font-black text-gray-900 tracking-tight">Accounts / <span className="text-indigo-600 italic underline decoration-indigo-200">Receivables</span></h3>
@@ -226,14 +213,14 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                     <div className="flex gap-3">
                         <Button
                             variant="outline"
-                            className="rounded-xl border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
+                            className="rounded-corner-md border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
                             onClick={handleExportCSV}
                         >
                             <Download size={16} className="mr-2" /> Export CSV
                         </Button>
                         <Button
                             variant="outline"
-                            className="rounded-xl border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
+                            className="rounded-corner-md border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
                             onClick={handleExportPDF}
                         >
                             <FileText size={16} className="mr-2" /> Export PDF
@@ -255,7 +242,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                             value={searchParams.get("status") || "ALL"}
                             onValueChange={(value) => handleFilterChange("status", value === "ALL" ? null : value)}
                         >
-                            <SelectTrigger className="rounded-xl">
+                            <SelectTrigger className="rounded-corner-md">
                                 <SelectValue placeholder="All Statuses" />
                             </SelectTrigger>
                             <SelectContent>
@@ -272,14 +259,14 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                 placeholder="Start Date"
                                 value={searchParams.get("startDate") || ""}
                                 onChange={(e) => handleFilterChange("startDate", e.target.value || null)}
-                                className="rounded-xl"
+                                className="rounded-corner-md"
                             />
                             <Input
                                 type="date"
                                 placeholder="End Date"
                                 value={searchParams.get("endDate") || ""}
                                 onChange={(e) => handleFilterChange("endDate", e.target.value || null)}
-                                className="rounded-xl"
+                                className="rounded-corner-md"
                             />
                         </div>
                     </div>
@@ -316,7 +303,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                     <tr key={invoice.id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="py-6 px-8">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-gray-100 rounded-xl">
+                                                <div className="p-2 bg-gray-100 rounded-corner-md">
                                                     <Building2 size={16} className="text-gray-500" />
                                                 </div>
                                                 <div>
@@ -345,8 +332,8 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                             <p className="text-sm font-black text-gray-900">{invoice.currency} {formatNumber(invoice.amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                         </td>
                                         <td className="py-6 px-4">
-                                            <Badge className={`font-black text-[9px] uppercase tracking-widest h-6 rounded-[8px] flex items-center justify-center w-fit ${getStatusStyles(invoice.status)}`}>
-                                                {invoice.status}
+                                            <Badge variant={getStatusColor(invoice.status)}>
+                                                {formatStatus(invoice.status)}
                                             </Badge>
                                         </td>
                                         <td className="py-6 px-8 text-right">
@@ -356,7 +343,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => handleUpdateStatus(invoice.id, InvoiceStatus.PAID)}
-                                                        className="h-8 rounded-xl border-emerald-100 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-[10px] items-center gap-1.5 hidden md:flex"
+                                                        className="h-8 rounded-corner-md border-emerald-100 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 font-bold text-[10px] items-center gap-1.5 hidden md:flex"
                                                     >
                                                         <CheckCircle2 size={14} />
                                                         Mark Paid
@@ -373,14 +360,14 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                                         {invoice.status !== InvoiceStatus.PAID && (
                                                             <DropdownMenuItem
                                                                 onClick={() => handleUpdateStatus(invoice.id, InvoiceStatus.PAID)}
-                                                                className="flex items-center gap-2 text-emerald-600 font-bold cursor-pointer rounded-xl p-3 md:hidden"
+                                                                className="flex items-center gap-2 text-emerald-600 font-bold cursor-pointer rounded-corner-md p-3 md:hidden"
                                                             >
                                                                 <CheckCircle2 size={16} />
                                                                 Mark as Paid
                                                             </DropdownMenuItem>
                                                         )}
                                                         <Link href={`/agent/fulfillment/${invoice.requestId}`} className="contents">
-                                                            <DropdownMenuItem className="flex items-center gap-2 text-gray-600 font-bold cursor-pointer rounded-xl p-3">
+                                                            <DropdownMenuItem className="flex items-center gap-2 text-gray-600 font-bold cursor-pointer rounded-corner-md p-3">
                                                                 <ArrowUpRight size={16} />
                                                                 View Request
                                                             </DropdownMenuItem>
@@ -390,7 +377,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                                                 setSelectedInvoiceForUpload(invoice);
                                                                 setUploadDialogOpen(true);
                                                             }}
-                                                            className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-xl p-3"
+                                                            className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-corner-md p-3"
                                                         >
                                                             <Upload size={16} />
                                                             Upload PDF
@@ -398,7 +385,7 @@ export function InvoiceList({ invoices, agencyCurrency, metadata, stats }: Invoi
                                                         {invoice.status !== InvoiceStatus.PAID && (
                                                             <DropdownMenuItem
                                                                 onClick={() => handleUpdateStatus(invoice.id, InvoiceStatus.VOID)}
-                                                                className="flex items-center gap-2 text-rose-600 font-bold cursor-pointer rounded-xl p-3"
+                                                                className="flex items-center gap-2 text-rose-600 font-bold cursor-pointer rounded-corner-md p-3"
                                                             >
                                                                 <Clock size={16} />
                                                                 Void Invoice

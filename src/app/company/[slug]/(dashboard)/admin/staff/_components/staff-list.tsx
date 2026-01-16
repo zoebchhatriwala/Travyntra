@@ -15,7 +15,7 @@ import {
     UserPlus
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatStatus, getStatusColor } from "@/lib/utils";
 import { toast } from "sonner";
 import {
     Card,
@@ -147,17 +147,17 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                         <input
                             type="text"
                             placeholder="Search staff by name or email..."
-                            className="w-full h-12 pl-11 pr-4 rounded-2xl border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
+                            className="w-full h-12 pl-11 pr-4 rounded-corner-lg border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center p-1 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                    <div className="flex items-center p-1 bg-white border border-gray-100 rounded-corner-lg shadow-sm">
                         <Button
                             variant={roleFilter === "ALL" ? "default" : "ghost"}
                             onClick={() => setRoleFilter("ALL")}
                             className={cn(
-                                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                                "h-10 px-6 rounded-corner-md font-black text-[10px] uppercase tracking-widest transition-all",
                                 roleFilter === "ALL"
                                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700"
                                     : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
@@ -169,7 +169,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                             variant={roleFilter === UserRole.COMPANY_ADMIN ? "default" : "ghost"}
                             onClick={() => setRoleFilter(UserRole.COMPANY_ADMIN)}
                             className={cn(
-                                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                                "h-10 px-6 rounded-corner-md font-black text-[10px] uppercase tracking-widest transition-all",
                                 roleFilter === UserRole.COMPANY_ADMIN
                                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700"
                                     : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
@@ -181,7 +181,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                             variant={roleFilter === UserRole.EMPLOYEE ? "default" : "ghost"}
                             onClick={() => setRoleFilter(UserRole.EMPLOYEE)}
                             className={cn(
-                                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                                "h-10 px-6 rounded-corner-md font-black text-[10px] uppercase tracking-widest transition-all",
                                 roleFilter === UserRole.EMPLOYEE
                                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700"
                                     : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
@@ -192,12 +192,12 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                     </div>
                 </div>
                 {pendingStaff.length > 0 && (
-                    <div className="flex items-center gap-3 px-6 h-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 px-6 h-12 bg-white rounded-corner-lg border border-gray-100 shadow-sm">
                         <Checkbox
                             id="select-all"
                             checked={selectedIds.length === pendingStaff.length && pendingStaff.length > 0}
                             onCheckedChange={toggleSelectAll}
-                            className="w-5 h-5 rounded-md border-gray-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all"
+                            className="w-5 h-5 rounded-corner-sm border-gray-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all"
                         />
                         <label htmlFor="select-all" className="text-[10px] font-black text-gray-500 uppercase tracking-widest cursor-pointer select-none">
                             Select All Pending
@@ -210,14 +210,14 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                         <Button
                             onClick={handleBulkApprove}
                             disabled={isLoading === "bulk"}
-                            className="h-12 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-100"
+                            className="h-12 px-6 rounded-corner-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-100"
                         >
                             Approve Selected ({selectedIds.length})
                         </Button>
                     )}
                     <Button
                         onClick={copyInviteLink}
-                        className="h-12 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 flex-1 md:flex-none"
+                        className="h-12 px-6 rounded-corner-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 flex-1 md:flex-none"
                     >
                         <UserPlus size={18} className="mr-2" />
                         Invite Member
@@ -274,7 +274,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
             )}
 
             {filteredStaff.length === 0 && (
-                <div className="text-center py-20 bg-white rounded-[32px] border border-gray-100">
+                <div className="text-center py-20 bg-white rounded-corner-xl border border-gray-100">
                     <UserX size={48} className="mx-auto text-gray-200 mb-4" />
                     <h3 className="text-lg font-black text-gray-900 mb-1 tracking-tight">No staff found.</h3>
                     <p className="text-sm text-gray-400 font-medium italic leading-relaxed">Try adjusting your search query or clear filters.</p>
@@ -311,10 +311,10 @@ function StaffCard({
                         <Checkbox
                             checked={selectedIds.includes(member.id)}
                             onCheckedChange={() => toggleSelect(member.id)}
-                            className="w-5 h-5 rounded-md border-gray-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all focus:ring-2 focus:ring-indigo-500"
+                            className="w-5 h-5 rounded-corner-sm border-gray-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all focus:ring-2 focus:ring-indigo-500"
                         />
                         <div className="relative">
-                            <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner uppercase overflow-hidden">
+                            <div className="w-14 h-14 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner uppercase overflow-hidden">
                                 {member.avatarUrl ? (
                                     <Image src={member.avatarUrl} alt={member.name || ""} width={56} height={56} className="w-full h-full object-cover" />
                                 ) : (
@@ -322,7 +322,7 @@ function StaffCard({
                                 )}
                             </div>
                             {member.isActive && (
-                                <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-lg p-0.5 border-2 border-white shadow-sm">
+                                <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-corner-sm p-0.5 border-2 border-white shadow-sm">
                                     <BadgeCheck size={14} />
                                 </div>
                             )}
@@ -337,19 +337,19 @@ function StaffCard({
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" disabled={isLoading === member.id}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-corner-md" disabled={isLoading === member.id}>
                                 <MoreHorizontal size={18} />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[180px]">
+                        <DropdownMenuContent align="end" className="rounded-corner-lg p-2 min-w-[180px]">
                             <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-gray-400 p-2">Actions</DropdownMenuLabel>
 
                             {!member.isActive && (
-                                <DropdownMenuItem onClick={() => handleApprove(member.id)} className="rounded-xl flex items-center gap-2 text-emerald-600 font-bold focus:text-emerald-700 focus:bg-emerald-50 cursor-pointer">
+                                <DropdownMenuItem onClick={() => handleApprove(member.id)} className="rounded-corner-md flex items-center gap-2 text-emerald-600 font-bold focus:text-emerald-700 focus:bg-emerald-50 cursor-pointer">
                                     <UserCheck size={16} /> Approve Access
                                 </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem onClick={() => handleToggleBlock(member.id, member.isBlocked)} className={`rounded-xl flex items-center gap-2 font-bold cursor-pointer ${member.isBlocked ? 'text-emerald-600 focus:bg-emerald-50' : 'text-rose-600 focus:bg-rose-50'}`}>
+                            <DropdownMenuItem onClick={() => handleToggleBlock(member.id, member.isBlocked)} className={`rounded-corner-md flex items-center gap-2 font-bold cursor-pointer ${member.isBlocked ? 'text-emerald-600 focus:bg-emerald-50' : 'text-rose-600 focus:bg-rose-50'}`}>
                                 {member.isBlocked ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
                                 {member.isBlocked ? 'Unblock User' : 'Block User'}
                             </DropdownMenuItem>
@@ -357,7 +357,7 @@ function StaffCard({
                             <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-gray-400 p-2">Promote/Demote</DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={() => handleRoleUpdate(member.id, member.role === UserRole.COMPANY_ADMIN ? UserRole.EMPLOYEE : UserRole.COMPANY_ADMIN)}
-                                className="rounded-xl flex items-center gap-2 font-bold cursor-pointer"
+                                className="rounded-corner-md flex items-center gap-2 font-bold cursor-pointer"
                             >
                                 {member.role === UserRole.COMPANY_ADMIN ? 'Demote to Employee' : 'Promote to Admin'}
                             </DropdownMenuItem>
@@ -368,17 +368,18 @@ function StaffCard({
 
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                    <div className="p-3 bg-gray-50/50 rounded-2xl ring-1 ring-gray-100">
+                    <div className="p-3 bg-gray-50/50 rounded-corner-lg ring-1 ring-gray-100">
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Status</span>
-                        {member.isBlocked ? (
-                            <Badge className="bg-rose-100 text-rose-600 border-none font-bold text-[10px] px-2 h-5 rounded-lg">BLOCKED</Badge>
-                        ) : member.isActive ? (
-                            <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold text-[10px] px-2 h-5 rounded-lg">ACTIVE</Badge>
-                        ) : (
-                            <Badge className="bg-amber-100 text-amber-600 border-none font-bold text-[10px] px-2 h-5 rounded-lg">PENDING</Badge>
-                        )}
+                        {(() => {
+                            const status = member.isBlocked ? 'BLOCKED' : member.isActive ? 'ACTIVE' : 'PENDING';
+                            return (
+                                <Badge variant={getStatusColor(status)}>
+                                    {formatStatus(status)}
+                                </Badge>
+                            );
+                        })()}
                     </div>
-                    <div className="p-3 bg-gray-50/50 rounded-2xl ring-1 ring-gray-100">
+                    <div className="p-3 bg-gray-50/50 rounded-corner-lg ring-1 ring-gray-100">
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Role</span>
                         <span className={`text-[10px] font-black ${member.role === UserRole.COMPANY_ADMIN ? 'text-indigo-600' : 'text-gray-600'} uppercase`}>
                             {member.role.replace('_', ' ')}
@@ -394,7 +395,7 @@ function StaffCard({
                     {!member.isActive && (
                         <Button
                             size="sm"
-                            className="h-8 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-black uppercase px-4 rounded-xl shadow-lg shadow-indigo-100"
+                            className="h-8 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-black uppercase px-4 rounded-corner-md shadow-lg shadow-indigo-100"
                             onClick={() => handleApprove(member.id)}
                             disabled={isLoading === member.id}
                         >

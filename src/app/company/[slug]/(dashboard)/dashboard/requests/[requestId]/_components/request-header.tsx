@@ -14,7 +14,7 @@ import { cancelTripRequest } from "../../../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { useConfirm } from "@/lib/hooks/use-confirm";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -68,23 +68,11 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
         }
     };
 
-    const getStatusStyles = (status: string) => {
-        switch (status) {
-            case 'APPROVED': return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
-            case 'REJECTED': return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
-            case 'COMPLETED': return 'bg-blue-50 text-blue-700 ring-1 ring-blue-100';
-            case 'CANCELLED': return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
-            case 'BOOKED': return 'bg-violet-50 text-violet-700 ring-1 ring-violet-100';
-            case 'PENDING_AGENT_ACTION': return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 animate-pulse-subtle';
-            case 'PENDING_COMPANY_APPROVAL': return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
-            default: return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
-        }
-    };
 
     return (
         <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
+                <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600 shrink-0">
                     <FileText size={24} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -101,11 +89,8 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
             </div>
 
             <div className="flex items-center gap-3 shrink-0 ml-4">
-                <Badge className={cn(
-                    "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500",
-                    getStatusStyles(request.status)
-                )}>
-                    {request.status.replace(/_/g, " ")}
+                <Badge variant={getStatusColor(request.status)} className="px-4 py-1.5 transition-all duration-500">
+                    {formatStatus(request.status)}
                 </Badge>
 
                 <DropdownMenu>
@@ -128,7 +113,7 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
                                     href={`/company/${slug}/dashboard/requests/${request.id}/edit`}
                                     className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-gray-700 focus:bg-indigo-50 focus:text-indigo-600 transition-colors"
                                 >
-                                    <div className="p-2 bg-indigo-50 rounded-xl group-focus:bg-indigo-100">
+                                    <div className="p-2 bg-indigo-50 rounded-corner-md group-focus:bg-indigo-100">
                                         <Edit size={16} />
                                     </div>
                                     Edit Request
@@ -141,7 +126,7 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
                                 className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-700 transition-colors mt-1"
                                 disabled={isCancelling}
                             >
-                                <div className="p-2 bg-rose-50 rounded-xl group-focus:bg-rose-100">
+                                <div className="p-2 bg-rose-50 rounded-corner-md group-focus:bg-rose-100">
                                     <Ban size={16} />
                                 </div>
                                 Cancel Request

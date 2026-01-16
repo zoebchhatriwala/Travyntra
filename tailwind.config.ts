@@ -23,18 +23,69 @@ const config: Config = {
                     DEFAULT: "var(--secondary)",
                     foreground: "var(--secondary-foreground)",
                 },
-                "joy-blue": "var(--joy-blue)",
-                "joy-purple": "var(--joy-purple)",
-                "joy-green": "var(--joy-green)",
-                "joy-amber": "var(--joy-amber)",
-                "fg-primary": "var(--fg-primary)",
-                "fg-secondary": "var(--fg-secondary)",
-                "fg-muted": "var(--fg-muted)",
+                destructive: {
+                    DEFAULT: "var(--destructive)",
+                    foreground: "var(--destructive-foreground)",
+                },
+                muted: {
+                    DEFAULT: "var(--muted)",
+                    foreground: "var(--muted-foreground)",
+                },
+                accent: {
+                    DEFAULT: "var(--accent)",
+                    foreground: "var(--accent-foreground)",
+                },
+                popover: {
+                    DEFAULT: "var(--popover)",
+                    foreground: "var(--popover-foreground)",
+                },
+                card: {
+                    DEFAULT: "var(--card)",
+                    foreground: "var(--card-foreground)",
+                },
+
+                // Direct access to MD3 System Tokens
+                "md-sys": {
+                    primary: "var(--md-sys-color-primary)",
+                    "on-primary": "var(--md-sys-color-on-primary)",
+                    "primary-container": "var(--md-sys-color-primary-container)",
+                    "on-primary-container": "var(--md-sys-color-on-primary-container)",
+
+                    secondary: "var(--md-sys-color-secondary)",
+                    "on-secondary": "var(--md-sys-color-on-secondary)",
+                    "secondary-container": "var(--md-sys-color-secondary-container)",
+                    "on-secondary-container": "var(--md-sys-color-on-secondary-container)",
+
+                    tertiary: "var(--md-sys-color-tertiary)",
+                    "on-tertiary": "var(--md-sys-color-on-tertiary)",
+                    "tertiary-container": "var(--md-sys-color-tertiary-container)",
+                    "on-tertiary-container": "var(--md-sys-color-on-tertiary-container)",
+
+                    error: "var(--md-sys-color-error)",
+                    "on-error": "var(--md-sys-color-on-error)",
+
+                    background: "var(--md-sys-color-background)",
+                    "on-background": "var(--md-sys-color-on-background)",
+
+                    surface: "var(--md-sys-color-surface)",
+                    "on-surface": "var(--md-sys-color-on-surface)",
+                    "surface-variant": "var(--md-sys-color-surface-variant)",
+                    "on-surface-variant": "var(--md-sys-color-on-surface-variant)",
+
+                    outline: "var(--md-sys-color-outline)",
+                }
             },
             borderRadius: {
-                lg: "var(--radius-lg)",
-                md: "var(--radius-md)",
-                sm: "var(--radius-sm)",
+                lg: "var(--radius)",
+                md: "calc(var(--radius) - 2px)",
+                sm: "calc(var(--radius) - 4px)",
+                // Extended MD3 shapes
+                "corner-xs": "var(--md-sys-shape-corner-xs)",
+                "corner-sm": "var(--md-sys-shape-corner-sm)",
+                "corner-md": "var(--md-sys-shape-corner-md)",
+                "corner-lg": "var(--md-sys-shape-corner-lg)",
+                "corner-xl": "var(--md-sys-shape-corner-xl)",
+                "corner-full": "var(--md-sys-shape-corner-full)",
             },
         },
     },

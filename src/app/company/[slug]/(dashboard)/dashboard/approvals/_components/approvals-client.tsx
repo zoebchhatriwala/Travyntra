@@ -88,7 +88,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
 
     if (approvals.length === 0) {
         return (
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-16">
+            <div className="bg-white rounded-corner-xl border border-gray-200 shadow-sm p-16">
                 <div className="text-center space-y-4">
                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mx-auto">
                         <Check size={40} className="text-emerald-600" />
@@ -108,7 +108,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                 {approvals.map((approval) => (
                     <div
                         key={approval.id}
-                        className="bg-white rounded-3xl border border-gray-200 shadow-sm hover:shadow-xl transition-all p-6 group"
+                        className="bg-white rounded-corner-xl border border-gray-200 shadow-sm hover:shadow-xl transition-all p-6 group"
                     >
                         <div className="flex items-start justify-between gap-6">
                             {/* Left: Request Info */}
@@ -140,7 +140,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
 
                                 {/* Details Grid */}
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-corner-lg">
                                         <MapPin size={18} className="text-indigo-600 flex-shrink-0" />
                                         <div>
                                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Destination</p>
@@ -148,7 +148,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-corner-lg">
                                         <Calendar size={18} className="text-indigo-600 flex-shrink-0" />
                                         <div>
                                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Travel Dates</p>
@@ -158,7 +158,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-corner-lg">
                                         <DollarSign size={18} className="text-indigo-600 flex-shrink-0" />
                                         <div>
                                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Budget</p>
@@ -179,7 +179,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                             <div className="flex flex-col gap-3">
                                 <Button
                                     onClick={() => handleOpenDialog(approval, 'APPROVE')}
-                                    className="h-12 px-6 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-black uppercase tracking-wider shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                    className="h-12 px-6 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-corner-md font-black uppercase tracking-wider shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
                                 >
                                     <Check size={18} />
                                     Approve
@@ -187,7 +187,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                 <Button
                                     onClick={() => handleOpenDialog(approval, 'REJECT')}
                                     variant="outline"
-                                    className="h-12 px-6 border-2 border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded-xl font-black uppercase tracking-wider transition-all flex items-center gap-2"
+                                    className="h-12 px-6 border-2 border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded-corner-md font-black uppercase tracking-wider transition-all flex items-center gap-2"
                                 >
                                     <X size={18} />
                                     Reject
@@ -195,7 +195,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                 <Button
                                     variant="ghost"
                                     asChild
-                                    className="h-12 px-6 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-xl font-bold text-sm"
+                                    className="h-12 px-6 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-corner-md font-bold text-sm"
                                 >
                                     <a href={`/company/${approval.companySlug}/dashboard/requests/${approval.requestId}`}>
                                         View Details →
@@ -209,7 +209,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
 
             {/* Confirmation Dialog */}
             <Dialog open={!!selectedApproval && !!action} onOpenChange={handleCloseDialog}>
-                <DialogContent className="sm:max-w-[500px] rounded-3xl">
+                <DialogContent className="sm:max-w-[500px] rounded-corner-xl">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black">
                             {action === 'APPROVE' ? 'Approve Request' : 'Reject Request'}
@@ -223,7 +223,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
 
                     {selectedApproval && (
                         <div className="space-y-4 py-4">
-                            <div className="p-4 bg-gray-50 rounded-2xl space-y-2">
+                            <div className="p-4 bg-gray-50 rounded-corner-lg space-y-2">
                                 <p className="text-sm font-bold text-gray-900">{selectedApproval.requestTitle}</p>
                                 <p className="text-xs text-gray-600">
                                     Requested by {selectedApproval.requesterName || selectedApproval.requesterEmail}
@@ -241,7 +241,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                                     placeholder={action === 'APPROVE'
                                         ? "Add an optional comment..."
                                         : "Please provide a reason for rejection..."}
-                                    className="min-h-[100px] rounded-2xl"
+                                    className="min-h-[100px] rounded-corner-lg"
                                 />
                             </div>
                         </div>
@@ -252,7 +252,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                             variant="outline"
                             onClick={handleCloseDialog}
                             disabled={isProcessing}
-                            className="rounded-xl"
+                            className="rounded-corner-md"
                         >
                             Cancel
                         </Button>
@@ -260,7 +260,7 @@ export function ApprovalsClient({ initialApprovals }: ApprovalsClientProps) {
                             onClick={handleSubmit}
                             disabled={isProcessing || (action === 'REJECT' && !comment.trim())}
                             className={cn(
-                                "rounded-xl font-bold",
+                                "rounded-corner-md font-bold",
                                 action === 'APPROVE'
                                     ? "bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                                     : "bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"

@@ -62,14 +62,14 @@ export function UploadInvoiceDialog({ invoiceId, open, onOpenChange, currentPdfU
 
                 <div className="space-y-4 py-4">
                     {currentPdfUrl && (
-                        <div className="flex items-center gap-3 p-3 bg-indigo-50 text-indigo-700 rounded-lg text-sm mb-4">
+                        <div className="flex items-center gap-3 p-3 bg-indigo-50 text-indigo-700 rounded-corner-sm text-sm mb-4">
                             <FileText size={16} />
                             <span className="font-medium flex-1">Current Invoice PDF</span>
                             <a
                                 href={currentPdfUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-1 hover:bg-indigo-100 rounded-md transition-colors"
+                                className="p-1 hover:bg-indigo-100 rounded-corner-sm transition-colors"
                             >
                                 <ExternalLink size={16} />
                             </a>

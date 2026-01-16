@@ -74,22 +74,22 @@ export function ApprovalActions({
 
     return (
         <>
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl border-2 border-amber-200 p-6 shadow-lg">
+            <div className="bg-orange-50 rounded-xl border border-orange-200 p-6 shadow-sm">
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                            <MessageSquare size={20} className="text-white" />
+                    <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                            <MessageSquare size={20} className="text-orange-700" />
                         </div>
-                        <div>
-                            <h3 className="text-lg font-black text-gray-900">Action Required</h3>
-                            <p className="text-sm text-gray-600">This request is awaiting your approval at step: <span className="font-bold">{stepName}</span></p>
+                        <div className="flex-1">
+                            <h3 className="text-base font-semibold text-gray-900 mb-1">Action Required</h3>
+                            <p className="text-sm text-gray-600">This request is awaiting your approval at step: <span className="font-semibold text-gray-900">{stepName}</span></p>
                         </div>
                     </div>
 
                     <div className="flex gap-3">
                         <Button
                             onClick={() => handleOpenDialog('APPROVE')}
-                            className="flex-1 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-black uppercase tracking-wider shadow-lg hover:shadow-xl transition-all"
+                            className="flex-1 h-11 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-sm"
                         >
                             <Check size={18} className="mr-2" />
                             Approve Request
@@ -97,7 +97,7 @@ export function ApprovalActions({
                         <Button
                             onClick={() => handleOpenDialog('REJECT')}
                             variant="outline"
-                            className="flex-1 h-12 border-2 border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded-xl font-black uppercase tracking-wider transition-all"
+                            className="flex-1 h-11 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium"
                         >
                             <X size={18} className="mr-2" />
                             Reject Request
@@ -108,9 +108,9 @@ export function ApprovalActions({
 
             {/* Confirmation Dialog */}
             <Dialog open={!!action} onOpenChange={handleCloseDialog}>
-                <DialogContent className="sm:max-w-[500px] rounded-3xl">
+                <DialogContent className="sm:max-w-[500px] rounded-xl">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black">
+                        <DialogTitle className="text-xl font-semibold">
                             {action === 'APPROVE' ? 'Approve Request' : 'Reject Request'}
                         </DialogTitle>
                         <DialogDescription className="text-base">
@@ -121,13 +121,13 @@ export function ApprovalActions({
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
-                        <div className="p-4 bg-gray-50 rounded-2xl space-y-2">
+                        <div className="p-4 bg-gray-50 rounded-lg space-y-2">
                             <p className="text-sm font-bold text-gray-900">{requestTitle}</p>
                             <p className="text-xs text-gray-600">Step: {stepName}</p>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                                 <MessageSquare size={16} />
                                 Comment {action === 'REJECT' && <span className="text-red-500">(Required)</span>}
                             </label>
@@ -137,7 +137,7 @@ export function ApprovalActions({
                                 placeholder={action === 'APPROVE'
                                     ? "Add an optional comment..."
                                     : "Please provide a reason for rejection..."}
-                                className="min-h-[100px] rounded-2xl"
+                                className="min-h-[100px] rounded-lg"
                             />
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export function ApprovalActions({
                             variant="outline"
                             onClick={handleCloseDialog}
                             disabled={isProcessing}
-                            className="rounded-xl"
+                            className="rounded-lg"
                         >
                             Cancel
                         </Button>
@@ -155,10 +155,10 @@ export function ApprovalActions({
                             onClick={handleSubmit}
                             disabled={isProcessing || (action === 'REJECT' && !comment.trim())}
                             className={cn(
-                                "rounded-xl font-bold",
+                                "rounded-lg font-medium",
                                 action === 'APPROVE'
-                                    ? "bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
-                                    : "bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : "bg-red-600 hover:bg-red-700"
                             )}
                         >
                             {isProcessing ? (

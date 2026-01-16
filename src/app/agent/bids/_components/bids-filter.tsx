@@ -73,7 +73,7 @@ export function BidsFilter({ companies }: BidsFilterProps) {
                 value={searchParams.get("companyId") || "all"}
                 onValueChange={handleCompanyChange}
             >
-                <SelectTrigger className="w-[180px] bg-white rounded-xl border-gray-200">
+                <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="All Companies" />
                 </SelectTrigger>
                 <SelectContent>
@@ -94,7 +94,7 @@ export function BidsFilter({ companies }: BidsFilterProps) {
                         setStartDate(e.target.value);
                         handleDateChange(e.target.value, endDate);
                     }}
-                    className="w-[150px] bg-white rounded-xl border-gray-200"
+                    className="w-[150px]"
                     placeholder="Start Date"
                 />
                 <span className="text-gray-400">-</span>
@@ -105,7 +105,7 @@ export function BidsFilter({ companies }: BidsFilterProps) {
                         setEndDate(e.target.value);
                         handleDateChange(startDate, e.target.value);
                     }}
-                    className="w-[150px] bg-white rounded-xl border-gray-200"
+                    className="w-[150px]"
                     placeholder="End Date"
                 />
             </div>

@@ -33,7 +33,7 @@ export function AssetTypeFilter() {
             value={currentValue}
             onValueChange={onValueChange}
         >
-            <SelectTrigger className="w-[180px] rounded-2xl bg-white border-gray-200">
+            <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by Type" />
             </SelectTrigger>
             <SelectContent>

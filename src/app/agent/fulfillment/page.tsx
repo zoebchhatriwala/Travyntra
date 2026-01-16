@@ -15,6 +15,7 @@ import { Prisma, RequestStatus } from "@prisma/client";
 import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { formatStatus, getStatusColor } from "@/lib/utils";
 import { type LocationDisplay as Location } from "@/types/common/location";
 
 interface PageProps {
@@ -105,10 +106,10 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-100">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-amber-100 rounded-xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-corner-lg border border-amber-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-amber-100 rounded-corner-md">
                                 <Clock size={20} className="text-amber-600" />
                             </div>
                             <div>
@@ -117,9 +118,9 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-blue-100 rounded-xl">
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-corner-lg border border-blue-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-100 rounded-corner-md">
                                 <Upload size={20} className="text-blue-600" />
                             </div>
                             <div>
@@ -128,9 +129,9 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-5 rounded-2xl border border-emerald-100">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-emerald-100 rounded-xl">
+                    <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-corner-lg border border-emerald-100">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-emerald-100 rounded-corner-md">
                                 <FileCheck size={20} className="text-emerald-600" />
                             </div>
                             <div>
@@ -146,28 +147,28 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                     <div className="flex gap-2">
                         <Link
                             href="/agent/fulfillment"
-                            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${!status ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            className={`px-4 py-2 flex items-center text-sm font-semibold rounded-corner-md transition-all ${!status ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             All
                         </Link>
                         <Link
                             href="/agent/fulfillment?status=IN_PROGRESS"
-                            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${status === 'IN_PROGRESS' ? 'bg-amber-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            className={`px-4 py-2 flex items-center text-sm font-semibold rounded-corner-md transition-all ${status === 'IN_PROGRESS' ? 'bg-amber-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             In Progress
                         </Link>
                         <Link
                             href="/agent/fulfillment?status=BOOKED"
-                            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${status === 'BOOKED' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            className={`px-4 py-2 flex items-center text-sm font-semibold rounded-corner-md transition-all ${status === 'BOOKED' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             Booked
                         </Link>
                         <Link
                             href="/agent/fulfillment?status=COMPLETED"
-                            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${status === 'COMPLETED' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            className={`px-4 py-2 flex items-center text-sm font-semibold rounded-corner-md transition-all ${status === 'COMPLETED' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             Completed
@@ -178,8 +179,8 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
 
             <div className="grid gap-4">
                 {requests.length === 0 ? (
-                    <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 text-gray-500">
-                        <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="p-12 text-center bg-white rounded-corner-xl border border-dashed border-gray-200 text-gray-500">
+                        <div className="w-16 h-16 bg-indigo-100 rounded-corner-lg flex items-center justify-center mx-auto mb-4">
                             <FileCheck size={28} className="text-indigo-600" />
                         </div>
                         <p className="font-semibold text-gray-900">No requests in fulfillment</p>
@@ -193,11 +194,11 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
 
                         return (
                             <Link key={req.id} href={`/agent/fulfillment/${req.id}`} className="block group">
-                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl hover:shadow-md hover:ring-indigo-100 transition-all duration-300">
+                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-lg hover:shadow-md hover:ring-indigo-100 transition-all duration-300">
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div className="space-y-3 min-w-0 flex-1">
-                                                <div className="flex items-center gap-3 flex-wrap">
+                                                <div className="flex items-center gap-4 flex-wrap">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors truncate max-w-full">
@@ -208,19 +209,14 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                                             <p>{req.title}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
-                                                    <Badge variant="secondary" className={`
-                                                        ${req.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' : ''}
-                                                        ${req.status === 'BOOKED' ? 'bg-blue-100 text-blue-800' : ''}
-                                                        ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : ''}
-                                                        font-bold shrink-0
-                                                    `}>
-                                                        {req.status.replace(/_/g, ' ')}
+                                                    <Badge variant={getStatusColor(req.status)}>
+                                                        {formatStatus(req.status)}
                                                     </Badge>
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 font-medium">
                                                     <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500 shrink-0">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500 shrink-0">
                                                             <MapPin size={14} />
                                                         </div>
                                                         <Tooltip>
@@ -235,13 +231,13 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                                         </Tooltip>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500">
                                                             <Calendar size={14} />
                                                         </div>
                                                         {format(new Date(req.startDate), "MMM d, yyyy")}
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500">
                                                             <User size={14} />
                                                         </div>
                                                         <span className="text-gray-900">{req.company.name}</span>
@@ -251,7 +247,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                                                 </div>
 
                                                 {/* Document Status */}
-                                                <div className="flex items-center gap-3 mt-2">
+                                                <div className="flex items-center gap-4 mt-2">
                                                     <div className={`text-xs px-2.5 py-1 rounded-full font-semibold ${hasTicket ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
                                                         }`}>
                                                         {hasTicket ? '✓ Ticket Uploaded' : '○ Ticket Needed'}

@@ -63,7 +63,7 @@ export function CompanyNav({ slug }: CompanyNavProps) {
                     href={link.href}
                     title={isCollapsed ? link.label : undefined}
                     className={cn(
-                        "flex items-center gap-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group",
+                        "flex items-center gap-4 py-2.5 rounded-corner-md text-xs font-semibold transition-all duration-200 group",
                         isActive
                             ? "text-indigo-600 bg-indigo-50 shadow-sm shadow-indigo-100/50"
                             : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/30",

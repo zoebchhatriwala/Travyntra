@@ -174,7 +174,7 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
                 </Dialog>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-corner-md shadow-sm border border-gray-100 overflow-hidden">
                 <table className="w-full">
                     <thead>
                         <tr className="bg-gray-50/50 border-b border-gray-100 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">

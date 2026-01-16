@@ -161,9 +161,9 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Billing Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                        <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600">
                             <Receipt size={24} />
                         </div>
                         <div>
@@ -172,9 +172,9 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600">
+                        <div className="w-12 h-12 bg-rose-50 rounded-corner-lg flex items-center justify-center text-rose-600">
                             <CreditCard size={24} />
                         </div>
                         <div>
@@ -183,9 +183,9 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                        <div className="w-12 h-12 bg-emerald-50 rounded-corner-lg flex items-center justify-center text-emerald-600">
                             <TrendingUp size={24} />
                         </div>
                         <div>
@@ -194,9 +194,9 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                        <div className="w-12 h-12 bg-amber-50 rounded-corner-lg flex items-center justify-center text-amber-600">
                             <Clock size={24} />
                         </div>
                         <div>
@@ -209,7 +209,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
 
             {/* Expenditure Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-1">
-                <Card className="lg:col-span-2 border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <Card className="lg:col-span-2 border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                     <CardHeader className="p-8 pb-0">
                         <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
                             <TrendingUp size={20} className="text-indigo-600" /> Spending Trend
@@ -223,7 +223,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
             </div>
 
             {/* Invoices Table */}
-            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                 <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h3 className="text-xl font-black text-gray-900 tracking-tight">Ledger / <span className="text-indigo-600 italic underline decoration-indigo-200">Reconciliation</span></h3>
@@ -232,14 +232,14 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                     <div className="flex gap-3">
                         <Button
                             variant="outline"
-                            className="rounded-xl border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
+                            className="rounded-corner-md border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
                             onClick={handleExportCSV}
                         >
                             <Download size={16} className="mr-2" /> Export CSV
                         </Button>
                         <Button
                             variant="outline"
-                            className="rounded-xl border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
+                            className="rounded-corner-md border-gray-100 font-bold hover:bg-gray-50 text-xs px-6"
                             onClick={handleExportPDF}
                         >
                             <FileText size={16} className="mr-2" /> Export PDF
@@ -261,7 +261,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                             value={searchParams.get("status") || "ALL"}
                             onValueChange={(value) => handleFilterChange("status", value === "ALL" ? null : value)}
                         >
-                            <SelectTrigger className="rounded-xl">
+                            <SelectTrigger>
                                 <SelectValue placeholder="All Statuses" />
                             </SelectTrigger>
                             <SelectContent>
@@ -278,14 +278,12 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                 placeholder="Start Date"
                                 value={searchParams.get("startDate") || ""}
                                 onChange={(e) => handleFilterChange("startDate", e.target.value || null)}
-                                className="rounded-xl"
                             />
                             <Input
                                 type="date"
                                 placeholder="End Date"
                                 value={searchParams.get("endDate") || ""}
                                 onChange={(e) => handleFilterChange("endDate", e.target.value || null)}
-                                className="rounded-xl"
                             />
                         </div>
                     </div>
@@ -328,7 +326,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                         </td>
                                         <td className="py-6 px-4">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] font-black text-gray-400">
+                                                <div className="w-6 h-6 bg-gray-100 rounded-corner-sm flex items-center justify-center text-[10px] font-black text-gray-400">
                                                     {invoice.recipient[0]}
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600">{invoice.recipient}</p>
@@ -341,7 +339,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                             <p className="text-sm font-black text-gray-900">{invoice.currency} {formatNumber(invoice.amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                         </td>
                                         <td className="py-6 px-4">
-                                            <Badge className={`font-black text-[9px] uppercase tracking-widest h-6 rounded-[8px] flex items-center justify-center w-fit ${getStatusStyles(invoice.status)}`}>
+                                            <Badge className={`font-black text-[9px] uppercase tracking-widest h-6 rounded-corner-sm flex items-center justify-center w-fit ${getStatusStyles(invoice.status)}`}>
                                                 {invoice.status}
                                             </Badge>
                                         </td>
@@ -353,9 +351,9 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                                             <MoreVertical size={16} className="text-gray-400" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-48 rounded-2xl border-gray-100 shadow-2xl p-2">
+                                                    <DropdownMenuContent align="end" className="w-48 rounded-corner-lg border-gray-100 shadow-2xl p-2">
                                                         <Link href={`/company/${companySlug}/dashboard/requests/${invoice.requestId}`} className="contents">
-                                                            <DropdownMenuItem className="flex items-center gap-2 text-gray-600 font-bold cursor-pointer rounded-xl p-3 hover:bg-gray-50 transition-colors">
+                                                            <DropdownMenuItem className="flex items-center gap-2 text-gray-600 font-bold cursor-pointer rounded-corner-md p-3 hover:bg-gray-50 transition-colors">
                                                                 <ArrowUpRight size={16} className="text-indigo-600" />
                                                                 View Request
                                                             </DropdownMenuItem>
@@ -364,7 +362,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                                         {(invoice.status === InvoiceStatus.PENDING || invoice.status === InvoiceStatus.OVERDUE) && (
                                                             <DropdownMenuItem
                                                                 onClick={() => handleVoidInvoice(invoice.id)}
-                                                                className="flex items-center gap-2 text-rose-600 font-bold cursor-pointer rounded-xl p-3 hover:bg-rose-50 transition-colors"
+                                                                className="flex items-center gap-2 text-rose-600 font-bold cursor-pointer rounded-corner-md p-3 hover:bg-rose-50 transition-colors"
                                                             >
                                                                 <Ban size={16} />
                                                                 Void Invoice
@@ -373,7 +371,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
 
                                                         {invoice.pdfUrl && (
                                                             <a href={invoice.pdfUrl} target="_blank" rel="noopener noreferrer" className="contents">
-                                                                <DropdownMenuItem className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-xl p-3 hover:bg-indigo-50 transition-colors">
+                                                                <DropdownMenuItem className="flex items-center gap-2 text-indigo-600 font-bold cursor-pointer rounded-corner-md p-3 hover:bg-indigo-50 transition-colors">
                                                                     <Download size={16} />
                                                                     Download Invoice
                                                                 </DropdownMenuItem>
@@ -383,7 +381,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                                 </DropdownMenu>
 
                                                 <Link href={`/company/${companySlug}/dashboard/requests/${invoice.requestId}`}>
-                                                    <Button variant="ghost" size="icon" className="rounded-2xl h-8 w-8 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-indigo-50 transition-all border border-transparent group-hover:border-indigo-100">
+                                                    <Button variant="ghost" size="icon" className="rounded-corner-lg h-8 w-8 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-indigo-50 transition-all border border-transparent group-hover:border-indigo-100">
                                                         <ArrowUpRight size={18} className="text-indigo-600" />
                                                     </Button>
                                                 </Link>

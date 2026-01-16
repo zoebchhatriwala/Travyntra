@@ -51,8 +51,8 @@ export default async function AgencyStaffPage() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                <div className="p-6 bg-white rounded-corner-lg shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-50 rounded-corner-md flex items-center justify-center text-blue-600">
                         <Users size={24} />
                     </div>
                     <div>

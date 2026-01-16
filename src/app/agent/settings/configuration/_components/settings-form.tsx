@@ -119,10 +119,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
             {/* Content Area */}
             <div className="flex-1 space-y-6 pb-24">
                 {activeTab === "organization" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-corner-md">
                                     <Building2 size={20} />
                                 </div>
                                 Agency Profile
@@ -139,7 +139,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="orgName"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                            className="h-12 pl-11 font-bold transition-all"
                                             placeholder="e.g. Travel Agency Inc"
                                         />
                                     </div>
@@ -153,7 +153,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="slug"
                                             value={company.slug}
                                             disabled
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-100/50 text-gray-400 font-bold cursor-not-allowed"
+                                            className="h-12 pl-11 text-gray-400 font-bold cursor-not-allowed"
                                         />
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
                                             <ShieldCheck className="h-4 w-4 text-emerald-500" />
@@ -170,7 +170,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="logoUrl"
                                             value={logoUrl}
                                             onChange={(e) => setLogoUrl(e.target.value)}
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                            className="h-12 pl-11 font-bold transition-all"
                                             placeholder="https://example.com/logo.png"
                                         />
                                     </div>
@@ -181,10 +181,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "regional" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-corner-md">
                                     <Globe size={20} />
                                 </div>
                                 Regional Settings
@@ -198,7 +198,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <CurrencySelect
                                         value={currency}
                                         onChange={setCurrency}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Currency"
                                         icon={<Coins className="h-4 w-4" />}
                                     />
@@ -209,7 +209,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <TimezoneSelect
                                         value={timezone}
                                         onChange={setTimezone}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Timezone"
                                         icon={<Clock className="h-4 w-4" />}
                                     />
@@ -220,7 +220,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <CountrySelect
                                         value={country}
                                         onChange={setCountry}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Country"
                                         icon={<MapPin className="h-4 w-4" />}
                                     />
@@ -231,10 +231,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "security" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-violet-50 text-violet-600 rounded-xl">
+                                <div className="p-2 bg-violet-50 text-violet-600 rounded-corner-md">
                                     <Lock size={20} />
                                 </div>
                                 Security & Identity
@@ -250,7 +250,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                         id="domain"
                                         value={domain}
                                         onChange={(e) => setDomain(e.target.value)}
-                                        className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all focus:ring-violet-500/20"
+                                        className="h-12 pl-11 font-bold transition-all focus:ring-violet-500/20"
                                         placeholder="e.g. acme-agency.com"
                                     />
                                 </div>
@@ -261,10 +261,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "billing" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white opacity-90 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white opacity-90 animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                                <div className="p-2 bg-blue-50 text-blue-600 rounded-corner-md">
                                     <Activity size={20} />
                                 </div>
                                 Deployment Tier
@@ -280,7 +280,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <p className="text-sm font-bold text-gray-900 mb-1">Super-Admin Controlled</p>
                                     <p className="text-xs font-medium text-gray-500">Subscription management is handled by the Travyntra Super-Admin console.</p>
                                 </div>
-                                <Button variant="outline" className="border-gray-200 text-xs font-black uppercase tracking-wider rounded-xl">
+                                <Button variant="outline" className="border-gray-200 text-xs font-black uppercase tracking-wider rounded-corner-md">
                                     Contact Support
                                 </Button>
                             </div>
@@ -318,7 +318,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className={`h-12 px-8 rounded-xl ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all min-w-[160px]`}
+                        className={`h-12 px-8 rounded-corner-md ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all min-w-[160px]`}
                     >
                         {isLoading ? (
                             <Loader2 className="animate-spin mr-2 h-4 w-4" />

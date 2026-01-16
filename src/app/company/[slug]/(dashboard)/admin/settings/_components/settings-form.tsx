@@ -103,7 +103,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                             key={tab.id}
                             type="button"
                             onClick={() => setActiveTab(tab.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === tab.id
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-corner-lg text-sm font-bold transition-all ${activeTab === tab.id
                                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100 scale-[1.02]"
                                 : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                                 }`}
@@ -118,10 +118,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
             {/* Content Area */}
             <div className="flex-1 space-y-6 pb-24">
                 {activeTab === "organization" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-corner-md">
                                     <Building2 size={20} />
                                 </div>
                                 Organization Profile
@@ -138,7 +138,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="orgName"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                            className="h-12 pl-11 font-bold transition-all"
                                             placeholder="e.g. Acme Corp"
                                         />
                                     </div>
@@ -152,7 +152,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="slug"
                                             value={company.slug}
                                             disabled
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-100/50 text-gray-400 font-bold cursor-not-allowed"
+                                            className="h-12 pl-11 font-bold cursor-not-allowed opacity-50"
                                         />
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
                                             <ShieldCheck className="h-4 w-4 text-emerald-500" />
@@ -169,7 +169,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             id="logoUrl"
                                             value={logoUrl}
                                             onChange={(e) => setLogoUrl(e.target.value)}
-                                            className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all"
+                                            className="h-12 pl-11 font-bold transition-all"
                                             placeholder="https://example.com/logo.png"
                                         />
                                     </div>
@@ -180,10 +180,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "regional" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-corner-md">
                                     <Globe size={20} />
                                 </div>
                                 Regional Settings
@@ -197,7 +197,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <CurrencySelect
                                         value={currency}
                                         onChange={setCurrency}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Currency"
                                         icon={<Coins className="h-4 w-4" />}
                                     />
@@ -208,7 +208,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <TimezoneSelect
                                         value={timezone}
                                         onChange={setTimezone}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Timezone"
                                         icon={<Clock className="h-4 w-4" />}
                                     />
@@ -219,7 +219,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                     <CountrySelect
                                         value={country}
                                         onChange={setCountry}
-                                        className="h-12 w-full pl-3 rounded-2xl border-gray-100 bg-white font-bold"
+                                        className="h-12 w-full pl-3 font-bold"
                                         placeholder="Select Country"
                                         icon={<MapPin className="h-4 w-4" />}
                                     />
@@ -230,10 +230,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "security" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-violet-50 text-violet-600 rounded-xl">
+                                <div className="p-2 bg-violet-50 text-violet-600 rounded-corner-md">
                                     <Lock size={20} />
                                 </div>
                                 Security & Identity
@@ -249,7 +249,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                         id="domain"
                                         value={domain}
                                         onChange={(e) => setDomain(e.target.value)}
-                                        className="h-12 pl-11 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-bold transition-all focus:ring-violet-500/20"
+                                        className="h-12 pl-11 font-bold transition-all focus:ring-violet-500/20"
                                         placeholder="e.g. acme-corp.com"
                                     />
                                 </div>
@@ -260,10 +260,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "compliance" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                                <div className="p-2 bg-rose-50 text-rose-600 rounded-corner-md">
                                     <ShieldCheck size={20} />
                                 </div>
                                 Policy & Compliance
@@ -284,7 +284,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                                             type="number"
                                             value={thresholdAmount}
                                             onChange={(e) => setThresholdAmount(e.target.value)}
-                                            className="h-14 pl-20 rounded-2xl border-gray-100 bg-gray-50 focus:bg-white font-black text-xl transition-all"
+                                            className="h-14 pl-20 font-black text-xl transition-all"
                                             placeholder="5000"
                                         />
                                     </div>
@@ -296,10 +296,10 @@ export function SettingsForm({ company }: SettingsFormProps) {
                 )}
 
                 {activeTab === "billing" && (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white opacity-90 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white opacity-90 animate-in fade-in slide-in-from-right-4 duration-300">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                                <div className="p-2 bg-blue-50 text-blue-600 rounded-corner-md">
                                     <Activity size={20} />
                                 </div>
                                 Deployment Tier
@@ -308,14 +308,14 @@ export function SettingsForm({ company }: SettingsFormProps) {
                         </CardHeader>
                         <CardContent className="p-8 pt-4">
                             <div className="p-8 bg-gray-50 rounded-[24px] border border-dashed border-gray-200 text-center flex flex-col items-center justify-center space-y-4">
-                                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                                <div className="w-16 h-16 bg-white rounded-corner-lg flex items-center justify-center shadow-sm">
                                     <CreditCard className="text-gray-400" size={32} />
                                 </div>
                                 <div className="max-w-xs">
                                     <p className="text-sm font-bold text-gray-900 mb-1">Super-Admin Controlled</p>
                                     <p className="text-xs font-medium text-gray-500">Subscription management is handled by the Travyntra Super-Admin console.</p>
                                 </div>
-                                <Button variant="outline" className="border-gray-200 text-xs font-black uppercase tracking-wider rounded-xl">
+                                <Button variant="outline" className="border-gray-200 text-xs font-black uppercase tracking-wider rounded-corner-md">
                                     Contact Support
                                 </Button>
                             </div>
@@ -354,7 +354,7 @@ export function SettingsForm({ company }: SettingsFormProps) {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className={`h-12 px-8 rounded-xl ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all min-w-[160px]`}
+                        className={`h-12 px-8 rounded-corner-md ${success ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"} text-white font-black shadow-lg hover:scale-[1.02] transition-all min-w-[160px]`}
                     >
                         {isLoading ? (
                             <Loader2 className="animate-spin mr-2 h-4 w-4" />

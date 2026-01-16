@@ -43,14 +43,14 @@ export default async function AssetsPage(props: { searchParams: SearchParams }) 
                         Securely access your tickets, visas, and travel documents.
                     </p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex items-center gap-4 w-full md:w-auto">
                     <SearchInput placeholder="Search documents..." />
                     <AssetTypeFilter />
                 </div>
             </div>
 
             {assets.length === 0 ? (
-                <div className="text-center py-20 bg-gray-50/50 rounded-[32px] border-2 border-dashed border-gray-100">
+                <div className="text-center py-20 bg-gray-50/50 rounded-corner-xl border-2 border-dashed border-gray-100">
                     <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                         <FileText size={32} className="text-gray-300" />
                     </div>
@@ -93,13 +93,13 @@ export default async function AssetsPage(props: { searchParams: SearchParams }) 
                             }
 
                             return (
-                                <Card key={asset.id} className="border-none shadow-sm ring-1 ring-gray-100 rounded-[24px] overflow-hidden hover:ring-indigo-200 hover:shadow-md transition-all group">
+                                <Card key={asset.id} className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden hover:ring-indigo-200 hover:shadow-md transition-all group">
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between mb-6">
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${colorClass}`}>
+                                            <div className={`w-12 h-12 rounded-corner-lg flex items-center justify-center ${colorClass}`}>
                                                 <Icon size={24} />
                                             </div>
-                                            <Badge variant="outline" className="rounded-lg px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider border-gray-200">
+                                            <Badge variant="outline" className="rounded-corner-sm px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider border-gray-200">
                                                 {asset.type}
                                             </Badge>
                                         </div>
@@ -118,7 +118,7 @@ export default async function AssetsPage(props: { searchParams: SearchParams }) 
                                             <span className="text-[10px] text-gray-400 font-medium">
                                                 {format(new Date(asset.createdAt), "MMM dd, yyyy")}
                                             </span>
-                                            <Button size="sm" variant="ghost" className="h-8 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-bold text-xs" asChild>
+                                            <Button size="sm" variant="ghost" className="h-8 rounded-corner-sm text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-bold text-xs" asChild>
                                                 <a href={asset.url} target="_blank" rel="noopener noreferrer" download>
                                                     <Download size={14} className="mr-2" />
                                                     Download

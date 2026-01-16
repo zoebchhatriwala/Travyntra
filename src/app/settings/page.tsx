@@ -128,10 +128,10 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Profile Section */}
-                <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-[32px] overflow-hidden bg-white ring-1 ring-gray-100">
+                <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-corner-xl overflow-hidden bg-white ring-1 ring-gray-100">
                     <CardHeader className="p-8 pb-4 border-b border-gray-50">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                            <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600">
                                 <User size={24} />
                             </div>
                             <div>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
                         <form onSubmit={handleProfileSubmit} className="space-y-8">
                             <div className="flex flex-col items-center sm:flex-row gap-8">
                                 <div className="relative group">
-                                    <div className="w-32 h-32 rounded-[40px] bg-gray-50 border-4 border-white shadow-xl overflow-hidden relative">
+                                    <div className="w-32 h-32 rounded-corner-xl bg-slate-50 border-4 border-white shadow-xl overflow-hidden relative">
                                         {(previewUrl || session?.user?.image) ? (
                                             <Image
                                                 src={previewUrl || session?.user?.image || ""}
@@ -161,7 +161,7 @@ export default function SettingsPage() {
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all scale-90 group-hover:scale-100"
+                                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-indigo-600 text-white rounded-corner-lg flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all scale-90 group-hover:scale-100"
                                     >
                                         <Camera size={20} />
                                     </button>
@@ -175,13 +175,13 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="flex-1 space-y-4 w-full">
-                                    <div className="space-y-2">
+                                    <div className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</Label>
                                         <Input
                                             name="name"
                                             defaultValue={session?.user?.name || ""}
                                             placeholder="Your Name"
-                                            className="h-14 bg-gray-50/50 border-gray-100 focus:border-indigo-600 focus:ring-indigo-600 rounded-2xl font-medium transition-all"
+                                            className="h-14 bg-slate-50/50 border-gray-100 focus:border-indigo-600 focus:ring-0 rounded-corner-lg font-medium transition-all"
                                         />
                                     </div>
                                     <div className="space-y-2 text-sm">
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                             </div>
 
                             {profileSuccess && (
-                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600 animate-in fade-in slide-in-from-top-2">
+                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-corner-lg flex items-center gap-3 text-emerald-600 animate-in fade-in slide-in-from-top-2">
                                     <CheckCircle2 size={20} />
                                     <p className="text-sm font-bold uppercase tracking-tight">Profile updated successfully!</p>
                                 </div>
@@ -200,7 +200,7 @@ export default function SettingsPage() {
 
                             <Button
                                 type="submit"
-                                className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
+                                className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-corner-lg font-black text-sm uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
                                 disabled={profileLoading}
                             >
                                 {profileLoading ? (
@@ -215,10 +215,10 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Security Section */}
-                <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-[32px] overflow-hidden bg-white ring-1 ring-gray-100">
+                <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-corner-xl overflow-hidden bg-white ring-1 ring-gray-100">
                     <CardHeader className="p-8 pb-4 border-b border-gray-50">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                            <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600">
                                 <ShieldCheck size={24} />
                             </div>
                             <div>
@@ -230,14 +230,14 @@ export default function SettingsPage() {
                     <CardContent className="p-8">
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
                             {error && (
-                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 text-rose-600 animate-in fade-in slide-in-from-top-2">
+                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-corner-lg flex items-center gap-3 text-rose-600 animate-in fade-in slide-in-from-top-2">
                                     <AlertCircle size={20} />
                                     <p className="text-sm font-bold uppercase tracking-tight">{error}</p>
                                 </div>
                             )}
 
                             {success && (
-                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-600 animate-in fade-in slide-in-from-top-2">
+                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-corner-lg flex items-center gap-3 text-emerald-600 animate-in fade-in slide-in-from-top-2">
                                     <CheckCircle2 size={20} />
                                     <p className="text-sm font-bold uppercase tracking-tight">Password updated successfully!</p>
                                 </div>
@@ -251,7 +251,7 @@ export default function SettingsPage() {
                                         name="currentPassword"
                                         type={showCurrent ? "text" : "password"}
                                         placeholder="••••••••"
-                                        className="h-14 pl-12 pr-12 bg-gray-50/50 border-gray-100 focus:border-indigo-600 focus:ring-indigo-600 rounded-2xl font-medium transition-all"
+                                        className="h-14 pl-12 pr-12 bg-slate-50/50 border-gray-100 focus:border-indigo-600 focus:ring-0 rounded-corner-lg font-medium transition-all"
                                         required
                                     />
                                     <button
@@ -273,7 +273,7 @@ export default function SettingsPage() {
                                             name="newPassword"
                                             type={showNew ? "text" : "password"}
                                             placeholder="••••••••"
-                                            className="h-14 pl-12 pr-12 bg-gray-50/50 border-gray-100 focus:border-indigo-600 focus:ring-indigo-600 rounded-2xl font-medium transition-all"
+                                            className="h-14 pl-12 pr-12 bg-slate-50/50 border-gray-100 focus:border-indigo-600 focus:ring-0 rounded-corner-lg font-medium transition-all"
                                             required
                                         />
                                         <button
@@ -294,7 +294,7 @@ export default function SettingsPage() {
                                             name="confirmPassword"
                                             type={showNew ? "text" : "password"}
                                             placeholder="••••••••"
-                                            className="h-14 pl-12 px-4 bg-gray-50/50 border-gray-100 focus:border-indigo-600 focus:ring-indigo-600 rounded-2xl font-medium transition-all"
+                                            className="h-14 pl-12 bg-slate-50/50 border-gray-100 focus:border-indigo-600 focus:ring-0 rounded-corner-lg font-medium transition-all"
                                             required
                                         />
                                     </div>
@@ -303,7 +303,7 @@ export default function SettingsPage() {
 
                             <div className="pt-4">
                                 <Button
-                                    className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-50"
+                                    className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-lg font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-50"
                                     disabled={loading}
                                 >
                                     {loading ? "Updating Security Protocol..." : "Save New Password"}
@@ -313,8 +313,8 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
 
-                <div className="p-8 bg-amber-50 rounded-[32px] border border-amber-100 flex items-start gap-4">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm flex-shrink-0">
+                <div className="p-8 bg-amber-50 rounded-corner-xl border border-amber-100 flex items-start gap-4">
+                    <div className="w-10 h-10 bg-white rounded-corner-md flex items-center justify-center text-amber-600 shadow-sm flex-shrink-0">
                         <ShieldCheck size={20} />
                     </div>
                     <div>

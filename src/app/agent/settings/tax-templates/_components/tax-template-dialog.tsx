@@ -57,20 +57,20 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
         if (template) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setName(template.name);
-             
+
             setDescription(template.description || "");
-             
+
             setIsDefault(template.isDefault);
-             
+
             setTaxes(template.taxes.length > 0 ? template.taxes : [{ label: "", value: 0, type: "PERCENTAGE" }]);
         } else {
-             
+
             setName("");
-             
+
             setDescription("");
-             
+
             setIsDefault(false);
-             
+
             setTaxes([{ label: "", value: 0, type: "PERCENTAGE" }]);
         }
     }, [template, open]);
@@ -151,7 +151,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="e.g., Standard GST, VAT Template"
-                                className="rounded-xl mt-1"
+                                className="rounded-corner-md mt-1"
                             />
                         </div>
 
@@ -162,7 +162,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Brief description of when to use this template"
-                                className="rounded-xl mt-1"
+                                className="rounded-corner-md mt-1"
                                 rows={2}
                             />
                         </div>
@@ -187,7 +187,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                 variant="outline"
                                 size="sm"
                                 onClick={handleAddTax}
-                                className="rounded-xl"
+                                className="rounded-corner-md"
                             >
                                 <Plus size={14} className="mr-1" />
                                 Add Tax
@@ -196,13 +196,13 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
 
                         <div className="space-y-3">
                             {taxes.map((tax, index) => (
-                                <div key={index} className="flex gap-2 items-start p-4 bg-gray-50 rounded-xl">
+                                <div key={index} className="flex gap-2 items-start p-4 bg-gray-50 rounded-corner-md">
                                     <div className="flex-1 space-y-2">
                                         <Input
                                             placeholder="Tax label (e.g., GST, VAT)"
                                             value={tax.label}
                                             onChange={(e) => handleTaxChange(index, "label", e.target.value)}
-                                            className="rounded-xl"
+                                            className="rounded-corner-md"
                                         />
                                         <div className="flex gap-2">
                                             <Input
@@ -210,7 +210,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                                 placeholder="Value"
                                                 value={tax.value || ""}
                                                 onChange={(e) => handleTaxChange(index, "value", parseFloat(e.target.value) || 0)}
-                                                className="rounded-xl flex-1"
+                                                className="rounded-corner-md flex-1"
                                                 step="0.01"
                                                 min="0"
                                             />
@@ -218,7 +218,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                                 value={tax.type}
                                                 onValueChange={(value) => handleTaxChange(index, "type", value)}
                                             >
-                                                <SelectTrigger className="rounded-xl w-[140px]">
+                                                <SelectTrigger className="rounded-corner-md w-[140px]">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -234,7 +234,7 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => handleRemoveTax(index)}
-                                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl mt-1"
+                                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-corner-md mt-1"
                                         >
                                             <Trash2 size={16} />
                                         </Button>
@@ -249,14 +249,14 @@ export function TaxTemplateDialog({ open, onOpenChange, template }: TaxTemplateD
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
-                            className="flex-1 rounded-xl font-bold"
+                            className="flex-1 rounded-corner-md font-bold"
                             disabled={loading}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            className="flex-1 rounded-xl font-bold"
+                            className="flex-1 rounded-corner-md font-bold"
                             disabled={loading}
                         >
                             {loading ? "Saving..." : template ? "Update Template" : "Create Template"}

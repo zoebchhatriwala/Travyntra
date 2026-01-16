@@ -97,10 +97,10 @@ function AnalyticsCard({
     };
 
     return (
-        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden group hover:ring-indigo-200 transition-all duration-300">
+        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden group hover:ring-indigo-200 transition-all duration-300">
             <CardContent className="p-8">
                 <div className="flex items-start justify-between mb-6">
-                    <div className={`p-4 rounded-2xl ${colors[color]} group-hover:scale-110 transition-transform`}>
+                    <div className={`p-4 rounded-corner-lg ${colors[color]} group-hover:scale-110 transition-transform`}>
                         <Icon size={24} />
                     </div>
                     <button className="text-gray-400 hover:text-indigo-600 transition-colors">

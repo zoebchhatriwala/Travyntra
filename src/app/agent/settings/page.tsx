@@ -43,9 +43,9 @@ export default async function AgencySettingsMenuPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {settingsOptions.map((option) => (
                     <Link key={option.href} href={option.href}>
-                        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden hover:shadow-md transition-all cursor-pointer h-full">
+                        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden hover:shadow-md transition-all cursor-pointer h-full">
                             <CardHeader>
-                                <div className={`w-12 h-12 rounded-2xl ${option.color} flex items-center justify-center mb-4`}>
+                                <div className={`w-12 h-12 rounded-corner-lg ${option.color} flex items-center justify-center mb-4`}>
                                     <option.icon size={24} />
                                 </div>
                                 <CardTitle className="text-xl font-black text-gray-900">

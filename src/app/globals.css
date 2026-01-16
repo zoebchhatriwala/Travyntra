@@ -2,86 +2,129 @@
 @plugin "tailwindcss-animate";
 
 @theme {
-  /* Brand Colors */
-  --color-primary: #4f46e5;
-  --color-primary-foreground: #ffffff;
+  /* Material Design 3 System - Color Palette */
 
-  --color-background: #ffffff;
-  --color-foreground: #111827;
+  /* Primary - Vivid Cobalt */
+  --md-sys-color-primary: #4338CA;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #E0E7FF;
+  --md-sys-color-on-primary-container: #312E81;
 
-  --color-card: #ffffff;
-  --color-card-foreground: #111827;
+  /* Secondary - Warm Amber */
+  --md-sys-color-secondary: #F59E0B;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #FEF3C7;
+  --md-sys-color-on-secondary-container: #78350F;
 
-  --color-popover: #ffffff;
-  --color-popover-foreground: #111827;
+  /* Tertiary - Friendly Mint */
+  --md-sys-color-tertiary: #10B981;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #D1FAE5;
+  --md-sys-color-on-tertiary-container: #064E3B;
 
-  --color-secondary: #f9fafb;
-  --color-secondary-foreground: #111827;
+  /* Backgrounds & Surfaces */
+  --md-sys-color-background: #F8FAFC;
+  --md-sys-color-on-background: #0F172A;
 
-  --color-muted: #f9fafb;
-  --color-muted-foreground: #4b5563;
+  --md-sys-color-surface: #FFFFFF;
+  --md-sys-color-on-surface: #1E293B;
 
-  --color-accent: #e0f2fe;
-  --color-accent-foreground: #4f46e5;
+  --md-sys-color-surface-variant: #E2E8F0;
+  --md-sys-color-on-surface-variant: #64748B;
 
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
+  --md-sys-color-outline: #CBD5E1;
 
-  --color-border: #e5e7eb;
-  --color-input: #e5e7eb;
-  --color-ring: #4f46e5;
-
-  /* Joyful Pastel Tokens */
-  --color-joy-blue: #e0f2fe;
-  --color-joy-purple: #f3e8ff;
-  --color-joy-green: #dcfce7;
-  --color-joy-amber: #fef3c7;
-
-  --color-fg-primary: #111827;
-  --color-fg-secondary: #4b5563;
-  --color-fg-muted: #9ca3af;
+  /* Error */
+  --md-sys-color-error: #EF4444;
+  --md-sys-color-on-error: #FFFFFF;
 
   /* Radii */
-  --radius-lg: 32px;
-  --radius-md: 16px;
-  --radius-sm: 8px;
-  --radius-xl: 48px;
+  /* --radius-*: Mapping generic tailwind utility names to our specific MD3 tokens handled in Tailwind config, 
+     but defining the values here for global usage if needed */
+  --md-sys-shape-corner-xs: 4px;
+  --md-sys-shape-corner-sm: 8px;
+  --md-sys-shape-corner-md: 12px;
+  --md-sys-shape-corner-lg: 16px;
+  --md-sys-shape-corner-xl: 32px;
+  --md-sys-shape-corner-full: 9999px;
 
   /* Fonts */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), var(--font-sans);
+
+  /* Shadcn Compatibility Utilities */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Radius Compat */
+  --radius: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  section[id] {
-    scroll-margin-top: 100px;
-  }
-
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 243.4 75.4% 58.6%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 243.4 75.4% 58.6%;
-    --radius: 0.5rem;
+    /* MAPPING SHADCN/COMPATIBILITY LAYER TO DESIGN SYSTEM TOKENS */
+    /* This ensures all components using '--primary' automatically use the MD3 'primary' color */
+
+    --background: var(--md-sys-color-background);
+    --foreground: var(--md-sys-color-on-background);
+
+    --card: var(--md-sys-color-surface);
+    --card-foreground: var(--md-sys-color-on-surface);
+
+    --popover: var(--md-sys-color-surface);
+    --popover-foreground: var(--md-sys-color-on-surface);
+
+    --primary: var(--md-sys-color-primary);
+    --primary-foreground: var(--md-sys-color-on-primary);
+
+    --secondary: var(--md-sys-color-secondary);
+    --secondary-foreground: var(--md-sys-color-on-secondary);
+
+    --muted: var(--md-sys-color-surface-variant);
+    --muted-foreground: var(--md-sys-color-on-surface-variant);
+
+    --accent: var(--md-sys-color-primary-container);
+    --accent-foreground: var(--md-sys-color-on-primary-container);
+
+    --destructive: var(--md-sys-color-error);
+    --destructive-foreground: var(--md-sys-color-on-error);
+
+    --border: var(--md-sys-color-outline);
+    --input: var(--md-sys-color-outline);
+    --ring: var(--md-sys-color-primary);
+
+    --radius: var(--md-sys-shape-corner-md);
+
+    /* Spacing aliases if needed by legacy code */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    /* Shadows */
+    --shadow-joy: 0 4px 6px -1px rgba(67, 56, 202, 0.1), 0 2px 4px -1px rgba(67, 56, 202, 0.06);
   }
 }
 
@@ -102,8 +145,15 @@
   }
 
   @keyframes pulse-subtle {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
   }
 
   .animate-pulse-subtle {

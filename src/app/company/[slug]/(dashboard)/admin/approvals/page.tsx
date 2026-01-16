@@ -38,9 +38,9 @@ export default async function AdminApprovalsPage({
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
+                <div className="bg-white rounded-corner-xl p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100">
+                        <div className="w-16 h-16 rounded-corner-lg bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100">
                             <span className="text-2xl font-black">{pendingApprovals.length}</span>
                         </div>
                         <div>
@@ -50,9 +50,9 @@ export default async function AdminApprovalsPage({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
+                <div className="bg-white rounded-corner-xl p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                        <div className="w-16 h-16 rounded-corner-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                             <span className="text-2xl font-black">✓</span>
                         </div>
                         <div>
@@ -62,9 +62,9 @@ export default async function AdminApprovalsPage({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
+                <div className="bg-white rounded-corner-xl p-8 border border-gray-100 shadow-sm ring-1 ring-gray-100/50">
                     <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+                        <div className="w-16 h-16 rounded-corner-lg bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
                             <span className="text-2xl font-black">⏱</span>
                         </div>
                         <div>

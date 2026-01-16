@@ -29,11 +29,11 @@ export function RecentMessages({ messages, requestId }: RecentMessagesProps) {
     }
 
     return (
-        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl overflow-hidden">
+        <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-lg overflow-hidden">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-gray-900">Recent Messages</h3>
-                    <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-indigo-100 rounded-corner-sm flex items-center justify-center">
                         <MessageCircle size={16} className="text-indigo-600" />
                     </div>
                 </div>

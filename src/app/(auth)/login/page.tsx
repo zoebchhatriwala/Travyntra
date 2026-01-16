@@ -78,7 +78,7 @@ export default function LoginPage() {
                 <p className="text-lg text-slate-500 font-medium">Enter your credentials to access your portal.</p>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100">
+            <div className="bg-white p-8 rounded-corner-xl shadow-xl shadow-slate-200/50 border border-slate-100">
                 <form onSubmit={onSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">
@@ -91,7 +91,7 @@ export default function LoginPage() {
                                 name="email"
                                 type="email"
                                 placeholder="name@company.com"
-                                className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                className="h-14 pl-12 rounded-corner-sm border-2 transition-all"
                                 required
                                 disabled={isLoading}
                             />
@@ -114,7 +114,7 @@ export default function LoginPage() {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="h-14 pl-12 pr-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                className="h-14 pl-12 pr-12 rounded-corner-sm border-2 transition-all"
                                 required
                                 disabled={isLoading}
                             />
@@ -130,7 +130,7 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
+                        <div className="p-4 rounded-corner-lg bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
                             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                             {error}
                         </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                        className="w-full h-14 rounded-corner-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01] active:scale-[0.99]"
                     >
                         {isLoading ? (
                             <Loader2 className="animate-spin h-6 w-6" />

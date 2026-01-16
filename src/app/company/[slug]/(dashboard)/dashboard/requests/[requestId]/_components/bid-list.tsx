@@ -9,6 +9,8 @@ import Image from "next/image";
 import { type Money } from "@/types/finance/money";
 import { formatMoney } from "@/lib/utils/money";
 import { useConfirm } from "@/lib/hooks/use-confirm";
+import { Badge } from "@/components/ui/badge";
+import { getStatusColor, formatStatus } from "@/lib/utils";
 
 interface Bid {
     id: string;
@@ -85,9 +87,9 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
             </h3>
             <div className="grid gap-4">
                 {bids.map(bid => (
-                    <div key={bid.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <div key={bid.id} className="bg-white p-6 rounded-corner-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                         <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-4 mb-2">
                                 <span className="font-bold text-xl text-gray-900">
                                     {bid.totalAmount ? formatMoney(bid.totalAmount) : (bid.amount ? formatMoney(bid.amount) : 'N/A')}
                                 </span>
@@ -96,12 +98,9 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                                         ≈ {formatMoney(bid.convertedAmount)}
                                     </span>
                                 )}
-                                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${bid.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
-                                    bid.status === 'REJECTED' ? 'bg-red-50 text-red-600' :
-                                        'bg-indigo-50 text-indigo-700'
-                                    }`}>
-                                    {bid.status}
-                                </span>
+                                <Badge variant={getStatusColor(bid.status)}>
+                                    {formatStatus(bid.status)}
+                                </Badge>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                                 <div className="w-5 h-5 rounded bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -114,7 +113,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                                 <span className="font-medium text-gray-900">{bid.agent.name}</span>
                             </div>
                             {bid.message && (
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl max-w-lg border border-gray-100">
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-md max-w-lg border border-gray-100">
                                     {bid.message}
                                 </p>
                             )}
@@ -125,7 +124,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                                 <Button
                                     onClick={() => handleApprove(bid.id)}
                                     disabled={!!processingId}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-md shadow-lg shadow-indigo-200"
                                 >
                                     {processingId === bid.id ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
                                     Approve Proposal
@@ -134,7 +133,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
 
                             {bid.status === 'ACCEPTED' && (
                                 <div className="flex flex-col gap-2">
-                                    <div className="flex items-center gap-2 text-sm font-bold text-green-600 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+                                    <div className="flex items-center gap-2 text-sm font-bold text-green-600 bg-green-50 px-4 py-2 rounded-corner-md border border-green-100">
                                         <CheckCircle2 size={18} />
                                         Approved
                                     </div>
@@ -144,7 +143,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                                             size="sm"
                                             onClick={() => handleUnapprove(bid.id)}
                                             disabled={!!processingId}
-                                            className="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg text-[10px] font-bold uppercase tracking-tight h-7"
+                                            className="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-corner-sm text-[10px] font-bold uppercase tracking-tight h-7"
                                         >
                                             {processingId === bid.id ? <Loader2 className="animate-spin mr-1" size={12} /> : <RotateCcw size={12} className="mr-1" />}
                                             Undo Selection
@@ -154,7 +153,7 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                             )}
 
                             {bid.status === 'REJECTED' && (
-                                <div className="flex items-center gap-2 text-sm font-medium text-gray-400 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
+                                <div className="flex items-center gap-2 text-sm font-medium text-gray-400 bg-gray-50 px-4 py-2 rounded-corner-md border border-gray-100">
                                     <XCircle size={18} />
                                     Rejected
                                 </div>

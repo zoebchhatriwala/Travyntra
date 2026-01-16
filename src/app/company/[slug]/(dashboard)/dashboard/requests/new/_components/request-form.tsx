@@ -297,7 +297,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         <FormItem>
                                             <FormLabel>Request Title</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="e.g. Q4 Sales Conference in Berlin" {...field} className="bg-white" />
+                                                <Input placeholder="e.g. Q4 Sales Conference in Berlin" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -354,7 +354,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                 <FormControl>
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{currency}</span>
-                                                        <Input type="number" placeholder="0.00" className="pl-12 bg-white" {...field} />
+                                                        <Input type="number" placeholder="0.00" className="pl-12" {...field} />
                                                     </div>
                                                 </FormControl>
                                                 <FormMessage />
@@ -372,7 +372,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Describe the reason for this trip..."
-                                                    className="resize-none min-h-[100px] bg-white"
+                                                    className="resize-none min-h-[100px]"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -406,7 +406,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                             key={mode.id}
                                             onClick={() => toggleMode(mode.id)}
                                             className={`
-                                                cursor-pointer flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200
+                                                cursor-pointer flex flex-col items-center justify-center p-4 rounded-corner-md border-2 transition-all duration-200
                                                 ${selectedModes.includes(mode.id)
                                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
                                                     : 'border-transparent bg-gray-100/50 text-gray-500 hover:bg-gray-100 hover:scale-105'}
@@ -422,7 +422,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                 <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
 
                                     {selectedModes.includes('flight') && (
-                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                        <div className="space-y-4 p-4 border rounded-corner-md bg-white/40">
                                             <div className="flex items-center justify-between">
                                                 <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
                                                     <Plane className="w-4 h-4" /> Flight Preferences
@@ -481,7 +481,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormControl>
                                                             <Textarea
                                                                 placeholder="Additional airline preferences, seat choice, timing constraints..."
-                                                                className="resize-none bg-white min-h-[80px]"
+                                                                className="resize-none min-h-[80px]"
                                                                 {...field}
                                                             />
                                                         </FormControl>
@@ -493,7 +493,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                     )}
 
                                     {selectedModes.includes('hotel') && (
-                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                        <div className="space-y-4 p-4 border rounded-corner-md bg-white/40">
                                             <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
                                                 <Building className="w-4 h-4" /> Hotel Preferences
                                             </FormLabel>
@@ -505,7 +505,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormControl>
                                                             <Textarea
                                                                 placeholder="Preferred area, star rating, room type, specific amenities..."
-                                                                className="resize-none bg-white h-24"
+                                                                className="resize-none h-24"
                                                                 {...field}
                                                             />
                                                         </FormControl>
@@ -517,7 +517,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                     )}
 
                                     {selectedModes.includes('train') && (
-                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                        <div className="space-y-4 p-4 border rounded-corner-md bg-white/40">
                                             <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
                                                 <Train className="w-4 h-4" /> Train / Rail
                                             </FormLabel>
@@ -567,7 +567,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormControl>
                                                             <Textarea
                                                                 placeholder="Class, Seat type, Route..."
-                                                                className="resize-none bg-white min-h-[60px]"
+                                                                className="resize-none min-h-[60px]"
                                                                 {...field}
                                                             />
                                                         </FormControl>
@@ -579,7 +579,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                     )}
 
                                     {selectedModes.includes('car') && (
-                                        <div className="space-y-4 p-4 border rounded-xl bg-white/40">
+                                        <div className="space-y-4 p-4 border rounded-corner-md bg-white/40">
                                             <FormLabel className="text-lg font-semibold flex items-center gap-2 text-indigo-900">
                                                 <Car className="w-4 h-4" /> Car Rental / Taxi
                                             </FormLabel>
@@ -597,7 +597,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                             placeholder="Pickup Address..."
                                                                             {...field}
                                                                             readOnly
-                                                                            className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
+                                                                            className="pl-9 cursor-pointer hover:bg-gray-100"
                                                                             onClick={() => setPickupAddressDialogOpen(true)}
                                                                         />
                                                                     </div>
@@ -635,7 +635,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                             placeholder="Dropoff Address..."
                                                                             {...field}
                                                                             readOnly
-                                                                            className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
+                                                                            className="pl-9 cursor-pointer hover:bg-gray-100"
                                                                             onClick={() => setDropoffAddressDialogOpen(true)}
                                                                         />
                                                                     </div>
@@ -669,7 +669,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormControl>
                                                             <Textarea
                                                                 placeholder="Vehicle type, needed duration, transmission..."
-                                                                className="resize-none bg-white min-h-[60px]"
+                                                                className="resize-none min-h-[60px]"
                                                                 {...field}
                                                             />
                                                         </FormControl>
@@ -689,7 +689,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                 <FormControl>
                                                     <Textarea
                                                         placeholder="Visa assistance, Meal requirements, Accessibility needs..."
-                                                        className="resize-none bg-white h-20"
+                                                        className="resize-none h-20"
                                                         {...field}
                                                     />
                                                 </FormControl>
@@ -742,7 +742,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                 <FormLabel>Link to Existing Group Trip</FormLabel>
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
-                                                        <SelectTrigger className="bg-white">
+                                                        <SelectTrigger>
                                                             <SelectValue placeholder="Select a group trip (optional)" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -781,7 +781,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         <FormItem>
                                             <FormLabel>Start Date</FormLabel>
                                             <FormControl>
-                                                <Input type="date" className="bg-white" {...field} />
+                                                <Input type="date" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -794,7 +794,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         <FormItem>
                                             <FormLabel>End Date</FormLabel>
                                             <FormControl>
-                                                <Input type="date" className="bg-white" {...field} />
+                                                <Input type="date" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

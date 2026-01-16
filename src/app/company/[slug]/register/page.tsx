@@ -57,7 +57,7 @@ export default function CompanyRegisterPage() {
 
                 <Card className="w-full max-w-md border-none shadow-2xl shadow-indigo-100/50 rounded-[40px] overflow-hidden bg-white/80 backdrop-blur-xl animate-in zoom-in-95 duration-500">
                     <CardContent className="p-12 text-center">
-                        <div className="w-20 h-20 bg-emerald-50 rounded-[32px] flex items-center justify-center text-emerald-500 mx-auto mb-8 shadow-inner shadow-emerald-100/50 animate-bounce">
+                        <div className="w-20 h-20 bg-emerald-50 rounded-corner-xl flex items-center justify-center text-emerald-500 mx-auto mb-8 shadow-inner shadow-emerald-100/50 animate-bounce">
                             <CheckCircle2 size={40} />
                         </div>
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4 uppercase">Registration Sent</h2>
@@ -66,7 +66,7 @@ export default function CompanyRegisterPage() {
                         </p>
                         <Button
                             onClick={() => router.push("/login")}
-                            className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-gray-200"
+                            className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-corner-lg font-black uppercase tracking-widest transition-all shadow-xl shadow-gray-200"
                         >
                             Return to Login
                         </Button>
@@ -95,7 +95,7 @@ export default function CompanyRegisterPage() {
 
                     <div className="space-y-6">
                         <h2 className="text-5xl font-black text-white leading-[1.1] tracking-tight">
-                            Join your team at <span className="bg-white text-indigo-600 px-4 py-1 rounded-2xl inline-block -rotate-1 shadow-xl uppercase">{slug}</span>
+                            Join your team at <span className="bg-white text-indigo-600 px-4 py-1 rounded-corner-lg inline-block -rotate-1 shadow-xl uppercase">{slug}</span>
                         </h2>
                         <p className="text-xl text-indigo-100 font-medium leading-relaxed opacity-90">
                             Access unified booking, automated expense tracking, and personalized itineraries curated for your company.
@@ -139,7 +139,7 @@ export default function CompanyRegisterPage() {
                                 <Input
                                     required
                                     placeholder="John Doe"
-                                    className="h-14 pl-12 rounded-2xl border-gray-100 bg-white shadow-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                                    className="h-14 pl-12 rounded-corner-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
@@ -154,7 +154,7 @@ export default function CompanyRegisterPage() {
                                     required
                                     type="email"
                                     placeholder="john@company.com"
-                                    className="h-14 pl-12 rounded-2xl border-gray-100 bg-white shadow-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                                    className="h-14 pl-12 rounded-corner-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
@@ -169,15 +169,15 @@ export default function CompanyRegisterPage() {
                                     required
                                     type="password"
                                     placeholder="••••••••"
-                                    className="h-14 pl-12 rounded-2xl border-gray-100 bg-white shadow-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                                    className="h-14 pl-12 rounded-corner-sm focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
                             </div>
                         </div>
 
-                        <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 flex items-start gap-4">
-                            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        <div className="p-4 bg-indigo-50/50 rounded-corner-lg border border-indigo-100/50 flex items-start gap-4">
+                            <div className="w-8 h-8 bg-indigo-600 rounded-corner-sm flex items-center justify-center text-white flex-shrink-0">
                                 <ShieldCheck size={18} />
                             </div>
                             <p className="text-[11px] text-indigo-600 font-bold leading-relaxed">
@@ -188,7 +188,7 @@ export default function CompanyRegisterPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-[0.15em] text-sm transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-[0.98]"
+                            className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-lg font-black uppercase tracking-[0.15em] text-sm transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-[0.98]"
                         >
                             {loading ? (
                                 <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>

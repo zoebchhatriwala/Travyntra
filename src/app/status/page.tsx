@@ -67,7 +67,7 @@ export default function StatusPage() {
                             variant="outline"
                             onClick={checkHealth}
                             disabled={loading}
-                            className="rounded-xl border-slate-100 font-bold text-slate-600 hover:bg-slate-50"
+                            className="rounded-corner-md border-slate-100 font-bold text-slate-600 hover:bg-slate-50"
                         >
                             <RefreshCcw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                             Re-check
@@ -81,17 +81,17 @@ export default function StatusPage() {
                         </div>
 
                         {loading ? (
-                            <div className="bg-slate-50 p-4 rounded-2xl flex items-center gap-3 border border-slate-100">
+                            <div className="bg-slate-50 p-4 rounded-corner-lg flex items-center gap-3 border border-slate-100">
                                 <div className="h-2 w-2 bg-slate-300 rounded-full animate-pulse" />
                                 <span className="font-bold text-slate-400">Pinging systems...</span>
                             </div>
                         ) : allSystemsUp ? (
-                            <div className="bg-emerald-50 p-4 rounded-2xl flex items-center gap-3 border border-emerald-100">
+                            <div className="bg-emerald-50 p-4 rounded-corner-lg flex items-center gap-3 border border-emerald-100">
                                 <CheckCircle2 className="text-emerald-500 h-6 w-6" />
                                 <span className="font-bold text-emerald-800">All Systems Functional</span>
                             </div>
                         ) : (
-                            <div className="bg-rose-50 p-4 rounded-2xl flex items-center gap-3 border border-rose-100">
+                            <div className="bg-rose-50 p-4 rounded-corner-lg flex items-center gap-3 border border-rose-100">
                                 <AlertCircle className="text-rose-500 h-6 w-6" />
                                 <span className="font-bold text-rose-800">Partial System Outage</span>
                             </div>
@@ -101,9 +101,9 @@ export default function StatusPage() {
 
                 <div className="grid gap-6">
                     {services.map((service) => (
-                        <div key={service.name} className={`bg-slate-50/50 rounded-3xl p-8 flex items-center justify-between border ${service.isUp ? "border-slate-100" : "border-rose-100 bg-rose-50/10"} hover:border-indigo-100 transition-colors group`}>
+                        <div key={service.name} className={`bg-slate-50/50 rounded-corner-xl p-8 flex items-center justify-between border ${service.isUp ? "border-slate-100" : "border-rose-100 bg-rose-50/10"} hover:border-indigo-100 transition-colors group`}>
                             <div className="flex items-center gap-6">
-                                <div className={`w-12 h-12 bg-white rounded-xl flex items-center justify-center ${service.isUp ? "text-slate-400 group-hover:text-indigo-600" : "text-rose-400"} transition-colors shadow-sm`}>
+                                <div className={`w-12 h-12 bg-white rounded-corner-md flex items-center justify-center ${service.isUp ? "text-slate-400 group-hover:text-indigo-600" : "text-rose-400"} transition-colors shadow-sm`}>
                                     <service.icon className="h-6 w-6" />
                                 </div>
                                 <div>

@@ -46,7 +46,7 @@ export function EmployeeNav({ slug }: EmployeeNavProps) {
                         key={link.href}
                         href={link.href}
                         className={cn(
-                            "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group",
+                            "flex items-center gap-4 px-3 py-3 rounded-corner-md text-sm font-semibold transition-all duration-200 group",
                             isActive
                                 ? "text-indigo-600 bg-indigo-50 shadow-sm shadow-indigo-100/50"
                                 : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/30",

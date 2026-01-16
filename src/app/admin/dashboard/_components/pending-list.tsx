@@ -104,7 +104,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                             <Badge variant="secondary" className={`${colors.bg} ${colors.text} border-none font-semibold px-3 py-1`}>
                                 {type === "AGENT" ? "Agency" : "Company Admin"}
                             </Badge>
-                            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
+                            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-corner-sm">
                                 <CalendarDays size={12} />
                                 {format(new Date(user.createdAt), 'MMM dd, yyyy')}
                             </div>
@@ -122,7 +122,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
 
                     <CardContent className="space-y-4">
                         {type === "COMPANY" && user.company && (
-                            <div className={`flex items-center gap-2 p-3 ${colors.bg} rounded-xl border ${colors.border}`}>
+                            <div className={`flex items-center gap-2 p-3 ${colors.bg} rounded-corner-md border ${colors.border}`}>
                                 <Building size={16} className={colors.text} />
                                 <div className="flex flex-col">
                                     <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 leading-none mb-0.5">Organization</span>
@@ -137,7 +137,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                                 size="sm"
                                 onClick={() => handleReject(user.id)}
                                 disabled={loadingId === user.id}
-                                className="flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors border-gray-200 text-gray-600 font-semibold rounded-xl h-11"
+                                className="flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors border-gray-200 text-gray-600 font-semibold rounded-corner-md h-11"
                             >
                                 {loadingId === user.id ? "..." : <><X size={16} className="mr-2" /> Reject</>}
                             </Button>
@@ -145,7 +145,7 @@ export function PendingList({ title, users, type, accentColor }: PendingListProp
                                 size="sm"
                                 onClick={() => handleApprove(user.id)}
                                 disabled={loadingId === user.id}
-                                className={`flex-1 ${colors.button} text-white shadow-lg shadow-primary/20 transition-all active:scale-95 font-semibold rounded-xl h-11`}
+                                className={`flex-1 ${colors.button} text-white shadow-lg shadow-primary/20 transition-all active:scale-95 font-semibold rounded-corner-md h-11`}
                             >
                                 {loadingId === user.id ? "Processing..." : <><Check size={16} className="mr-2" /> Approve</>}
                             </Button>

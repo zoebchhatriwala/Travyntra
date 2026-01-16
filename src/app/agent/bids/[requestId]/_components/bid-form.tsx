@@ -220,14 +220,14 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                 size="sm"
                                 disabled={isClosed}
                                 onClick={() => append({ label: "", type: "PERCENTAGE", value: 0 })}
-                                className="h-7 text-[10px] font-bold uppercase tracking-wider rounded-lg border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                                className="h-7 text-[10px] font-bold uppercase tracking-wider rounded-corner-sm border-indigo-100 text-indigo-600 hover:bg-indigo-50"
                             >
                                 <Plus size={14} className="mr-1" /> Add Tax
                             </Button>
                         </div>
 
                         {taxTemplates.length > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                            <div className="flex items-center gap-2 p-3 bg-indigo-50/50 rounded-corner-md border border-indigo-100">
                                 <FileText size={16} className="text-indigo-600 shrink-0" />
                                 <div className="flex-1 flex items-center gap-2">
                                     <span className="text-xs font-medium text-gray-700">Quick Apply:</span>
@@ -236,7 +236,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                         onValueChange={handleApplyTemplate}
                                         disabled={isClosed}
                                     >
-                                        <SelectTrigger className="h-8 text-xs bg-white flex-1">
+                                        <SelectTrigger className="h-8 text-xs flex-1">
                                             <SelectValue placeholder="Select a tax template..." />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -257,7 +257,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                         )}
 
                         {fields.map((field, index) => (
-                            <div key={field.id} className="space-y-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                            <div key={field.id} className="space-y-2 bg-gray-50/50 p-3 rounded-corner-md border border-gray-100">
                                 <Input
                                     placeholder="Label (e.g. VAT, GST, Service Tax)"
                                     disabled={isClosed}
@@ -300,7 +300,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                         size="icon"
                                         disabled={isClosed}
                                         onClick={() => remove(index)}
-                                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg shrink-0"
+                                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm shrink-0"
                                     >
                                         <Trash2 size={16} />
                                     </Button>
@@ -335,7 +335,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                         <Textarea
                             id="message"
                             placeholder="Describe flight options, layovers, baggage allowance..."
-                            className="min-h-[100px] rounded-xl border-gray-200"
+                            className="min-h-[100px] rounded-corner-md"
                             disabled={isClosed}
                             {...form.register("message")}
                         />

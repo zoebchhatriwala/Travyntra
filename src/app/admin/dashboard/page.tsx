@@ -9,6 +9,7 @@ import {
     Activity,
     LayoutDashboard
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata = {
     title: "Super Admin Dashboard | Travyntra",
@@ -26,7 +27,7 @@ export default async function AdminDashboardPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-2 mb-1">
-                                <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                                <div className="p-2 bg-indigo-50 rounded-corner-md text-indigo-600">
                                     <LayoutDashboard size={20} />
                                 </div>
                                 <span className="text-sm font-semibold text-indigo-600 tracking-wide uppercase">Control Center</span>
@@ -85,9 +86,9 @@ export default async function AdminDashboardPage() {
                                     <div className="w-1.5 h-8 bg-blue-500 rounded-full" />
                                     <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Agency Verification Queue</h2>
                                 </div>
-                                <div className="px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-100">
+                                <Badge variant="pending">
                                     {agents.length} Pending
-                                </div>
+                                </Badge>
                             </div>
                             <PendingList
                                 title="Agencies"
@@ -105,9 +106,9 @@ export default async function AdminDashboardPage() {
                                     <div className="w-1.5 h-8 bg-purple-500 rounded-full" />
                                     <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Company Activation</h2>
                                 </div>
-                                <div className="px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-semibold border border-purple-100">
+                                <Badge variant="violet">
                                     {companies.length} Pending
-                                </div>
+                                </Badge>
                             </div>
                             <PendingList
                                 title="Company Admins"
@@ -129,7 +130,7 @@ function StatCard({ title, value, icon, gradient, label }: { title: string, valu
         <Card className="border-none shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-2xl ${gradient} transition-transform group-hover:scale-110`}>
+                    <div className={`p-3 rounded-corner-lg ${gradient} transition-transform group-hover:scale-110`}>
                         {icon}
                     </div>
                     <div className="text-right">

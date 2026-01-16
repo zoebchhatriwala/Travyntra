@@ -10,7 +10,7 @@ import { authOptions } from "@/lib/auth-options";
 import { RequestTabs } from "./_components/request-tabs";
 import { RequestActions } from "./_components/request-actions";
 import { CopyButton } from "./_components/copy-button";
-import { cn, getStatusColor } from "@/lib/utils";
+import { formatStatus, getStatusColor } from "@/lib/utils";
 
 
 export default async function RequestLayout({
@@ -81,14 +81,11 @@ export default async function RequestLayout({
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                            <Badge className={cn(
-                                "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm transition-all duration-500 flex items-center gap-1.5",
-                                getStatusColor(request.status)
-                            )}>
+                            <Badge variant={getStatusColor(request.status)} className="px-4 py-1.5 transition-all duration-500 flex items-center gap-1.5">
                                 {request.status === 'APPROVED' && <CheckCircle2 size={12} />}
                                 {request.status === 'REJECTED' && <AlertCircle size={12} />}
                                 {request.status === 'PENDING_AGENT_ACTION' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
-                                {request.status.replace(/_/g, " ")}
+                                {formatStatus(request.status)}
                             </Badge>
 
                             <RequestActions

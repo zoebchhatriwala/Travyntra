@@ -158,7 +158,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Visual Flow Preview */}
-            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+            <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                 <CardHeader className="p-8 pb-4">
                     <div className="flex items-center justify-between">
                         <div>
@@ -170,14 +170,14 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                 variant="outline"
                                 onClick={handleCreateTest}
                                 disabled={isSimulating}
-                                className="rounded-xl border-indigo-200 text-indigo-600 font-bold px-6 h-10 hover:bg-indigo-50"
+                                className="rounded-corner-md border-indigo-200 text-indigo-600 font-bold px-6 h-10 hover:bg-indigo-50"
                             >
                                 {isSimulating ? "Initiating..." : "Simulate Flow"}
                             </Button>
                             <Button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="bg-indigo-600 text-white rounded-xl font-bold px-6 h-10 hover:bg-indigo-700"
+                                className="bg-indigo-600 text-white rounded-corner-md font-bold px-6 h-10 hover:bg-indigo-700"
                             >
                                 {isSaving ? "Saving..." : "Save Protocol"}
                             </Button>
@@ -188,7 +188,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                     <div className="flex flex-wrap items-center gap-4 p-8 bg-gray-50/50 rounded-[40px] border-2 border-dashed border-gray-100 relative overflow-hidden">
                         {/* Start */}
                         <div className="text-center space-y-2">
-                            <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-400 ring-1 ring-gray-100">
+                            <div className="w-14 h-14 bg-white rounded-corner-lg shadow-sm flex items-center justify-center text-gray-400 ring-1 ring-gray-100">
                                 <User size={24} />
                             </div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Requester</p>
@@ -198,7 +198,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                             <div key={idx} className="flex items-center gap-4">
                                 <ArrowRight size={16} className="text-gray-300" />
                                 <div className="text-center space-y-2">
-                                    <div className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 flex items-center justify-center text-white">
+                                    <div className="w-14 h-14 bg-indigo-600 rounded-corner-lg shadow-lg shadow-indigo-100 flex items-center justify-center text-white">
                                         <Badge className="absolute -top-1 -right-1 bg-white text-indigo-600 border-none w-5 h-5 flex items-center justify-center p-0 rounded-full text-[10px] shadow-sm">
                                             {step.approverIds.length}
                                         </Badge>
@@ -215,7 +215,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
                         {/* End */}
                         <div className="text-center space-y-2">
-                            <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-blue-600 ring-1 ring-gray-100">
+                            <div className="w-14 h-14 bg-white rounded-corner-lg shadow-sm flex items-center justify-center text-blue-600 ring-1 ring-gray-100">
                                 <Globe size={24} />
                             </div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Agency</p>
@@ -226,7 +226,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
             {/* Simulation Sandbox */}
             {simulationRequests.length > 0 && (
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                     <CardHeader className="p-8 pb-4">
                         <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
                             <GitBranch size={20} className="text-indigo-600" /> Simulation Sandbox
@@ -237,7 +237,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                         {simulationRequests.map((req) => {
                             const currentStep = req.approvalSteps.find((s) => s.status === "PENDING");
                             return (
-                                <div key={req.id} className="p-6 bg-indigo-50/30 rounded-[32px] border border-indigo-100 space-y-4">
+                                <div key={req.id} className="p-6 bg-indigo-50/30 rounded-corner-xl border border-indigo-100 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-sm font-black text-indigo-900">{req.title}</p>
@@ -251,7 +251,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                     {currentStep && (
                                         <div className="flex flex-wrap gap-4">
                                             {currentStep.approvals.filter((a) => a.status === "PENDING").map((approval) => (
-                                                <div key={approval.userId} className="flex items-center gap-3 p-3 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
+                                                <div key={approval.userId} className="flex items-center gap-3 p-3 bg-white rounded-corner-lg shadow-sm ring-1 ring-gray-100">
                                                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-black">
                                                         {approval.user.name?.[0] || approval.user.email[0]}
                                                     </div>
@@ -300,7 +300,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
 
             <div className="grid grid-cols-1 gap-8">
                 {/* Workflow Configuration */}
-                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden bg-white">
+                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden bg-white">
                     <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-lg font-black text-gray-900 flex items-center gap-2">
@@ -308,16 +308,16 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                             </CardTitle>
                             <CardDescription className="text-gray-500 font-medium">Define who needs to approve at each stage.</CardDescription>
                         </div>
-                        <Button variant="outline" onClick={addStep} className="rounded-xl border-gray-200 font-bold text-xs uppercase tracking-widest px-4">
+                        <Button variant="outline" onClick={addStep} className="rounded-corner-md border-gray-200 font-bold text-xs uppercase tracking-widest px-4">
                             <Plus size={16} className="mr-2" /> Add Step
                         </Button>
                     </CardHeader>
                     <CardContent className="p-8 pt-4 space-y-6">
                         {steps.map((step, stepIdx) => (
-                            <div key={stepIdx} className="p-6 bg-gray-50/50 rounded-[32px] border border-gray-100 space-y-4">
+                            <div key={stepIdx} className="p-6 bg-gray-50/50 rounded-corner-xl border border-gray-100 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4 flex-1">
-                                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center font-black text-sm">
+                                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-corner-sm flex items-center justify-center font-black text-sm">
                                             {stepIdx + 1}
                                         </div>
                                         <Input
@@ -328,16 +328,16 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                         />
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex bg-white p-1 rounded-xl ring-1 ring-gray-100">
+                                        <div className="flex bg-white p-1 rounded-corner-md ring-1 ring-gray-100">
                                             <button
                                                 onClick={() => updateStep(stepIdx, { type: "ANY" })}
-                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${step.type === "ANY" ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                                                className={`px-3 py-1.5 rounded-corner-sm text-[10px] font-black uppercase tracking-tight transition-all ${step.type === "ANY" ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}
                                             >
                                                 One Must Approve
                                             </button>
                                             <button
                                                 onClick={() => updateStep(stepIdx, { type: "ALL" })}
-                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${step.type === "ALL" ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                                                className={`px-3 py-1.5 rounded-corner-sm text-[10px] font-black uppercase tracking-tight transition-all ${step.type === "ALL" ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-600'}`}
                                             >
                                                 All Must Approve
                                             </button>
@@ -345,7 +345,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                         <Button
                                             variant="ghost"
                                             onClick={() => removeStep(stepIdx)}
-                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-corner-md"
                                         >
                                             <Trash2 size={18} />
                                         </Button>
@@ -368,7 +368,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                     setSearchQueries({ ...searchQueries, [stepIdx]: e.target.value });
                                                     setPageOffsets({ ...pageOffsets, [stepIdx]: 0 });
                                                 }}
-                                                className="h-8 pl-8 pr-3 text-[10px] font-bold rounded-xl border-gray-100 bg-white w-[180px] focus:ring-1 focus:ring-indigo-500"
+                                                className="h-8 pl-8 pr-3 text-[10px] font-bold rounded-corner-md border-gray-100 bg-white w-[180px] focus:ring-1 focus:ring-indigo-500"
                                             />
                                         </div>
                                     </div>
@@ -397,7 +397,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                         <button
                                                             key={user.id}
                                                             onClick={() => toggleApprover(stepIdx, user.id)}
-                                                            className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all ${step.approverIds.includes(user.id)
+                                                            className={`flex items-center gap-2 px-3 py-2 rounded-corner-lg border transition-all ${step.approverIds.includes(user.id)
                                                                 ? 'bg-indigo-50 border-indigo-200 text-indigo-600 ring-2 ring-indigo-500/10'
                                                                 : 'bg-white border-gray-100 text-gray-600 hover:border-gray-300'
                                                                 }`}
@@ -431,7 +431,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                                 size="icon"
                                                                 onClick={() => setPageOffsets({ ...pageOffsets, [stepIdx]: Math.max(0, currentPage - 1) })}
                                                                 disabled={currentPage === 0}
-                                                                className="h-6 w-6 rounded-lg border-gray-100"
+                                                                className="h-6 w-6 rounded-corner-sm border-gray-100"
                                                             >
                                                                 <ChevronLeft size={12} />
                                                             </Button>
@@ -440,7 +440,7 @@ export function WorkflowBuilder({ slug, availableUsers, initialWorkflow, simulat
                                                                 size="icon"
                                                                 onClick={() => setPageOffsets({ ...pageOffsets, [stepIdx]: Math.min(totalPages - 1, currentPage + 1) })}
                                                                 disabled={currentPage >= totalPages - 1}
-                                                                className="h-6 w-6 rounded-lg border-gray-100"
+                                                                className="h-6 w-6 rounded-corner-sm border-gray-100"
                                                             >
                                                                 <ChevronRight size={12} />
                                                             </Button>

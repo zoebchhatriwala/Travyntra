@@ -34,7 +34,7 @@ export default async function AgentLayout({
                     title="Travyntra"
                     subtitle="Agency Portal"
                     logo={
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                        <div className="w-10 h-10 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                             <Building2 size={24} />
                         </div>
                     }

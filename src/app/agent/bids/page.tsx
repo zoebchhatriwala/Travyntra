@@ -150,7 +150,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
             <div className="grid gap-4">
                 {requests.length === 0 ? (
-                    <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 text-gray-500">
+                    <div className="p-12 text-center bg-white rounded-corner-xl border border-dashed border-gray-200 text-gray-500">
                         <p className="font-semibold text-gray-900">No requests found</p>
                         <p className="text-sm mt-1">Try adjusting your filters or search terms.</p>
                     </div>
@@ -161,7 +161,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
                         return (
                             <Link key={req.id} href={`/agent/bids/${req.id}`} className="block group min-w-0">
-                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-2xl hover:shadow-md hover:ring-indigo-100 transition-all duration-300 overflow-hidden">
+                                <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-lg hover:shadow-md hover:ring-indigo-100 transition-all duration-300 overflow-hidden">
                                     <CardContent className="p-6">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div className="space-y-3 min-w-0 flex-1">
@@ -196,7 +196,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
 
                                                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 font-medium">
                                                     <div className="flex items-center gap-2 min-w-0 max-w-[200px]">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500 shrink-0">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500 shrink-0">
                                                             <MapPin size={14} />
                                                         </div>
                                                         <Tooltip>
@@ -211,13 +211,13 @@ export default async function BidsPage({ searchParams }: PageProps) {
                                                         </Tooltip>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500">
                                                             <Calendar size={14} />
                                                         </div>
                                                         {format(new Date(req.startDate), "MMM d, yyyy")}
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-500">
+                                                        <div className="p-1.5 bg-gray-100 rounded-corner-sm text-gray-500">
                                                             <User size={14} />
                                                         </div>
                                                         <span className="text-gray-900">{req.company.name}</span>

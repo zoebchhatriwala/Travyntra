@@ -149,7 +149,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                 <input
                     type="text"
                     placeholder="Search companies..."
-                    className="w-full h-12 pl-11 pr-4 rounded-2xl border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
+                    className="w-full h-12 pl-11 pr-4 rounded-corner-lg border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
                     value={searchQuery}
                     onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -159,7 +159,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
             </div>
 
             {paginatedCompanies.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <div className="text-center py-16 bg-white rounded-corner-xl border border-gray-100 shadow-sm">
                     <p className="text-gray-400 font-medium">No results found.</p>
                 </div>
             ) : (
@@ -169,7 +169,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl group-hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 bg-indigo-50 rounded-corner-lg flex items-center justify-center text-indigo-600 font-black text-xl group-hover:scale-110 transition-transform">
                                             {company.name[0]}
                                         </div>
                                         <div>
@@ -178,7 +178,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                         </div>
                                     </div>
                                     <Badge
-                                        className={`rounded-lg px-2 py-0.5 font-bold text-[10px] border-none ${company.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                                        className={`rounded-corner-sm px-2 py-0.5 font-bold text-[10px] border-none ${company.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                                             company.status === 'BLOCKED' ? 'bg-rose-100 text-rose-700' :
                                                 'bg-amber-100 text-amber-700'
                                             }`}
@@ -188,11 +188,11 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 mb-6">
-                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                    <div className="p-3 bg-gray-50 rounded-corner-md">
                                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Staff</span>
                                         <p className="text-lg font-black text-gray-900">{company._count.users}</p>
                                     </div>
-                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                    <div className="p-3 bg-gray-50 rounded-corner-md">
                                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">
                                             {company.type === 'AGENT' ? 'Fulfillments' : 'Trips'}
                                         </span>
@@ -213,7 +213,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                             setSelectedCompany(company);
                                             setIsManageOpen(true);
                                         }}
-                                        className="h-8 rounded-lg bg-gray-900 hover:bg-black text-[10px] font-black px-4"
+                                        className="h-8 rounded-corner-sm bg-gray-900 hover:bg-black text-[10px] font-black px-4"
                                     >
                                         MANAGE
                                     </Button>
@@ -230,20 +230,20 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                     <Button
                         variant="outline"
                         size="icon"
-                        className="rounded-xl h-10 w-10 border-gray-100"
+                        className="rounded-corner-md h-10 w-10 border-gray-100"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                     >
                         <ChevronLeft size={18} />
                     </Button>
-                    <div className="flex items-center gap-1 px-4 py-2 bg-white rounded-xl shadow-sm ring-1 ring-gray-100">
+                    <div className="flex items-center gap-1 px-4 py-2 bg-white rounded-corner-md shadow-sm ring-1 ring-gray-100">
                         <span className="text-xs font-black text-indigo-600">{currentPage}</span>
                         <span className="text-[10px] font-bold text-gray-400">/ {totalPages}</span>
                     </div>
                     <Button
                         variant="outline"
                         size="icon"
-                        className="rounded-xl h-10 w-10 border-gray-100"
+                        className="rounded-corner-md h-10 w-10 border-gray-100"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
                     >
@@ -254,7 +254,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
 
             {/* Manage Company Dialog */}
             <Dialog open={isManageOpen} onOpenChange={setIsManageOpen}>
-                <DialogContent className="sm:max-w-[540px] rounded-[32px] p-0 border-none shadow-2xl overflow-hidden">
+                <DialogContent className="sm:max-w-[540px] rounded-corner-xl p-0 border-none shadow-2xl overflow-hidden">
                     {selectedCompany && (
                         <>
                             <div className="p-8 bg-indigo-600 text-white relative">
@@ -274,13 +274,13 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                             <div className="flex flex-col gap-2">
                                                 <Button
                                                     onClick={() => handleStatusUpdate(selectedCompany.id, 'ACTIVE')}
-                                                    className={`h-11 rounded-xl font-bold ${selectedCompany.status === 'ACTIVE' ? 'bg-emerald-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                                                    className={`h-11 rounded-corner-md font-bold ${selectedCompany.status === 'ACTIVE' ? 'bg-emerald-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                                                 >
                                                     <ShieldCheck size={16} className="mr-2" /> Active
                                                 </Button>
                                                 <Button
                                                     onClick={() => handleStatusUpdate(selectedCompany.id, 'BLOCKED')}
-                                                    className={`h-11 rounded-xl font-bold ${selectedCompany.status === 'BLOCKED' ? 'bg-rose-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                                                    className={`h-11 rounded-corner-md font-bold ${selectedCompany.status === 'BLOCKED' ? 'bg-rose-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                                                 >
                                                     <Lock size={16} className="mr-2" /> Suspended
                                                 </Button>
@@ -294,7 +294,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                                         key={p}
                                                         size="sm"
                                                         onClick={() => handleSubscriptionUpdate(selectedCompany.id, p as SubscriptionPlan)}
-                                                        className={`h-11 rounded-xl font-bold text-[10px] ${selectedCompany.plan === p
+                                                        className={`h-11 rounded-corner-md font-bold text-[10px] ${selectedCompany.plan === p
                                                             ? 'bg-indigo-600 shadow-md'
                                                             : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                             }`}
@@ -314,14 +314,14 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                         <div className="flex items-center gap-3">
                                             <Input
                                                 type="date"
-                                                className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white font-bold"
+                                                className="h-12 rounded-corner-md border-gray-100 bg-gray-50 focus:bg-white font-bold"
                                                 value={selectedCompany.subscriptionExpiresAt ? new Date(selectedCompany.subscriptionExpiresAt).toISOString().split('T')[0] : ""}
                                                 onChange={(e) => handleSubscriptionUpdate(selectedCompany.id, selectedCompany.plan, e.target.value)}
                                             />
                                             <Button
                                                 variant="outline"
                                                 onClick={() => handleSubscriptionUpdate(selectedCompany.id, selectedCompany.plan, undefined)}
-                                                className="h-12 px-6 rounded-xl font-bold border-gray-100 text-gray-400"
+                                                className="h-12 px-6 rounded-corner-md font-bold border-gray-100 text-gray-400"
                                             >
                                                 RESET
                                             </Button>
@@ -335,7 +335,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Identity Management</Label>
                                         <div className="space-y-3">
                                             {selectedCompany.users.map((admin) => (
-                                                <div key={admin.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                                <div key={admin.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-corner-lg border border-gray-100">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-900 text-xs font-black shadow-sm ring-1 ring-gray-100">
                                                             {admin.name ? admin.name[0].toUpperCase() : 'A'}
@@ -348,7 +348,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className={`h-8 px-3 rounded-lg text-[10px] font-black ${admin.isBlocked ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
+                                                        className={`h-8 px-3 rounded-corner-sm text-[10px] font-black ${admin.isBlocked ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
                                                         onClick={() => handleUserBlock(admin.id, selectedCompany.id, !admin.isBlocked)}
                                                         disabled={loadingId === admin.id}
                                                     >
@@ -364,7 +364,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                             <div className="p-8 pt-0 mt-4">
                                 <Button
                                     onClick={() => setIsManageOpen(false)}
-                                    className="w-full h-14 rounded-2xl bg-gray-900 text-white font-black hover:bg-black transition-colors"
+                                    className="w-full h-14 rounded-corner-lg bg-gray-900 text-white font-black hover:bg-black transition-colors"
                                 >
                                     CLOSE WORKSPACE
                                 </Button>

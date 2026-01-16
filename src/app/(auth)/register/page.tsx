@@ -68,7 +68,7 @@ export default function RegisterPage() {
         return (
             <div className="text-center space-y-8 py-10">
                 <div className="flex justify-center">
-                    <div className="w-24 h-24 bg-emerald-50 rounded-[32px] flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-100/50 animate-bounce">
+                    <div className="w-24 h-24 bg-emerald-50 rounded-corner-xl flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-100/50 animate-bounce">
                         <CheckCircle2 size={48} strokeWidth={2.5} />
                     </div>
                 </div>
@@ -79,7 +79,7 @@ export default function RegisterPage() {
                     </p>
                 </div>
                 <div className="pt-4">
-                    <Button variant="outline" asChild className="h-14 px-8 rounded-2xl font-bold border-2 border-slate-100">
+                    <Button variant="outline" asChild className="h-14 px-8 rounded-corner-lg font-bold border-2 border-slate-100">
                         <Link href="/login" className="flex items-center gap-2">
                             Back to Login <ArrowRight size={18} />
                         </Link>
@@ -100,9 +100,9 @@ export default function RegisterPage() {
                 <div className="grid gap-6">
                     <button
                         onClick={() => setRegType("COMPANY")}
-                        className="group p-8 text-left bg-white rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all"
+                        className="group p-8 text-left bg-white rounded-corner-xl border-2 border-slate-100 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all"
                     >
-                        <div className="w-14 h-14 bg-joy-purple/50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-purple-100/50 rounded-corner-lg flex items-center justify-center text-indigo-600 mb-6 group-hover:scale-110 transition-transform">
                             <Building2 className="h-7 w-7" />
                         </div>
                         <h3 className="text-2xl font-black text-slate-900 mb-2">I am a Company Admin</h3>
@@ -113,9 +113,9 @@ export default function RegisterPage() {
 
                     <button
                         onClick={() => setRegType("AGENT")}
-                        className="group p-8 text-left bg-white rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all"
+                        className="group p-8 text-left bg-white rounded-corner-xl border-2 border-slate-100 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all"
                     >
-                        <div className="w-14 h-14 bg-joy-blue/50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-blue-100/50 rounded-corner-lg flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
                             <Globe2 className="h-7 w-7" />
                         </div>
                         <h3 className="text-2xl font-black text-slate-900 mb-2">I am an Agency</h3>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 <p className="text-lg text-slate-500 font-medium">Create your credentials to get started.</p>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100">
+            <div className="bg-white p-8 rounded-corner-xl shadow-xl shadow-slate-200/50 border border-slate-100">
                 <form onSubmit={onSubmit} className="space-y-5">
                     {regType === "COMPANY" && (
                         <div className="space-y-2">
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                                     name="companyName"
                                     type="text"
                                     placeholder="Acme Corporation"
-                                    className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                    className="h-14 pl-12 rounded-corner-sm border-2 transition-all"
                                     required
                                     disabled={isLoading}
                                 />
@@ -183,7 +183,7 @@ export default function RegisterPage() {
                                 name="name"
                                 type="text"
                                 placeholder="John Doe"
-                                className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                className="h-14 pl-12 rounded-corner-sm border-2 transition-all"
                                 required
                                 disabled={isLoading}
                             />
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                                 name="email"
                                 type="email"
                                 placeholder="name@organization.com"
-                                className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                className="h-14 pl-12 rounded-corner-sm border-2 transition-all"
                                 required
                                 disabled={isLoading}
                             />
@@ -219,7 +219,7 @@ export default function RegisterPage() {
                                 name="password"
                                 type="password"
                                 placeholder="••••••••"
-                                className="h-14 pl-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-indigo-50 border-2 transition-all"
+                                className="h-14 pl-12 rounded-corner-sm border-2 transition-all"
                                 required
                                 disabled={isLoading}
                             />
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                     </div>
 
                     {error && (
-                        <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2">
+                        <div className="p-4 rounded-corner-lg bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                             {error}
                         </div>
@@ -236,7 +236,7 @@ export default function RegisterPage() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01] active:scale-[0.99] mt-4"
+                        className="w-full h-14 rounded-corner-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01] active:scale-[0.99] mt-4"
                     >
                         {isLoading ? (
                             <Loader2 className="animate-spin h-6 w-6" />

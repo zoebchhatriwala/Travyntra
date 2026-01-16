@@ -33,9 +33,9 @@ export default async function ApprovalsPage() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
+                    <div className="bg-white rounded-corner-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                            <div className="w-14 h-14 rounded-corner-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
                                 {pendingApprovals.length}
                             </div>
                             <div>
@@ -45,9 +45,9 @@ export default async function ApprovalsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
+                    <div className="bg-white rounded-corner-xl p-6 border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                            <div className="w-14 h-14 rounded-corner-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
                                 ✓
                             </div>
                             <div>
@@ -57,9 +57,9 @@ export default async function ApprovalsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
+                    <div className="bg-white rounded-corner-xl p-6 border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                            <div className="w-14 h-14 rounded-corner-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
                                 ⏱
                             </div>
                             <div>

@@ -126,13 +126,13 @@ export default function ActivityLogPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search activity..."
-                            className="pl-9 h-10 w-64 rounded-xl border-gray-200"
+                            className="pl-9 h-10 w-64 rounded-corner-md border-gray-200"
                         />
                     </div>
 
                     <Button
                         variant="outline"
-                        className="h-10 w-10 p-0 rounded-xl border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50"
+                        className="h-10 w-10 p-0 rounded-corner-md border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50"
                         onClick={handleExport}
                         title="Export CSV"
                         disabled={loading || activities.length === 0}
@@ -142,12 +142,12 @@ export default function ActivityLogPage() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className={`h-10 rounded-xl border-gray-200 font-bold ${filterDays ? 'text-indigo-600 border-indigo-200 bg-indigo-50' : 'text-gray-600'}`}>
+                            <Button variant="outline" className={`h-10 rounded-corner-md border-gray-200 font-bold ${filterDays ? 'text-indigo-600 border-indigo-200 bg-indigo-50' : 'text-gray-600'}`}>
                                 <Clock size={16} className="mr-2" />
                                 {filterDays ? `Last ${filterDays} Days` : 'All Time'}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuContent align="end" className="rounded-corner-sm">
                             <DropdownMenuItem onClick={() => setFilterDays(7)}>Last 7 Days</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterDays(30)}>Last 30 Days</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterDays(90)}>Last 3 Months</DropdownMenuItem>
@@ -157,7 +157,7 @@ export default function ActivityLogPage() {
                 </div>
             </div>
 
-            <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-[32px] overflow-hidden bg-white ring-1 ring-gray-100">
+            <Card className="border-none shadow-xl shadow-indigo-100/20 rounded-corner-xl overflow-hidden bg-white ring-1 ring-gray-100">
                 <CardHeader className="p-8 border-b border-gray-50 bg-gray-50/30">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg font-black text-gray-900 uppercase tracking-widest">Recent Events</CardTitle>
@@ -172,7 +172,7 @@ export default function ActivityLogPage() {
                             const { icon: Icon, color } = getActionIcon(activity.action);
                             return (
                                 <div key={activity.id} className="p-6 hover:bg-gray-50/50 transition-colors flex items-start gap-6 group">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${color}`}>
+                                    <div className={`w-12 h-12 rounded-corner-lg flex items-center justify-center shrink-0 shadow-sm ${color}`}>
                                         <Icon size={20} />
                                     </div>
                                     <div className="flex-1 min-w-0 pt-1">
@@ -180,7 +180,7 @@ export default function ActivityLogPage() {
                                             <p className="text-sm font-black text-gray-900 truncate">
                                                 {activity.description}
                                             </p>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-lg">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-corner-sm">
                                                 {format(new Date(activity.createdAt), "MMM dd, HH:mm")}
                                             </span>
                                         </div>

@@ -16,7 +16,7 @@ export default function AdminLayout({
                 <div className="container mx-auto h-full px-6 flex items-center justify-between">
                     <div className="flex items-center gap-8">
                         <Link href="/admin/dashboard" className="flex items-center gap-2 group">
-                            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
+                            <div className="w-9 h-9 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
                                 <ShieldCheck size={20} />
                             </div>
                             <span className="font-display text-xl font-bold tracking-tight text-gray-900">

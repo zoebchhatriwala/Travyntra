@@ -23,7 +23,7 @@ export function NavLinks() {
                         key={link.href}
                         href={link.href}
                         className={cn(
-                            "px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg",
+                            "px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-corner-sm",
                             isActive
                                 ? "text-indigo-600 bg-indigo-50 shadow-sm shadow-indigo-100/50"
                                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"

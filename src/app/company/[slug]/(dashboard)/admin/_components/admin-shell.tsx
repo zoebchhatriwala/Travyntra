@@ -19,7 +19,7 @@ function SupportPlanCard({ companyPlan }: { companyPlan?: string | null }) {
     if (isCollapsed) {
         return (
             <div className="flex justify-center py-2">
-                <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600" title="Values Plan">
+                <div className="w-10 h-10 bg-indigo-100 rounded-corner-md flex items-center justify-center text-indigo-600" title="Values Plan">
                     <span className="text-xs font-bold">
                         {companyPlan === 'FREE' ? 'F' : companyPlan === 'STARTER' ? 'S' : 'E'}
                     </span>
@@ -29,7 +29,7 @@ function SupportPlanCard({ companyPlan }: { companyPlan?: string | null }) {
     }
 
     return (
-        <div className="bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 relative overflow-hidden w-full">
+        <div className="bg-indigo-600 rounded-corner-lg p-4 text-white shadow-lg shadow-indigo-100 relative overflow-hidden w-full">
             <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl" />
             <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">Support Plan</p>
             <p className="text-sm font-bold mb-3">
@@ -40,12 +40,12 @@ function SupportPlanCard({ companyPlan }: { companyPlan?: string | null }) {
             {companyPlan === 'FREE' ? (
                 <Link
                     href="mailto:sales@travyntra.com"
-                    className="block w-full py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase text-center hover:bg-gray-50 transition-colors"
+                    className="block w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase text-center hover:bg-gray-50 transition-colors"
                 >
                     Upgrade Tier
                 </Link>
             ) : (
-                <button className="w-full py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase hover:bg-gray-50 transition-colors">
+                <button className="w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase hover:bg-gray-50 transition-colors">
                     View Billing
                 </button>
             )}
@@ -64,7 +64,7 @@ export function AdminShell({ children, slug, companyPlan }: AdminShellProps) {
                     title="Travyntra"
                     subtitle="Company Admin"
                     logo={
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                        <div className="w-10 h-10 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                             <Building2 size={24} />
                         </div>
                     }

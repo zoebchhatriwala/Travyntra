@@ -39,8 +39,8 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/50">
-                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
+                        <div className="flex items-start gap-4 p-4 rounded-corner-lg bg-gray-50/50">
+                            <div className="w-10 h-10 rounded-corner-md bg-white shadow-sm flex items-center justify-center text-indigo-600">
                                 <MapPin size={20} />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -58,8 +58,8 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/50">
-                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
+                        <div className="flex items-start gap-4 p-4 rounded-corner-lg bg-gray-50/50">
+                            <div className="w-10 h-10 rounded-corner-md bg-white shadow-sm flex items-center justify-center text-indigo-600">
                                 <DollarSign size={20} />
                             </div>
                             <div>
@@ -72,8 +72,8 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50/50 md:col-span-2">
-                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600">
+                        <div className="flex items-start gap-4 p-4 rounded-corner-lg bg-gray-50/50 md:col-span-2">
+                            <div className="w-10 h-10 rounded-corner-md bg-white shadow-sm flex items-center justify-center text-indigo-600">
                                 <Calendar size={20} />
                             </div>
                             <div>
@@ -113,7 +113,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                         {preferences.flight && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Flight Requirements</h4>
-                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-sm border border-gray-100">
                                     {typeof preferences.flight === 'string' ? (
                                         preferences.flight
                                     ) : (
@@ -129,7 +129,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                         {preferences.hotel && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Hotel Requirements</h4>
-                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-sm border border-gray-100">
                                     {preferences.hotel}
                                 </div>
                             </div>
@@ -137,7 +137,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                         {preferences.train && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Train / Rail Requirements</h4>
-                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-sm border border-gray-100">
                                     {typeof preferences.train === 'string' ? (
                                         preferences.train
                                     ) : (
@@ -153,7 +153,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                         {preferences.car && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Car / Taxi Requirements</h4>
-                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-sm border border-gray-100">
                                     {typeof preferences.car === 'string' ? (
                                         preferences.car
                                     ) : (
@@ -173,7 +173,7 @@ export function RequestInfo({ request }: { request: RequestInfoProps['request'] 
                         {preferences.other && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Other Requests</h4>
-                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-sm border border-gray-100">
                                     {typeof preferences.other === 'string' ? preferences.other : JSON.stringify(preferences.other)}
                                 </div>
                             </div>

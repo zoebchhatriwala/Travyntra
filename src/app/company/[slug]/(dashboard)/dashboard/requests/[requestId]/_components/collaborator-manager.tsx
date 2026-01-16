@@ -102,7 +102,7 @@ export function CollaboratorManager({
         <Card className="border-none shadow-sm bg-white/60 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
             <CardHeader className="pb-3 border-b border-gray-100/50">
                 <CardTitle className="flex items-center gap-2 text-lg font-display text-gray-800">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-corner-sm bg-indigo-50 flex items-center justify-center">
                         <Users className="w-4 h-4 text-indigo-500" />
                     </div>
                     Collaborators
@@ -123,7 +123,7 @@ export function CollaboratorManager({
                             {collaborators.map((collaborator) => (
                                 <div
                                     key={collaborator.id}
-                                    className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-white/80 transition-all duration-300 group"
+                                    className="flex items-center justify-between p-2.5 rounded-corner-lg hover:bg-white/80 transition-all duration-300 group"
                                 >
                                     <div className="flex items-center gap-3">
                                         <Avatar className="w-9 h-9 border-2 border-white shadow-sm ring-1 ring-gray-100">
@@ -170,7 +170,7 @@ export function CollaboratorManager({
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
                             <Input
                                 placeholder="Search staff..."
-                                className="pl-9 h-10 bg-white border-gray-100 focus-visible:ring-indigo-500 rounded-2xl text-xs font-medium shadow-sm transition-all"
+                                className="pl-9 h-10 bg-white border-gray-100 focus-visible:ring-indigo-500 rounded-corner-lg text-xs font-medium shadow-sm transition-all"
                                 value={searchQuery}
                                 onChange={(e) => handleSearch(e.target.value)}
                             />
@@ -178,7 +178,7 @@ export function CollaboratorManager({
 
                         {/* Search Results */}
                         {(isSearching || searchResults.length > 0) && (
-                            <div className="mt-3 p-1.5 rounded-3xl bg-white border border-gray-100 shadow-xl shadow-indigo-900/5 max-h-[180px] overflow-y-auto animate-in slide-in-from-top-2 duration-300">
+                            <div className="mt-3 p-1.5 rounded-corner-xl bg-white border border-gray-100 shadow-xl shadow-indigo-900/5 max-h-[180px] overflow-y-auto animate-in slide-in-from-top-2 duration-300">
                                 {isSearching ? (
                                     <div className="flex items-center justify-center p-6 text-[10px] font-bold text-indigo-400 gap-2 uppercase tracking-widest">
                                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -188,12 +188,12 @@ export function CollaboratorManager({
                                     searchResults.map((user) => (
                                         <button
                                             key={user.id}
-                                            className="w-full flex items-center justify-between p-2.5 hover:bg-indigo-50/50 rounded-2xl transition-all duration-300 group text-left"
+                                            className="w-full flex items-center justify-between p-2.5 hover:bg-indigo-50/50 rounded-corner-lg transition-all duration-300 group text-left"
                                             onClick={() => handleAddCollaborator(user)}
                                             disabled={isAdding === user.id}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Avatar className="w-8 h-8 rounded-xl ring-2 ring-gray-100">
+                                                <Avatar className="w-8 h-8 rounded-corner-md ring-2 ring-gray-100">
                                                     <AvatarImage src={user.avatarUrl || ""} />
                                                     <AvatarFallback className="bg-gray-50 text-gray-500 text-[10px] font-bold">
                                                         {user.name?.[0] || user.email?.[0]}
@@ -208,7 +208,7 @@ export function CollaboratorManager({
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="h-7 w-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+                                            <div className="h-7 w-7 rounded-corner-md bg-indigo-50 text-indigo-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
                                                 {isAdding === user.id ? (
                                                     <Loader2 className="w-3 h-3 animate-spin" />
                                                 ) : (

@@ -16,11 +16,11 @@ export function SpendingChart({ data }: SpendingChartProps) {
                         <div className="relative w-full">
                             {/* Bar */}
                             <div
-                                className="w-full bg-indigo-50 rounded-t-xl hover:bg-indigo-600 transition-all duration-500 cursor-pointer relative"
+                                className="w-full bg-indigo-50 rounded-t-corner-md hover:bg-indigo-600 transition-all duration-500 cursor-pointer relative"
                                 style={{ height: `${heightPercentage}%` }}
                             >
                                 {/* Tooltip */}
-                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-black px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-black px-2 py-1 rounded-corner-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
                                     ${item.amount.toLocaleString()}
                                 </div>
                             </div>

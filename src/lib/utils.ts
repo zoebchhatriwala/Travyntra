@@ -32,27 +32,53 @@ export function formatStatus(status: string): string {
 }
 
 /**
- * Returns the Tailwind CSS classes for a given status.
+ * Returns the Badge variant for a given status.
  * Ensures consistent coloring across the application.
  */
-export function getStatusColor(status: string): string {
-  switch (status) {
+export function getStatusColor(status: string): "success" | "destructive" | "warning" | "info" | "pending" | "violet" | "secondary" | "default" | "outline" {
+  const s = status?.toUpperCase();
+  switch (s) {
+    // Positive / Completed
     case 'COMPLETED':
     case 'APPROVED':
-      return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100';
+    case 'ACCEPTED':
+    case 'PAID':
+    case 'ACTIVE':
+    case 'SUCCESS':
+      return 'success';
+
+    // Negative / Error / Cancelled
     case 'REJECTED':
-      return 'bg-rose-50 text-rose-700 ring-1 ring-rose-100';
+    case 'FAILED':
     case 'CANCELLED':
-      return 'bg-slate-50 text-slate-700 ring-1 ring-slate-100';
-    case 'BOOKED':
-      return 'bg-violet-50 text-violet-700 ring-1 ring-violet-100';
+    case 'VOID':
+    case 'OVERDUE':
+    case 'INACTIVE':
+    case 'ERROR':
+    case 'BLOCKED':
+      return 'destructive';
+
+    // Neutral / Pending / Action Required
+    case 'PENDING':
     case 'PENDING_COMPANY_APPROVAL':
     case 'PENDING_AGENT_ACTION':
-    case 'PENDING':
-      return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100';
+    case 'WAITING':
+    case 'IN_PROGRESS':
+      return 'warning';
+
+    // Information / Shift / Active
+    case 'BOOKED':
+    case 'SHIPPED':
+      return 'violet';
+
     case 'DRAFT':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-gray-100';
+    case 'ARCHIVED':
+      return 'outline';
+
+    case 'INFO':
+      return 'info';
+
     default:
-      return 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100';
+      return 'info';
   }
 }

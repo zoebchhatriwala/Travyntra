@@ -45,8 +45,8 @@ export default async function StaffManagementPage({
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-6 bg-white rounded-[32px] shadow-sm ring-1 ring-gray-100 flex items-center gap-4 group hover:ring-indigo-100 transition-all">
-                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                <div className="p-6 bg-white rounded-corner-xl shadow-sm ring-1 ring-gray-100 flex items-center gap-4 group hover:ring-indigo-100 transition-all">
+                    <div className="w-12 h-12 bg-blue-50 rounded-corner-lg flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                         <Users2 size={24} />
                     </div>
                     <div>
@@ -54,8 +54,8 @@ export default async function StaffManagementPage({
                         <p className="text-2xl font-black text-gray-900">{staff.length} Members</p>
                     </div>
                 </div>
-                <div className="p-6 bg-white rounded-[32px] shadow-sm ring-1 ring-gray-100 flex items-center gap-4 group hover:ring-indigo-100 transition-all">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                <div className="p-6 bg-white rounded-corner-xl shadow-sm ring-1 ring-gray-100 flex items-center gap-4 group hover:ring-indigo-100 transition-all">
+                    <div className="w-12 h-12 bg-emerald-50 rounded-corner-lg flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                         <ShieldCheck size={24} />
                     </div>
                     <div>
@@ -63,8 +63,8 @@ export default async function StaffManagementPage({
                         <p className="text-2xl font-black text-gray-900">{staff.filter(s => s.isActive && !s.isBlocked).length} Verified</p>
                     </div>
                 </div>
-                <div className="p-6 bg-indigo-600 rounded-[32px] shadow-lg shadow-indigo-100 flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+                <div className="p-6 bg-indigo-600 rounded-corner-xl shadow-lg shadow-indigo-100 flex items-center gap-4 group">
+                    <div className="w-12 h-12 bg-white/10 rounded-corner-lg flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
                         <ShieldCheck size={24} />
                     </div>
                     <div className="text-white">

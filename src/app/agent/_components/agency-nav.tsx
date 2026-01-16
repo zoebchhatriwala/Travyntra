@@ -84,7 +84,7 @@ export function AgencyNav() {
                         key={item.href}
                         href={item.href}
                         className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                            "flex items-center gap-4 px-3 py-2.5 rounded-corner-md text-sm font-medium transition-all duration-200",
                             isActive
                                 ? "bg-indigo-50 text-indigo-700 shadow-sm"
                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",

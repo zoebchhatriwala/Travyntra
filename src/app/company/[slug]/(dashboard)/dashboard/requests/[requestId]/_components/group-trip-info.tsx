@@ -45,7 +45,7 @@ export function GroupTripInfo({ request, slug }: GroupTripInfoProps) {
                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Parent Trip</span>
                         <Link
                             href={`/company/${slug}/dashboard/requests/${request.parentTrip.id}`}
-                            className="flex items-center justify-between p-3 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors group"
+                            className="flex items-center justify-between p-3 rounded-corner-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
                                 <LinkIcon className="w-4 h-4" />
@@ -73,7 +73,7 @@ export function GroupTripInfo({ request, slug }: GroupTripInfoProps) {
                                     <Link
                                         key={child.id}
                                         href={`/company/${slug}/dashboard/requests/${child.id}`}
-                                        className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                                        className="flex items-center justify-between p-2 rounded-corner-md hover:bg-gray-50 transition-colors group"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-8 w-8 border-2 border-white shadow-sm">

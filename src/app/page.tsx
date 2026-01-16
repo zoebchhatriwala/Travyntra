@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <main className="w-full">
       {/* Navigation */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-6xl h-16 z-50 flex items-center glass rounded-2xl border border-white/20 shadow-xl px-6">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-6xl h-16 z-50 flex items-center glass rounded-corner-lg border border-white/20 shadow-xl px-6">
         <div className="flex justify-between items-center w-full">
           <div className="text-2xl font-black text-indigo-600 tracking-tighter">
             Travyntra
@@ -31,7 +31,7 @@ export default function Home() {
             <Button variant="ghost" asChild className="text-sm font-bold text-slate-700">
               <Link href="/login">Sign in</Link>
             </Button>
-            <Button asChild className="rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
+            <Button asChild className="rounded-corner-md px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
               <Link href="/register">Get Started</Link>
             </Button>
           </div>
@@ -40,11 +40,11 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 overflow-hidden bg-white">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-joy-blue/40 blur-[120px] rounded-full -z-10 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-joy-purple/40 blur-[120px] rounded-full -z-10 animate-pulse" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 blur-[120px] rounded-full -z-10 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-100/40 blur-[120px] rounded-full -z-10 animate-pulse" />
 
         <div className="max-w-4xl mx-auto">
-          <Badge className="mb-8 px-5 py-2 text-sm font-black bg-white text-indigo-600 border-joy-blue shadow-md rounded-full">
+          <Badge className="mb-8 px-6 py-2 text-sm font-black bg-white text-indigo-600 border-blue-100 shadow-md rounded-full">
             ✨ Infrastructure for Corporate Joy
           </Badge>
           <h1 className="text-6xl md:text-8xl font-black leading-[1.05] tracking-tight mb-8 text-slate-900">
@@ -55,13 +55,13 @@ export default function Home() {
             A joyful, triple-layered ecosystem connecting Agencies,
             Companies, and Staff. Managed at scale, fulfilled with precision.
           </p>
-          <div className="flex flex-col sm:flex-row gap-5 justify-center">
-            <Button size="lg" className="h-16 px-10 text-lg rounded-2xl font-black shadow-xl bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 transition-all" asChild>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="h-16 px-10 text-lg rounded-corner-lg font-black shadow-xl bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 transition-all" asChild>
               <Link href="/register">
                 Start for Free <ArrowRight className="ml-3 h-5 w-5" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-16 px-10 text-lg rounded-2xl font-bold border-2 border-indigo-50 text-indigo-600 hover:bg-indigo-50 transition-all" asChild>
+            <Button size="lg" variant="outline" className="h-16 px-10 text-lg rounded-corner-lg font-bold border-2 border-indigo-50 text-indigo-600 hover:bg-indigo-50 transition-all" asChild>
               <Link href="#ecosystem">Explore Platform</Link>
             </Button>
           </div>
@@ -82,10 +82,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {/* Agencies */}
             <div className="group p-8 md:p-12 rounded-[40px] bg-[#E0F2FE] border border-white hover:border-blue-200 transition-all hover:shadow-2xl hover:shadow-blue-200/50">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-white rounded-corner-lg flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Globe2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Agencies</h3>
+              <h3 className="text-3xl font-black mb-6 text-slate-900">Agencies</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 Your SaaS command center. Manage high-volume ticketing,
                 visas, and global company portfolios from one joyful interface.
@@ -94,10 +94,10 @@ export default function Home() {
 
             {/* Company Admins */}
             <div className="group p-8 md:p-12 rounded-[40px] bg-[#F3E8FF] border border-white hover:border-purple-200 transition-all hover:shadow-2xl hover:shadow-purple-200/50">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-white rounded-corner-lg flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Building2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Company Admins</h3>
+              <h3 className="text-3xl font-black mb-6 text-slate-900">Company Admins</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 The ultimate control plane. Define your company&apos;s chain of
                 command and approve requests with a single click.
@@ -106,10 +106,10 @@ export default function Home() {
 
             {/* Global Staff */}
             <div className="group p-8 md:p-12 rounded-[40px] bg-[#DCFCE7] border border-white hover:border-green-200 transition-all hover:shadow-2xl hover:shadow-green-200/50">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-white rounded-corner-lg flex items-center justify-center mb-10 shadow-sm text-indigo-600 group-hover:scale-110 transition-transform">
                 <Users2 className="h-8 w-8" />
               </div>
-              <h3 className="text-3xl font-black mb-5 text-slate-900">Staff</h3>
+              <h3 className="text-3xl font-black mb-6 text-slate-900">Staff</h3>
               <p className="text-slate-600 text-lg leading-relaxed font-medium">
                 Travel requests made simple. Track your journey&apos;s lifecycle
                 and message your agency directly within the thread.
@@ -124,7 +124,7 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="space-y-6">
-              <div className="w-14 h-14 bg-joy-amber/50 rounded-2xl flex items-center justify-center text-amber-600">
+              <div className="w-14 h-14 bg-amber-100/50 rounded-corner-lg flex items-center justify-center text-amber-600">
                 <Zap className="h-7 w-7" />
               </div>
               <h3 className="text-3xl font-black text-fg-primary">Automated Workflows</h3>
@@ -134,7 +134,7 @@ export default function Home() {
               </p>
             </div>
             <div className="space-y-6">
-              <div className="w-14 h-14 bg-joy-blue/50 rounded-2xl flex items-center justify-center text-blue-600">
+              <div className="w-14 h-14 bg-blue-100/50 rounded-corner-lg flex items-center justify-center text-blue-600">
                 <ShieldCheck className="h-7 w-7" />
               </div>
               <h3 className="text-3xl font-black text-fg-primary">Digital Asset Vault</h3>
@@ -144,7 +144,7 @@ export default function Home() {
               </p>
             </div>
             <div className="space-y-6">
-              <div className="w-14 h-14 bg-joy-green/50 rounded-2xl flex items-center justify-center text-emerald-600">
+              <div className="w-14 h-14 bg-green-100/50 rounded-corner-lg flex items-center justify-center text-emerald-600">
                 <BarChart3 className="h-7 w-7" />
               </div>
               <h3 className="text-3xl font-black text-fg-primary">Unified Billing</h3>
@@ -160,9 +160,9 @@ export default function Home() {
       {/* Pricing / Enterprise Section */}
       <section id="pricing" className="py-24 md:py-32 bg-white">
         <div className="container mx-auto px-6">
-          <div className="bg-joy-amber/30 rounded-[48px] p-8 md:p-16 border border-amber-100/50 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="bg-amber-100/30 rounded-[48px] p-8 md:p-16 border border-amber-100/50 flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="max-w-xl">
-              <Badge className="mb-6 bg-amber-100 text-amber-700 border-none rounded-lg px-4 py-1 font-bold">
+              <Badge className="mb-6 bg-amber-100 text-amber-700 border-none rounded-corner-sm px-6 py-1 font-bold">
                 Enterprise Only
               </Badge>
               <h2 className="text-4xl md:text-6xl font-black mb-6 text-slate-900 leading-tight">
@@ -181,7 +181,7 @@ export default function Home() {
                 Connect with our deployment specialists to architect your custom travel portal.
               </p>
               <div className="space-y-4">
-                <Button className="w-full h-14 text-lg rounded-2xl bg-slate-900 hover:bg-black text-white font-bold transition-all" asChild>
+                <Button className="w-full h-14 text-lg rounded-corner-lg bg-slate-900 hover:bg-black text-white font-bold transition-all" asChild>
                   <Link href="mailto:sales@travyntra.com">
                     Contact Sales Specialist
                   </Link>
@@ -216,7 +216,7 @@ export default function Home() {
               <p className="text-xl opacity-90 mb-10 font-medium">
                 Join hundreds of companies that trust Travyntra to manage their most important journeys.
               </p>
-              <Button size="lg" variant="secondary" className="h-16 px-12 text-lg rounded-2xl font-black bg-white text-primary hover:bg-joy-white hover:scale-105 transition-all shadow-xl" asChild>
+              <Button size="lg" variant="secondary" className="h-16 px-12 text-lg rounded-corner-lg font-black bg-white text-primary hover:bg-joy-white hover:scale-105 transition-all shadow-xl" asChild>
                 <Link href="/register">Get Started Now</Link>
               </Button>
             </div>
@@ -225,7 +225,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 bg-brand-subtle border-t">
+      <footer className="py-16 bg-slate-50 border-t">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-2xl font-extrabold text-primary tracking-tighter">
             Travyntra

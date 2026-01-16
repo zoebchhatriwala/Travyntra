@@ -183,7 +183,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
         return (
             <>
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-semibold text-sm">
+                    <div className="flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-corner-md font-semibold text-sm">
                         <CheckCircle size={18} />
                         Completed
                     </div>
@@ -196,7 +196,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
                                     setIsGenerateDialogOpen(true);
                                 }}
                                 disabled={isLoading !== null}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-indigo-100"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-corner-md font-semibold shadow-lg shadow-indigo-100"
                             >
                                 {isLoading === 'invoice' ? (
                                     <Loader2 size={16} className="animate-spin mr-2" />
@@ -280,7 +280,7 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
                 <ConfirmDialog />
 
                 <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
-                    <DialogContent className="sm:max-w-md rounded-3xl border-gray-100 p-0 overflow-hidden">
+                    <DialogContent className="sm:max-w-md rounded-corner-xl border-gray-100 p-0 overflow-hidden">
                         <DialogHeader className="px-8 pt-8 pb-4 bg-gray-50/50 border-b border-gray-100">
                             <DialogTitle className="text-xl font-black text-gray-900">Generate Invoice</DialogTitle>
                             <DialogDescription className="text-gray-500 font-medium">

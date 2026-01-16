@@ -34,7 +34,7 @@ function GoBackLink() {
 
     return (
         <Link href={backPath} className="group flex items-center gap-3 text-gray-400 hover:text-gray-900 transition-all font-black uppercase text-[10px] tracking-widest">
-            <div className="w-10 h-10 rounded-2xl border border-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-lg transition-all">
+            <div className="w-10 h-10 rounded-corner-lg border border-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-lg transition-all">
                 <ArrowLeft size={18} />
             </div>
             Back to Dashboard
@@ -122,7 +122,7 @@ function NotificationsContent() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <Input
                         placeholder="Search notifications..."
-                        className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20"
+                        className="pl-10 h-11 rounded-corner-sm focus:ring-2 focus:ring-indigo-500/20"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
                     />
@@ -131,7 +131,7 @@ function NotificationsContent() {
                 <Button
                     variant="ghost"
                     onClick={handleMarkAllRead}
-                    className="text-indigo-600 font-bold hover:bg-indigo-50 hover:text-indigo-700 h-11 px-6 rounded-xl transition-all active:scale-95"
+                    className="text-indigo-600 font-bold hover:bg-indigo-50 hover:text-indigo-700 h-11 px-6 rounded-corner-sm transition-all active:scale-95"
                 >
                     <CheckSquare size={18} className="mr-2" />
                     Mark all as read
@@ -148,7 +148,7 @@ function NotificationsContent() {
                         </div>
                     ) : data.notifications.length === 0 ? (
                         <div className="p-20 text-center space-y-4">
-                            <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto text-gray-300">
+                            <div className="w-20 h-20 bg-gray-50 rounded-corner-xl flex items-center justify-center mx-auto text-gray-300">
                                 <Bell size={40} />
                             </div>
                             <div className="space-y-1">
@@ -162,12 +162,12 @@ function NotificationsContent() {
                                 <div
                                     key={notification.id}
                                     className={cn(
-                                        "p-6 transition-all relative flex gap-5 group",
+                                        "p-6 transition-all relative flex gap-6 group",
                                         !notification.read ? "bg-indigo-50/20" : "hover:bg-gray-50/50"
                                     )}
                                 >
                                     <div className="mt-1 flex-shrink-0">
-                                        <div className="w-10 h-10 rounded-2xl bg-white shadow-sm border border-gray-50 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-corner-lg bg-white shadow-sm border border-gray-50 flex items-center justify-center">
                                             {getTypeIcon(notification.type)}
                                         </div>
                                     </div>
@@ -218,13 +218,13 @@ function NotificationsContent() {
 
             {/* Pagination */}
             {data.pages > 1 && (
-                <div className="flex items-center justify-center gap-3 py-4">
+                <div className="flex items-center justify-center gap-4 py-4">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handlePageChange(Math.max(1, page - 1))}
                         disabled={page === 1}
-                        className="rounded-2xl w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
+                        className="rounded-corner-lg w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
                     >
                         <ChevronLeft size={20} />
                     </Button>
@@ -239,7 +239,7 @@ function NotificationsContent() {
                                     variant={page === p ? "default" : "ghost"}
                                     onClick={() => handlePageChange(p)}
                                     className={cn(
-                                        "w-12 h-12 rounded-2xl font-black transition-all",
+                                        "w-12 h-12 rounded-corner-lg font-black transition-all",
                                         page === p
                                             ? "bg-gray-900 text-white shadow-xl shadow-gray-200"
                                             : "hover:bg-white hover:shadow-xl text-gray-500 hover:text-gray-900"
@@ -255,7 +255,7 @@ function NotificationsContent() {
                                 variant={page === data.pages ? "default" : "ghost"}
                                 onClick={() => handlePageChange(data.pages)}
                                 className={cn(
-                                    "w-12 h-12 rounded-2xl font-black transition-all",
+                                    "w-12 h-12 rounded-corner-lg font-black transition-all",
                                     page === data.pages
                                         ? "bg-gray-900 text-white shadow-xl shadow-gray-200"
                                         : "hover:bg-white hover:shadow-xl text-gray-500 hover:text-gray-900"
@@ -271,7 +271,7 @@ function NotificationsContent() {
                         size="icon"
                         onClick={() => handlePageChange(Math.min(data.pages, page + 1))}
                         disabled={page === data.pages}
-                        className="rounded-2xl w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
+                        className="rounded-corner-lg w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
                     >
                         <ChevronRight size={20} />
                     </Button>
@@ -299,8 +299,8 @@ export default function NotificationsPage() {
                     <div className="flex items-center gap-6">
                         <GoBackLink />
                         <div className="h-8 w-px bg-gray-100 mx-2" />
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-corner-lg flex items-center justify-center text-white shadow-lg shadow-indigo-100">
                                 <Bell size={20} />
                             </div>
                             <div>

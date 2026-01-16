@@ -4,7 +4,7 @@ import { ArrowLeft, ShieldCheck } from "lucide-react";
 
 export default function PrivacyPage() {
     return (
-        <main className="min-h-screen bg-brand-subtle py-20">
+        <main className="min-h-screen bg-slate-50 py-20">
             <div className="container mx-auto px-6 max-w-4xl">
                 <div className="mb-12 text-center">
                     <div className="flex justify-center mb-8">
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
                                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
                             </Link>
                         </Button>
-                        <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+                        <div className="w-16 h-16 bg-blue-100 rounded-corner-lg flex items-center justify-center text-blue-600">
                             <ShieldCheck className="h-8 w-8" />
                         </div>
                     </div>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
                         </p>
                     </section>
 
-                    <section className="bg-joy-blue/30 rounded-3xl p-8 border border-blue-100/50">
+                    <section className="bg-blue-100/30 rounded-corner-xl p-8 border border-blue-100/50">
                         <h2 className="text-2xl font-black text-slate-900 mb-4">GDPR & Corporate Compliance</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Travyntra is committed to global data protection standards. We provide tools for

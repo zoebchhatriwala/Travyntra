@@ -24,7 +24,7 @@ export default async function AnalyticsPage() {
     if (!data) {
         return (
             <div className="container mx-auto py-10 px-6">
-                <div className="bg-rose-50 border border-rose-100 p-6 rounded-3xl text-rose-700 font-medium">
+                <div className="bg-rose-50 border border-rose-100 p-6 rounded-corner-xl text-rose-700 font-medium">
                     Failed to load analytics data. Please try again later.
                 </div>
             </div>
@@ -37,7 +37,7 @@ export default async function AnalyticsPage() {
             <div className="bg-white border-b border-gray-100 mb-10">
                 <div className="container mx-auto py-8 px-6">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                        <div className="p-2 bg-indigo-50 rounded-corner-md text-indigo-600">
                             <BarChart3 size={20} />
                         </div>
                         <span className="text-sm font-semibold text-indigo-600 tracking-wide uppercase">Insight Engine</span>
@@ -88,7 +88,7 @@ export default async function AnalyticsPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Status Distribution */}
-                    <Card className="lg:col-span-1 border-none shadow-sm rounded-3xl overflow-hidden">
+                    <Card className="lg:col-span-1 border-none shadow-sm rounded-corner-xl overflow-hidden">
                         <CardHeader>
                             <div className="flex items-center gap-2 mb-1">
                                 <Activity size={18} className="text-indigo-600" />
@@ -121,7 +121,7 @@ export default async function AnalyticsPage() {
                     </Card>
 
                     {/* Volume Trends (Simplified CSS Chart) */}
-                    <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
+                    <Card className="lg:col-span-2 border-none shadow-sm rounded-corner-xl overflow-hidden">
                         <CardHeader>
                             <div className="flex items-center gap-2 mb-1">
                                 <TrendingUp size={18} className="text-indigo-600" />
@@ -138,14 +138,14 @@ export default async function AnalyticsPage() {
                                         <div key={item.month} className="flex-1 flex flex-col items-center gap-3 h-full justify-end group">
                                             <div className="relative w-full flex justify-center">
                                                 <div
-                                                    className="w-full max-w-[40px] bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors rounded-t-xl absolute bottom-0"
+                                                    className="w-full max-w-[40px] bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors rounded-t-corner-md absolute bottom-0"
                                                     style={{ height: '100px' }}
                                                 />
                                                 <div
-                                                    className="w-full max-w-[40px] bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-xl transition-all duration-1000 group-hover:scale-y-[1.02] origin-bottom shadow-lg shadow-indigo-100"
+                                                    className="w-full max-w-[40px] bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-corner-md transition-all duration-1000 group-hover:scale-y-[1.02] origin-bottom shadow-lg shadow-indigo-100"
                                                     style={{ height: `${Math.max(height * 2, 8)}px` }}
                                                 >
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded-lg font-bold">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded-corner-sm font-bold">
                                                         {item.count}
                                                     </div>
                                                 </div>
@@ -166,7 +166,7 @@ export default async function AnalyticsPage() {
                 {/* Second Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     {/* Spending by Category */}
-                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+                    <Card className="border-none shadow-sm rounded-corner-xl overflow-hidden">
                         <CardHeader>
                             <div className="flex items-center gap-2 mb-1">
                                 <PieChart size={18} className="text-indigo-600" />
@@ -207,7 +207,7 @@ export default async function AnalyticsPage() {
                     </Card>
 
                     {/* Active User Metrics */}
-                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 to-slate-800 text-white">
+                    <Card className="border-none shadow-sm rounded-corner-xl overflow-hidden bg-gradient-to-br from-gray-900 to-slate-800 text-white">
                         <CardHeader>
                             <div className="flex items-center gap-2 mb-1">
                                 <Users size={18} className="text-indigo-400" />
@@ -217,9 +217,9 @@ export default async function AnalyticsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col gap-6">
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-corner-lg border border-white/5">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-indigo-500/20 rounded-xl">
+                                        <div className="p-3 bg-indigo-500/20 rounded-corner-md">
                                             <Building2 size={24} className="text-indigo-400" />
                                         </div>
                                         <div>
@@ -230,9 +230,9 @@ export default async function AnalyticsPage() {
                                     <TrendingUp size={20} className="text-indigo-400" />
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-corner-lg border border-white/5">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-500/20 rounded-xl">
+                                        <div className="p-3 bg-blue-500/20 rounded-corner-md">
                                             <Globe2 size={24} className="text-blue-400" />
                                         </div>
                                         <div>
@@ -243,9 +243,9 @@ export default async function AnalyticsPage() {
                                     <TrendingUp size={20} className="text-blue-400" />
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-corner-lg border border-white/5">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-purple-500/20 rounded-xl">
+                                        <div className="p-3 bg-purple-500/20 rounded-corner-md">
                                             <Users size={24} className="text-purple-400" />
                                         </div>
                                         <div>
@@ -269,10 +269,10 @@ function KpiCard({ title, value, trend, isUp, icon, bgColor }: { title: string, 
         <Card className="border-none shadow-sm hover:shadow-xl transition-all duration-300 group overflow-hidden bg-white">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <div className={`p-4 rounded-2xl ${bgColor} group-hover:scale-110 transition-transform`}>
+                    <div className={`p-4 rounded-corner-lg ${bgColor} group-hover:scale-110 transition-transform`}>
                         {icon}
                     </div>
-                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black uppercase ${isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-corner-sm text-[10px] font-black uppercase ${isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                         {isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                         {trend}
                     </div>

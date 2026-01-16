@@ -87,40 +87,34 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="end"
-                    className="w-56 rounded-[28px] p-2 border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
+                    className="w-48 rounded-lg p-1 border-gray-200 shadow-lg bg-white"
                 >
                     <DropdownMenuItem
                         onClick={() => router.push(`/company/${slug}/dashboard/requests/${requestId}/edit`)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-gray-700 focus:bg-indigo-50 focus:text-indigo-600 transition-colors"
+                        className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100"
                     >
-                        <div className="p-2 bg-indigo-50 rounded-xl group-focus:bg-indigo-100">
-                            <Edit size={16} />
-                        </div>
+                        <Edit size={18} className="text-indigo-600" />
                         <span>Edit Request</span>
                     </DropdownMenuItem>
 
                     {canCancel && (
                         <DropdownMenuItem
                             onClick={() => setShowCancelDialog(true)}
-                            className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-amber-600 focus:bg-amber-50 focus:text-amber-700 transition-colors mt-1"
+                            className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm text-orange-600 hover:bg-orange-50 focus:bg-orange-50"
                         >
-                            <div className="p-2 bg-amber-50 rounded-xl group-focus:bg-amber-100">
-                                <Ban size={16} />
-                            </div>
+                            <Ban size={18} />
                             <span>Cancel Request</span>
                         </DropdownMenuItem>
                     )}
 
                     {canDelete && (
                         <>
-                            <DropdownMenuSeparator className="my-2 bg-slate-50" />
+                            <DropdownMenuSeparator className="my-1 bg-gray-100" />
                             <DropdownMenuItem
                                 onClick={() => setShowDeleteDialog(true)}
-                                className="flex items-center gap-3 px-4 py-3 rounded-[20px] cursor-pointer font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-700 transition-colors"
+                                className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm text-red-600 hover:bg-red-50 focus:bg-red-50"
                             >
-                                <div className="p-2 bg-rose-50 rounded-xl group-focus:bg-rose-100">
-                                    <Trash2 size={16} />
-                                </div>
+                                <Trash2 size={18} />
                                 <span>Delete Request</span>
                             </DropdownMenuItem>
                         </>
@@ -130,22 +124,22 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
 
             {/* Cancel Confirmation Dialog */}
             <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-                <DialogContent className="rounded-[32px] sm:max-w-[425px]">
+                <DialogContent className="rounded-xl sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black">Cancel Request?</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">Cancel Request?</DialogTitle>
                         <DialogDescription className="text-gray-500 font-medium">
                             Are you sure you want to cancel this travel request? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setShowCancelDialog(false)} className="rounded-xl font-bold">
+                        <Button variant="ghost" onClick={() => setShowCancelDialog(false)} className="rounded-lg font-medium">
                             Keep Request
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleCancel}
                             disabled={isCancelling}
-                            className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black uppercase tracking-widest text-xs"
+                            className="bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
                         >
                             {isCancelling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Confirm Cancellation
@@ -156,22 +150,22 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent className="rounded-[32px] sm:max-w-[425px]">
+                <DialogContent className="rounded-xl sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black">Delete Request?</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">Delete Request?</DialogTitle>
                         <DialogDescription className="text-gray-500 font-medium">
                             This will permanently delete the travel request. This action cannot be rolled back.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setShowDeleteDialog(false)} className="rounded-xl font-bold">
+                        <Button variant="ghost" onClick={() => setShowDeleteDialog(false)} className="rounded-lg font-medium">
                             Cancel
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
                             disabled={isDeleting}
-                            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black uppercase tracking-widest text-xs"
+                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
                         >
                             {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Delete Permanently

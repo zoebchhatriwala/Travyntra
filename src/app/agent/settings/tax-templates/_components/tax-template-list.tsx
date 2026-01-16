@@ -85,7 +85,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                     </p>
                     <Button
                         onClick={handleCreate}
-                        className="rounded-xl font-bold"
+                        className="rounded-corner-md font-bold"
                     >
                         <Plus size={16} className="mr-2" />
                         Create Template
@@ -93,7 +93,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                 </div>
 
                 {templates.length === 0 ? (
-                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px]">
+                    <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl">
                         <CardContent className="p-12 text-center">
                             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                                 <Plus size={32} className="text-gray-400" />
@@ -102,7 +102,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                             <p className="text-gray-500 mb-6">
                                 Create your first tax template to streamline your bidding process.
                             </p>
-                            <Button onClick={handleCreate} className="rounded-xl font-bold">
+                            <Button onClick={handleCreate} className="rounded-corner-md font-bold">
                                 <Plus size={16} className="mr-2" />
                                 Create Your First Template
                             </Button>
@@ -113,7 +113,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                         {templates.map((template) => (
                             <Card
                                 key={template.id}
-                                className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden hover:shadow-md transition-all"
+                                className="border-none shadow-sm ring-1 ring-gray-100 rounded-corner-xl overflow-hidden hover:shadow-md transition-all"
                             >
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between">
@@ -160,7 +160,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleSetDefault(template.id)}
-                                                className="flex-1 rounded-xl text-xs"
+                                                className="flex-1 rounded-corner-md text-xs"
                                             >
                                                 <Star size={14} className="mr-1" />
                                                 Set Default
@@ -170,7 +170,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => handleEdit(template)}
-                                            className="flex-1 rounded-xl text-xs"
+                                            className="flex-1 rounded-corner-md text-xs"
                                         >
                                             <Edit size={14} className="mr-1" />
                                             Edit
@@ -179,7 +179,7 @@ export function TaxTemplateList({ templates }: TaxTemplateListProps) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => handleDelete(template.id)}
-                                            className="flex-1 rounded-xl text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                            className="flex-1 rounded-corner-md text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                                         >
                                             <Trash2 size={14} className="mr-1" />
                                             Delete
