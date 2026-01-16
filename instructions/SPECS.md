@@ -231,6 +231,19 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [ ] **Budget Analytics**: Spending trends and forecasts.
 - [ ] **Expense Reports**: Per-request and per-employee breakdowns.
 
+### Phase 11: Subscription & Super Admin Refinement 🛠️ PLANNED
+- [ ] **Plan Architecture**: Define capability-based plans (Starter, Growth, Enterprise).
+    - **Features**: Active Requests/Month, Company Integrations, Tax Templates, Analytics, Support SLA, Team Accounts, Dedicated Manager.
+- [ ] **Subscription Tracking & Assignment**:
+    - [ ] **No Internal Invoicing**: Invoices are generated externally. System only tracks Plan Type and Expiry.
+    - [ ] **Super Admin Assignment UI**: Interface to manually assign plans to companies (Select Plan, Set Start/End Date).
+    - [ ] **Expiration Monitoring**: Dashboard view identifying companies near subscription expiry for manual follow-up.
+    - [ ] **Customer Plan View**: Company/Agency settings page to view their Active Plan, Feature Limits, and Expiry Date.
+- [ ] **Landing Page Updates**: Add detailed "Plans & Pricing" section reflecting the feature matrix.
+- [ ] **Super Admin Enhancements**:
+    - [ ] **Control Improvements**: Enhanced control over company/agency accounts (feature toggles, manual plan overrides).
+    - [ ] **Global Dashboard**: Refine global analytics and oversight capabilities.
+
 ---
 
 ## Current Sprint Focus 🎯
