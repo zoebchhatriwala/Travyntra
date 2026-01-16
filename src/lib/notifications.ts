@@ -1,5 +1,5 @@
 
-import { Notification } from "@prisma/client";
+import { Notification, NotificationType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendUserEmail } from "@/lib/email";
 import { getGeneralNotificationTemplate } from "@/lib/email-templates";
@@ -7,7 +7,7 @@ import { getGeneralNotificationTemplate } from "@/lib/email-templates";
 /**
  * Defines the available types for notifications to categorize them by severity or intent.
  */
-export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
+// NotificationType is now imported from @prisma/client
 
 /**
  * Creates a new notification for a specific user and optionally sends an email alert.
@@ -39,7 +39,7 @@ export async function createNotification(params: {
     const message = params.message;
 
     // Extract type from parameters or default to "INFO"
-    const type = params.type || "INFO";
+    const type = params.type || NotificationType.INFO;
 
     // Extract link from parameters
     const link = params.link;

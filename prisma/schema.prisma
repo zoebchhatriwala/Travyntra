@@ -43,7 +43,6 @@ model User {
   role                  UserRole         @default(EMPLOYEE)
   avatarUrl             String?
   companyId             String?
-  tags                  String[]         @default([])
   isActive              Boolean          @default(false)
   isBlocked             Boolean          @default(false)
   createdAt             DateTime         @default(now())
@@ -54,7 +53,7 @@ model User {
   messages              Message[]
   notifications         Notification[]
   requests              TripRequest[]
-  company               Company?         @relation(fields: [companyId], references: [id])
+  company               Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   approvals             UserApproval[]
   actions               WorkflowAction[]
   collaboratingRequests TripRequest[]    @relation("RequestCollaborators")
@@ -66,11 +65,11 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      String?
+  type      NotificationType? @default(INFO)
   link      String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TripRequest {
@@ -97,14 +96,17 @@ model TripRequest {
   invoice         Invoice?
   messages        Message[]
   approvalSteps   RequestApprovalStep[]
-  assignedAgent   Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id])
-  company         Company               @relation("CompanyRequests", fields: [companyId], references: [id])
-  parentTrip      TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id])
+  assignedAgent   Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  company         Company               @relation("CompanyRequests", fields: [companyId], references: [id], onDelete: Cascade)
+  parentTrip      TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
   childTrips      TripRequest[]         @relation("GroupTrip")
-  user            User                  @relation(fields: [userId], references: [id])
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   workflow        WorkflowAction[]
   collaborators   User[]                @relation("RequestCollaborators")
   fulfillmentItems FulfillmentItem[]
+
+  @@index([companyId, status])
+  @@index([userId, status])
 }
 
 model AgentBid {
@@ -115,11 +117,14 @@ model AgentBid {
   amount    Json?
   taxes     Json?
   message   String?
-  status    String      @default("PENDING")
+  status    BidStatus   @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  agent     Company     @relation(fields: [agentId], references: [id])
-  request   TripRequest @relation(fields: [requestId], references: [id])
+  agent     Company     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  request   TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, agentId])
+  @@index([agentId, status])
 }
 
 model FulfillmentItem {
@@ -131,7 +136,7 @@ model FulfillmentItem {
   order       Int         @default(0)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  request     TripRequest @relation(fields: [requestId], references: [id])
+  request     TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   documents   Document[]  @relation("FulfillmentItemDocuments")
 }
 
@@ -139,11 +144,11 @@ model WorkflowAction {
   id        String      @id @default(uuid())
   requestId String
   actorId   String
-  action    String
+  action    WorkflowActionType
   comment   String?
   timestamp DateTime    @default(now())
-  actor     User        @relation(fields: [actorId], references: [id])
-  request   TripRequest @relation(fields: [requestId], references: [id])
+  actor     User        @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  request   TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -153,8 +158,8 @@ model Message {
   content   String
   readAt    DateTime?
   createdAt DateTime    @default(now())
-  request   TripRequest @relation(fields: [requestId], references: [id])
-  sender    User        @relation(fields: [senderId], references: [id])
+  request   TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender    User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model Document {
@@ -167,9 +172,9 @@ model Document {
   url               String
   type              DocType          @default(OTHER)
   createdAt         DateTime         @default(now())
-  request           TripRequest?     @relation(fields: [requestId], references: [id])
-  uploader          User             @relation(fields: [uploaderId], references: [id])
-  fulfillmentItem   FulfillmentItem? @relation("FulfillmentItemDocuments", fields: [fulfillmentItemId], references: [id])
+  request           TripRequest?     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploader          User             @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  fulfillmentItem   FulfillmentItem? @relation("FulfillmentItemDocuments", fields: [fulfillmentItemId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
@@ -177,12 +182,14 @@ model Expense {
   requestId   String
   amount      Decimal
   currency    String      @default("USD")
-  category    String
+  category    ExpenseCategory
   description String?
   receiptUrl  String?
   incurredAt  DateTime
   createdAt   DateTime    @default(now())
-  request     TripRequest @relation(fields: [requestId], references: [id])
+  request     TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
 }
 
 model ApprovalWorkflow {
@@ -192,7 +199,7 @@ model ApprovalWorkflow {
   isActive  Boolean        @default(true)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  company   Company        @relation(fields: [companyId], references: [id])
+  company   Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   steps     WorkflowStep[]
 }
 
@@ -202,12 +209,11 @@ model WorkflowStep {
   name             String
   order            Int
   type             ApprovalType          @default(ANY)
-  approverTags     String[]              @default([])
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   deletedAt        DateTime?
   requestApprovals RequestApprovalStep[]
-  workflow         ApprovalWorkflow      @relation(fields: [workflowId], references: [id])
+  workflow         ApprovalWorkflow      @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   approvers        User[]                @relation("UserToWorkflowStep")
 }
 
@@ -219,8 +225,8 @@ model RequestApprovalStep {
   metadata  Json?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  request   TripRequest    @relation(fields: [requestId], references: [id])
-  step      WorkflowStep   @relation(fields: [stepId], references: [id])
+  request   TripRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  step      WorkflowStep   @relation(fields: [stepId], references: [id], onDelete: Cascade)
   approvals UserApproval[]
 
   @@unique([requestId, stepId])
@@ -234,8 +240,8 @@ model UserApproval {
   comment               String?
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
-  requestApprovalStep   RequestApprovalStep @relation(fields: [requestApprovalStepId], references: [id])
-  user                  User                @relation(fields: [userId], references: [id])
+  requestApprovalStep   RequestApprovalStep @relation(fields: [requestApprovalStepId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([requestApprovalStepId, userId])
 }
@@ -253,10 +259,13 @@ model Invoice {
   agencyId  String
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  agency    Company       @relation("AgencyInvoices", fields: [agencyId], references: [id])
-  company   Company       @relation("CompanyInvoices", fields: [companyId], references: [id])
-  request   TripRequest   @relation(fields: [requestId], references: [id])
+  agency    Company       @relation("AgencyInvoices", fields: [agencyId], references: [id], onDelete: Cascade)
+  company   Company       @relation("CompanyInvoices", fields: [companyId], references: [id], onDelete: Cascade)
+  request   TripRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
   pdfUrl    String?
+  
+  @@index([companyId, status])
+  @@index([agencyId, status])
 }
 
 model ActivityLog {
@@ -268,9 +277,9 @@ model ActivityLog {
   description String
   metadata    Json?
   createdAt   DateTime @default(now())
-  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id])
-  company     Company  @relation(fields: [companyId], references: [id])
-  target      User?    @relation("ActivityTarget", fields: [targetId], references: [id])
+  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  target      User?    @relation("ActivityTarget", fields: [targetId], references: [id], onDelete: SetNull)
 
   @@index([companyId])
 }
@@ -347,8 +356,8 @@ model AgencyIntegration {
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
-  company Company @relation("CompanyIntegrations", fields: [companyId], references: [id])
-  agency  Company @relation("AgencyIntegrations", fields: [agencyId], references: [id])
+  company Company @relation("CompanyIntegrations", fields: [companyId], references: [id], onDelete: Cascade)
+  agency  Company @relation("AgencyIntegrations", fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, agencyId])
 }
@@ -356,6 +365,40 @@ model AgencyIntegration {
 enum IntegrationStatus {
   ACTIVE
   INACTIVE
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  ARCHIVED
+}
+
+enum WorkflowActionType {
+  REQUEST_CREATED
+  SUBMITTED
+  APPROVED_STEP
+  REJECTED
+  APPROVED
+  AUTO_APPROVED
+  AUTO_APPROVAL_REVOKED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum ExpenseCategory {
+  FLIGHT
+  HOTEL
+  TRAIN
+  MEALS
+  TRANSPORT
+  OTHER
 }
 
 model TaxTemplate {

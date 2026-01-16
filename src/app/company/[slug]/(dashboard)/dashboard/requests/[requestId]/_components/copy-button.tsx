@@ -18,7 +18,7 @@ export function CopyButton({ text, displayText }: CopyButtonProps) {
             setCopied(true);
             toast.success("Copied to clipboard!");
             setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
+        } catch {
             toast.error("Failed to copy");
         }
     };

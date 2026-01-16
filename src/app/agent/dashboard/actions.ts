@@ -4,7 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { RequestStatus, IntegrationStatus, UserRole } from "@prisma/client";
+import { RequestStatus, IntegrationStatus, UserRole, BidStatus } from "@prisma/client";
 
 export async function getAgencyStats() {
     const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export async function getAgencyStats() {
 
     let openOpportunities = 0;
     let activeBids = 0;
-    // eslint-disable-next-line prefer-const
+     
     let pendingFulfillment = 0;
 
     if (isAgent) {
@@ -53,7 +53,7 @@ export async function getAgencyStats() {
             prisma.agentBid.count({
                 where: {
                     agentId: agencyId,
-                    status: "PENDING",
+                    status: BidStatus.PENDING,
                     request: {
                         assignedAgentId: null
                     }

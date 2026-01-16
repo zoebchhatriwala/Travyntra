@@ -24,7 +24,7 @@ export async function getCompanyUsers(companySlug: string) {
             name: true,
             email: true,
             avatarUrl: true,
-            tags: true
+
         }
     });
 }
@@ -67,7 +67,7 @@ export async function saveWorkflowConfig(
         order: number;
         type: ApprovalType;
         approverIds: string[];
-        approverTags: string[];
+
     }[]
 ) {
     const session = await getServerSession(authOptions);
@@ -110,7 +110,6 @@ export async function saveWorkflowConfig(
                     name: step.name,
                     order: step.order,
                     type: step.type,
-                    approverTags: step.approverTags,
                     approvers: {
                         connect: step.approverIds.map(id => ({ id }))
                     }

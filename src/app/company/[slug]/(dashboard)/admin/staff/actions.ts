@@ -194,29 +194,4 @@ export async function updateStaffRole(staffId: string, role: UserRole, slug: str
     }
 }
 
-export async function updateStaffTags(staffId: string, tags: string[], slug: string) {
-    try {
-        const actor = await getCurrentUser();
-        const user = await prisma.user.update({
-            where: { id: staffId },
-            data: { tags },
-            select: { companyId: true }
-        });
 
-        const { logActivity } = await import("@/lib/activity");
-        await logActivity({
-            companyId: user.companyId || "",
-            actorId: actor?.id,
-            targetId: staffId,
-            action: "SETTINGS_CHANGE",
-            description: "User tags updated",
-            metadata: { tags }
-        });
-
-        revalidatePath(`/company/${slug}/admin/staff`);
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to update staff tags:", error);
-        return { success: false, error: "Failed to update staff tags" };
-    }
-}

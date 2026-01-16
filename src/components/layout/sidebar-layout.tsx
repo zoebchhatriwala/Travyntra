@@ -70,8 +70,11 @@ export function SidebarLayout({
 
     // Initialize state from local storage on mount
     useEffect(() => {
+        // We need to use useEffect to access localStorage on the client side
+        // to avoid hydration mismatch if we tried to do it in useState initializer
         const stored = localStorage.getItem("sidebar-collapsed");
         if (stored) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsCollapsed(stored === "true");
         }
     }, []);

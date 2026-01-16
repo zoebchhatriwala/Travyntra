@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'TRAVEL_AGENT', 'COMPANY_ADMIN', 'EMPLOYEE');
+CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'TRAVEL_AGENT', 'COMPANY_ADMIN', 'EMPLOYEE', 'AGENCY_EMPLOYEE');
 
 -- CreateEnum
 CREATE TYPE "RequestStatus" AS ENUM ('DRAFT', 'PENDING_COMPANY_APPROVAL', 'PENDING_AGENT_ACTION', 'IN_PROGRESS', 'APPROVED', 'BOOKED', 'COMPLETED', 'REJECTED', 'CANCELLED');
@@ -20,10 +20,25 @@ CREATE TYPE "SubscriptionPlan" AS ENUM ('FREE', 'STARTER', 'ENTERPRISE');
 CREATE TYPE "ApprovalType" AS ENUM ('ALL', 'ANY');
 
 -- CreateEnum
-CREATE TYPE "ApprovalStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+CREATE TYPE "ApprovalStatus" AS ENUM ('PENDING', 'WAITING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'PAID', 'VOID', 'OVERDUE');
+
+-- CreateEnum
+CREATE TYPE "IntegrationStatus" AS ENUM ('ACTIVE', 'INACTIVE');
+
+-- CreateEnum
+CREATE TYPE "BidStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "WorkflowActionType" AS ENUM ('REQUEST_CREATED', 'SUBMITTED', 'APPROVED_STEP', 'REJECTED', 'APPROVED', 'AUTO_APPROVED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "NotificationType" AS ENUM ('INFO', 'SUCCESS', 'WARNING', 'ERROR');
+
+-- CreateEnum
+CREATE TYPE "ExpenseCategory" AS ENUM ('FLIGHT', 'HOTEL', 'TRAIN', 'MEALS', 'TRANSPORT', 'OTHER');
 
 -- CreateTable
 CREATE TABLE "Company" (
@@ -41,6 +56,7 @@ CREATE TABLE "Company" (
     "country" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "policyThreshold" JSONB,
 
     CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
 );
@@ -54,7 +70,6 @@ CREATE TABLE "User" (
     "role" "UserRole" NOT NULL DEFAULT 'EMPLOYEE',
     "avatarUrl" TEXT,
     "companyId" TEXT,
-    "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "isActive" BOOLEAN NOT NULL DEFAULT false,
     "isBlocked" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -69,7 +84,7 @@ CREATE TABLE "Notification" (
     "userId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "message" TEXT NOT NULL,
-    "type" TEXT,
+    "type" "NotificationType" DEFAULT 'INFO',
     "link" TEXT,
     "read" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -85,13 +100,15 @@ CREATE TABLE "TripRequest" (
     "assignedAgentId" TEXT,
     "status" "RequestStatus" NOT NULL DEFAULT 'DRAFT',
     "title" TEXT NOT NULL,
-    "destination" TEXT NOT NULL,
+    "destination" JSONB NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "purpose" TEXT,
-    "budget" DECIMAL(65,30),
+    "budget" JSONB,
+    "cost" JSONB,
     "preferences" JSONB,
     "parentTripId" TEXT,
+    "isGroup" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -103,9 +120,10 @@ CREATE TABLE "AgentBid" (
     "id" TEXT NOT NULL,
     "requestId" TEXT NOT NULL,
     "agentId" TEXT NOT NULL,
-    "amount" DECIMAL(65,30),
+    "amount" JSONB,
+    "taxes" JSONB,
     "message" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "status" "BidStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -113,11 +131,25 @@ CREATE TABLE "AgentBid" (
 );
 
 -- CreateTable
+CREATE TABLE "FulfillmentItem" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "isCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "FulfillmentItem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "WorkflowAction" (
     "id" TEXT NOT NULL,
     "requestId" TEXT NOT NULL,
     "actorId" TEXT NOT NULL,
-    "action" TEXT NOT NULL,
+    "action" "WorkflowActionType" NOT NULL,
     "comment" TEXT,
     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -141,6 +173,7 @@ CREATE TABLE "Document" (
     "id" TEXT NOT NULL,
     "requestId" TEXT,
     "uploaderId" TEXT NOT NULL,
+    "fulfillmentItemId" TEXT,
     "name" TEXT NOT NULL,
     "s3Key" TEXT NOT NULL,
     "url" TEXT NOT NULL,
@@ -156,7 +189,7 @@ CREATE TABLE "Expense" (
     "requestId" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'USD',
-    "category" TEXT NOT NULL,
+    "category" "ExpenseCategory" NOT NULL,
     "description" TEXT,
     "receiptUrl" TEXT,
     "incurredAt" TIMESTAMP(3) NOT NULL,
@@ -184,7 +217,6 @@ CREATE TABLE "WorkflowStep" (
     "name" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "type" "ApprovalType" NOT NULL DEFAULT 'ANY',
-    "approverTags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -198,6 +230,7 @@ CREATE TABLE "RequestApprovalStep" (
     "requestId" TEXT NOT NULL,
     "stepId" TEXT NOT NULL,
     "status" "ApprovalStatus" NOT NULL DEFAULT 'PENDING',
+    "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -221,13 +254,17 @@ CREATE TABLE "UserApproval" (
 CREATE TABLE "Invoice" (
     "id" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
+    "subtotal" DECIMAL(65,30) NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
     "status" "InvoiceStatus" NOT NULL DEFAULT 'PENDING',
+    "taxes" JSONB,
     "dueDate" TIMESTAMP(3),
     "requestId" TEXT NOT NULL,
     "companyId" TEXT NOT NULL,
     "agencyId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "pdfUrl" TEXT,
 
     CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
 );
@@ -244,6 +281,32 @@ CREATE TABLE "ActivityLog" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AgencyIntegration" (
+    "id" TEXT NOT NULL,
+    "companyId" TEXT NOT NULL,
+    "agencyId" TEXT NOT NULL,
+    "status" "IntegrationStatus" NOT NULL DEFAULT 'ACTIVE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AgencyIntegration_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TaxTemplate" (
+    "id" TEXT NOT NULL,
+    "agencyId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "taxes" JSONB NOT NULL,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TaxTemplate_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -272,6 +335,21 @@ CREATE UNIQUE INDEX "Company_domain_key" ON "Company"("domain");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE INDEX "TripRequest_companyId_status_idx" ON "TripRequest"("companyId", "status");
+
+-- CreateIndex
+CREATE INDEX "TripRequest_userId_status_idx" ON "TripRequest"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "AgentBid_requestId_agentId_idx" ON "AgentBid"("requestId", "agentId");
+
+-- CreateIndex
+CREATE INDEX "AgentBid_agentId_status_idx" ON "AgentBid"("agentId", "status");
+
+-- CreateIndex
+CREATE INDEX "Expense_requestId_idx" ON "Expense"("requestId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ApprovalWorkflow_companyId_key" ON "ApprovalWorkflow"("companyId");
 
 -- CreateIndex
@@ -284,7 +362,19 @@ CREATE UNIQUE INDEX "UserApproval_requestApprovalStepId_userId_key" ON "UserAppr
 CREATE UNIQUE INDEX "Invoice_requestId_key" ON "Invoice"("requestId");
 
 -- CreateIndex
+CREATE INDEX "Invoice_companyId_status_idx" ON "Invoice"("companyId", "status");
+
+-- CreateIndex
+CREATE INDEX "Invoice_agencyId_status_idx" ON "Invoice"("agencyId", "status");
+
+-- CreateIndex
 CREATE INDEX "ActivityLog_companyId_idx" ON "ActivityLog"("companyId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AgencyIntegration_companyId_agencyId_key" ON "AgencyIntegration"("companyId", "agencyId");
+
+-- CreateIndex
+CREATE INDEX "TaxTemplate_agencyId_idx" ON "TaxTemplate"("agencyId");
 
 -- CreateIndex
 CREATE INDEX "_UserToWorkflowStep_B_index" ON "_UserToWorkflowStep"("B");
@@ -299,28 +389,31 @@ ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId"
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_assignedAgentId_fkey" FOREIGN KEY ("assignedAgentId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_assignedAgentId_fkey" FOREIGN KEY ("assignedAgentId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_parentTripId_fkey" FOREIGN KEY ("parentTripId") REFERENCES "TripRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "FulfillmentItem" ADD CONSTRAINT "FulfillmentItem_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -333,6 +426,9 @@ ALTER TABLE "Document" ADD CONSTRAINT "Document_requestId_fkey" FOREIGN KEY ("re
 
 -- AddForeignKey
 ALTER TABLE "Document" ADD CONSTRAINT "Document_uploaderId_fkey" FOREIGN KEY ("uploaderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Document" ADD CONSTRAINT "Document_fulfillmentItemId_fkey" FOREIGN KEY ("fulfillmentItemId") REFERENCES "FulfillmentItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Expense" ADD CONSTRAINT "Expense_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -356,22 +452,31 @@ ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_requestApprovalStepId_fk
 ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_targetId_fkey" FOREIGN KEY ("targetId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TaxTemplate" ADD CONSTRAINT "TaxTemplate_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserToWorkflowStep" ADD CONSTRAINT "_UserToWorkflowStep_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

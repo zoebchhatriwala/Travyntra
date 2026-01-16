@@ -1,15 +1,5 @@
 
-/**
- * Represents the status of a bid submitted by an agent.
- */
-export enum AgentBidStatus {
-    /** The bid is waiting for review or approval */
-    PENDING = "PENDING",
-    /** The bid has been accepted by the customer or administrator */
-    ACCEPTED = "ACCEPTED",
-    /** The bid has been rejected by the customer or administrator */
-    REJECTED = "REJECTED"
-}
+
 
 /**
  * Represents the possible actions recorded in the activity log.

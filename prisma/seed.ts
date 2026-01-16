@@ -1,5 +1,5 @@
 
-import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, ApprovalStatus } from "@prisma/client";
+import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, ApprovalStatus, BidStatus, WorkflowActionType } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -440,10 +440,10 @@ async function main() {
                 });
 
                 // determine the bid status based on the request status
-                let bidStatus = "PENDING";
+                let bidStatus: BidStatus = BidStatus.PENDING;
                 const isBookedRequest = status === RequestStatus.BOOKED;
                 if (isBookedRequest) {
-                    bidStatus = "ACCEPTED";
+                    bidStatus = BidStatus.ACCEPTED;
                 }
 
                 // Define the bid amount
@@ -614,7 +614,7 @@ async function main() {
         data: {
             requestId: autoApprovedTrip.id,
             actorId: testEmployeeUser.id,
-            action: "AUTO_APPROVED",
+            action: WorkflowActionType.AUTO_APPROVED,
             comment: "✅ Trip request auto-approved based on Domestic Trip policy."
         }
     });

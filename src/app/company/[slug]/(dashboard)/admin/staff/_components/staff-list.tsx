@@ -12,10 +12,7 @@ import {
     Mail,
     CalendarDays,
     BadgeCheck,
-    UserPlus,
-    Tag,
-    X,
-    Plus
+    UserPlus
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -24,15 +21,6 @@ import {
     Card,
     CardContent
 } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -44,7 +32,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { approveStaff, toggleStaffBlock, updateStaffRole, updateStaffTags } from "../actions";
+import { approveStaff, toggleStaffBlock, updateStaffRole } from "../actions";
 import { UserRole } from "@prisma/client";
 
 interface StaffMember {
@@ -56,7 +44,6 @@ interface StaffMember {
     isBlocked: boolean;
     createdAt: Date;
     avatarUrl: string | null;
-    tags: string[];
 }
 
 interface StaffListProps {
@@ -71,13 +58,11 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<string | null>(null);
 
-    const [editingTagsUser, setEditingTagsUser] = useState<StaffMember | null>(null);
-    const [newTag, setNewTag] = useState("");
+
 
     const filteredStaff = staff.filter(member => {
         const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+            member.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesRole = roleFilter === "ALL" || member.role === roleFilter;
         return matchesSearch && matchesRole;
     });
@@ -124,40 +109,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
         setIsLoading(null);
     };
 
-    const handleAddTag = () => {
-        if (!newTag.trim() || !editingTagsUser) return;
-        if (editingTagsUser.tags.includes(newTag.trim())) {
-            toast.error("Tag already exists");
-            return;
-        }
-        setEditingTagsUser({
-            ...editingTagsUser,
-            tags: [...editingTagsUser.tags, newTag.trim()]
-        });
-        setNewTag("");
-    };
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        if (!editingTagsUser) return;
-        setEditingTagsUser({
-            ...editingTagsUser,
-            tags: editingTagsUser.tags.filter(t => t !== tagToRemove)
-        });
-    };
-
-    const handleSaveTags = async () => {
-        if (!editingTagsUser) return;
-        setIsLoading(editingTagsUser.id);
-        const res = await updateStaffTags(editingTagsUser.id, editingTagsUser.tags, slug);
-        if (res.success) {
-            setStaff(prev => prev.map(s => s.id === editingTagsUser.id ? { ...s, tags: editingTagsUser.tags } : s));
-            toast.success("Tags updated successfully");
-            setEditingTagsUser(null);
-        } else {
-            toast.error(res.error || "Failed to update tags");
-        }
-        setIsLoading(null);
-    };
 
     const toggleSelect = (id: string) => {
         setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -194,7 +146,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search staff by name, email, or tags..."
+                            placeholder="Search staff by name or email..."
                             className="w-full h-12 pl-11 pr-4 rounded-2xl border-none bg-white shadow-sm ring-1 ring-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -291,7 +243,6 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                                 handleApprove={handleApprove}
                                 handleToggleBlock={handleToggleBlock}
                                 handleRoleUpdate={handleRoleUpdate}
-                                setEditingTagsUser={setEditingTagsUser}
                             />
                         ))}
                     </div>
@@ -316,7 +267,6 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                                 handleApprove={handleApprove}
                                 handleToggleBlock={handleToggleBlock}
                                 handleRoleUpdate={handleRoleUpdate}
-                                setEditingTagsUser={setEditingTagsUser}
                             />
                         ))}
                     </div>
@@ -331,46 +281,7 @@ export function StaffList({ initialStaff, slug }: StaffListProps) {
                 </div>
             )}
 
-            <Dialog open={!!editingTagsUser} onOpenChange={(open) => !open && setEditingTagsUser(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Manage Tags</DialogTitle>
-                        <DialogDescription>
-                            Add custom tags to identify this user (e.g., Manager, Frequent Flyer).
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Enter tag name..."
-                                value={newTag}
-                                onChange={(e) => setNewTag(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                            />
-                            <Button onClick={handleAddTag} size="icon" className="shrink-0 bg-indigo-600 hover:bg-indigo-700">
-                                <Plus size={18} />
-                            </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {editingTagsUser?.tags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="px-3 py-1 flex items-center gap-2">
-                                    {tag}
-                                    <button onClick={() => handleRemoveTag(tag)} className="hover:text-red-500">
-                                        <X size={14} />
-                                    </button>
-                                </Badge>
-                            ))}
-                            {editingTagsUser?.tags.length === 0 && (
-                                <p className="text-sm text-gray-400 italic">No tags assigned yet.</p>
-                            )}
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingTagsUser(null)}>Cancel</Button>
-                        <Button onClick={handleSaveTags} className="bg-indigo-600 hover:bg-indigo-700">Save Changes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+
         </div>
     );
 }
@@ -383,7 +294,6 @@ function StaffCard({
     handleApprove,
     handleToggleBlock,
     handleRoleUpdate,
-    setEditingTagsUser
 }: {
     member: StaffMember;
     selectedIds: string[];
@@ -392,7 +302,6 @@ function StaffCard({
     handleApprove: (id: string) => void;
     handleToggleBlock: (id: string, isBlocked: boolean) => void;
     handleRoleUpdate: (id: string, role: UserRole) => void;
-    setEditingTagsUser: (member: StaffMember) => void;
 }) {
     return (
         <Card className="border-none shadow-sm ring-1 ring-gray-100 rounded-[32px] overflow-hidden hover:ring-indigo-100 hover:shadow-md transition-all duration-300 bg-white">
@@ -434,9 +343,7 @@ function StaffCard({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[180px]">
                             <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-gray-400 p-2">Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => setEditingTagsUser(member)} className="rounded-xl flex items-center gap-2 font-bold cursor-pointer">
-                                <Tag size={16} /> Manage Tags
-                            </DropdownMenuItem>
+
                             {!member.isActive && (
                                 <DropdownMenuItem onClick={() => handleApprove(member.id)} className="rounded-xl flex items-center gap-2 text-emerald-600 font-bold focus:text-emerald-700 focus:bg-emerald-50 cursor-pointer">
                                     <UserCheck size={16} /> Approve Access
@@ -458,15 +365,7 @@ function StaffCard({
                     </DropdownMenu>
                 </div>
 
-                {member.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                        {member.tags.map(tag => (
-                            <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-bold border border-gray-200">
-                                #{tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
+
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <div className="p-3 bg-gray-50/50 rounded-2xl ring-1 ring-gray-100">

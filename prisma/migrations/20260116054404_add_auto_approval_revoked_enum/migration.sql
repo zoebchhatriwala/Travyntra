@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "WorkflowActionType" ADD VALUE 'AUTO_APPROVAL_REVOKED';

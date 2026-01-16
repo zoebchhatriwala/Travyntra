@@ -2,11 +2,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma, UserRole, RequestStatus } from "@prisma/client";
+import { Prisma, UserRole, RequestStatus, BidStatus, NotificationType } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { AgentBidStatus, ActivityLogAction } from "@/lib/enums";
+import { ActivityLogAction } from "@/lib/enums";
 import { createMoney, formatMoney, parseMoney, moneyToDecimal, type Money } from "@/lib/types/money";
 import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
@@ -91,7 +91,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
         const totalMoney = createMoney(totalWithTaxes, currency);
 
         // Check for auto-approval constraints
-        let autoApprovedStep = request.approvalSteps.find(s => {
+        const autoApprovedStep = request.approvalSteps.find(s => {
             const metadata = s.metadata as unknown as ApprovalStepMetadata | null;
             return metadata?.autoApproved === true;
         });
@@ -157,7 +157,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 amount: bidAmount as unknown as Prisma.InputJsonValue,
                 taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
-                status: AgentBidStatus.PENDING
+                status: BidStatus.PENDING
             }
         });
 
@@ -167,13 +167,13 @@ export async function submitBid(requestId: string, amount: number, message: stri
         // check if we can auto-accept
         if (policyMetadata) {
             // Check if any bid is already accepted for this request
-            const alreadyAccepted = request.bids.some(b => b.status === AgentBidStatus.ACCEPTED);
+            const alreadyAccepted = request.bids.some(b => b.status === BidStatus.ACCEPTED);
 
             if (alreadyAccepted) {
                 // If a bid is already accepted, auto-reject this one
                 await prisma.agentBid.update({
                     where: { id: newBid.id },
-                    data: { status: AgentBidStatus.REJECTED }
+                    data: { status: BidStatus.REJECTED }
                 });
 
                 await prisma.message.create({
@@ -230,7 +230,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 userId: admin.id,
                 title: "New Bid Received",
                 message: `A new bid of ${formatMoney(totalMoney)} has been submitted for "${request?.title}".`,
-                type: "INFO",
+                type: NotificationType.INFO,
                 link: `/company/${request?.company.slug}/dashboard/requests/${requestId}`,
                 sendEmail: true
             })
@@ -264,7 +264,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     // 1. Update Bid Status
     await prisma.agentBid.update({
         where: { id: bidId },
-        data: { status: AgentBidStatus.ACCEPTED }
+        data: { status: BidStatus.ACCEPTED }
     });
 
     // 2. Reject other bids
@@ -273,7 +273,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
             requestId,
             id: { not: bidId }
         },
-        data: { status: AgentBidStatus.REJECTED }
+        data: { status: BidStatus.REJECTED }
     });
 
     // Calculate total amount with taxes
@@ -338,7 +338,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
             userId,
             title: "Bid Auto-Approved!",
             message: `Your bid for "${bid.request.title}" was auto-accepted based on the company's policy.`,
-            type: "SUCCESS",
+            type: NotificationType.SUCCESS,
             link: `/agent/fulfillment/${requestId}`,
             sendEmail: true
         })
@@ -407,7 +407,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
 
         // --- Auto-Approval Logic Start ---
         // Check for auto-approval constraints
-        let autoApprovedStep = request.approvalSteps.find(s => {
+        const autoApprovedStep = request.approvalSteps.find(s => {
             const metadata = s.metadata as unknown as ApprovalStepMetadata | null;
             return metadata?.autoApproved === true;
         });
@@ -460,7 +460,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
         let autoApprovalApplied = false;
 
         if (policyMetadata) {
-            const alreadyAccepted = request.bids.some(b => b.status === AgentBidStatus.ACCEPTED);
+            const alreadyAccepted = request.bids.some(b => b.status === BidStatus.ACCEPTED);
             // We don't auto-reject updates here, we just check if we can auto-accept this update
             if (!alreadyAccepted && isWithinThreshold) {
                 await approveBidInternal(bidId, requestId, session.user.id);
@@ -503,7 +503,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
                 userId: admin.id,
                 title: "Bid Updated",
                 message: `A bid for "${request?.title}" has been updated to ${formatMoney(totalMoney)}.`,
-                type: "INFO",
+                type: NotificationType.INFO,
                 link: `/company/${request?.company.slug}/dashboard/requests/${requestId}`,
                 sendEmail: true
             })
@@ -548,7 +548,7 @@ export async function approveBid(bidId: string, requestId: string) {
         // 1. Update Bid Status
         await prisma.agentBid.update({
             where: { id: bidId },
-            data: { status: AgentBidStatus.ACCEPTED }
+            data: { status: BidStatus.ACCEPTED }
         });
 
         // 2. Reject other bids? Optional, but often good practice. 
@@ -559,7 +559,7 @@ export async function approveBid(bidId: string, requestId: string) {
                 requestId,
                 id: { not: bidId }
             },
-            data: { status: AgentBidStatus.REJECTED }
+            data: { status: BidStatus.REJECTED }
         });
 
         // Calculate total amount with taxes
@@ -627,7 +627,7 @@ export async function approveBid(bidId: string, requestId: string) {
                 userId,
                 title: "Bid Approved!",
                 message: `Your bid for "${bid.request.title}" has been accepted by the company.`,
-                type: "SUCCESS",
+                type: NotificationType.SUCCESS,
                 link: `/agent/fulfillment/${requestId}`,
                 sendEmail: true
             })
@@ -676,7 +676,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
         // 1. Reset all bids for this request to PENDING
         await prisma.agentBid.updateMany({
             where: { requestId },
-            data: { status: AgentBidStatus.PENDING }
+            data: { status: BidStatus.PENDING }
         });
 
         // 2. Clear Request assignment
@@ -716,7 +716,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
                 userId,
                 title: "Bid Status Update",
                 message: `The approval of your bid for "${bid.request.title}" has been reversed by the company admin.`,
-                type: "WARNING",
+                type: NotificationType.WARNING,
                 link: `/agent/bids/${requestId}`,
                 sendEmail: true
             })
@@ -749,7 +749,7 @@ export async function removeBid(bidId: string, requestId: string) {
         const bid = await prisma.agentBid.findUnique({ where: { id: bidId } });
         if (!bid) return { error: "Bid not found" };
 
-        if (bid.status === AgentBidStatus.ACCEPTED) {
+        if (bid.status === BidStatus.ACCEPTED) {
             // If removing an accepted bid, we need to reset the request state
             await prisma.tripRequest.update({
                 where: { id: requestId },

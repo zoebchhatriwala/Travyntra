@@ -1,9 +1,8 @@
 import { prisma } from "./prisma";
-import { RequestStatus, ApprovalType, ApprovalStatus, Prisma } from "@prisma/client";
+import { RequestStatus, ApprovalType, ApprovalStatus, Prisma, WorkflowActionType, NotificationType, BidStatus } from "@prisma/client";
 import { AutoApprovalEngine } from "./auto-approval-engine";
 import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "./types/auto-approval-policy";
 import { createNotification } from "./notifications";
-import { AgentBidStatus } from "./enums";
 import { UserRole } from "./constants/roles";
 
 /**
@@ -105,7 +104,7 @@ export class WorkflowEngine {
                 data: {
                     requestId: requestId,
                     actorId: request.userId,
-                    action: "AUTO_APPROVED",
+                    action: WorkflowActionType.AUTO_APPROVED,
                     comment: autoApprovalComment
                 }
             });
@@ -239,7 +238,7 @@ export class WorkflowEngine {
                 data: {
                     requestId: request.id,
                     actorId: request.userId,
-                    action: "SUBMITTED",
+                    action: WorkflowActionType.SUBMITTED,
                     comment: "Request submitted for approval."
                 }
             });
@@ -251,7 +250,7 @@ export class WorkflowEngine {
                         userId: approver.id,
                         title: "New Approval Request",
                         message: `"${request.title}" requires your approval (${firstStep.name})`,
-                        type: "INFO",
+                        type: NotificationType.INFO,
                         link: `/company/${request.company.slug}/dashboard/requests/${request.id}`,
                         sendEmail: true
                     })
@@ -447,7 +446,7 @@ export class WorkflowEngine {
                 const rejectionActionData = {
                     requestId: requestId,
                     actorId: userId,
-                    action: "REJECTED",
+                    action: WorkflowActionType.REJECTED,
                     comment: finalLogComment
                 };
 
@@ -546,7 +545,7 @@ export class WorkflowEngine {
                 const stepActionPayload = {
                     requestId: requestId,
                     actorId: lastActorId,
-                    action: "APPROVED_STEP",
+                    action: WorkflowActionType.APPROVED_STEP,
                     comment: transitionLogComment
                 };
 
@@ -578,7 +577,7 @@ export class WorkflowEngine {
             const finalActionPayload = {
                 requestId: requestId,
                 actorId: lastActorId,
-                action: "APPROVED",
+                action: WorkflowActionType.APPROVED,
                 comment: processCompleteComment
             };
 
@@ -684,7 +683,7 @@ export class WorkflowEngine {
             data: {
                 requestId,
                 actorId,
-                action: "AUTO_APPROVED",
+                action: WorkflowActionType.AUTO_APPROVED,
                 comment: `✅ Auto-approved after update: ${evaluation.reason}`
             }
         });
@@ -810,7 +809,7 @@ export class WorkflowEngine {
             data: {
                 requestId,
                 actorId,
-                action: "AUTO_APPROVAL_REVOKED", // Using string literal as enum might not have this
+                action: WorkflowActionType.AUTO_APPROVAL_REVOKED,
                 comment: `⚠️ Auto-approval revoked: Request update triggered re-evaluation. Reason: ${reason}`
             }
         });
@@ -838,7 +837,7 @@ export class WorkflowEngine {
                         userId: approver.id,
                         title: "Approval Required",
                         message: `A request "${request.title}" has been updated and now requires your approval.`,
-                        type: "WARNING",
+                        type: NotificationType.WARNING,
                         link: `/company/${request.company.slug}/dashboard/requests/${requestId}`,
                         sendEmail: true
                     })
@@ -851,7 +850,7 @@ export class WorkflowEngine {
         const approvedBids = await prisma.agentBid.findMany({
             where: {
                 requestId,
-                status: AgentBidStatus.ACCEPTED
+                status: BidStatus.ACCEPTED
             }
         });
 
@@ -874,7 +873,7 @@ export class WorkflowEngine {
                         userId: user.id,
                         title: "Bid Status Update",
                         message: `The approval of your bid for "${request.title}" has been reversed because the request approval was revoked.`,
-                        type: "WARNING",
+                        type: NotificationType.WARNING,
                         link: `/agent/bids/${bid.id}`,
                         sendEmail: true
                     });
@@ -889,7 +888,7 @@ export class WorkflowEngine {
                     }
                 },
                 data: {
-                    status: AgentBidStatus.PENDING
+                    status: BidStatus.PENDING
                 }
             });
         }
