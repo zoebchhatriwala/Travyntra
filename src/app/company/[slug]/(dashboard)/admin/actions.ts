@@ -218,6 +218,15 @@ export async function getCompanyRequests(slug: string, options: {
     };
 }
 
+/**
+ * Bulk process requests with quick approval/rejection.
+ * This bypasses the normal approval workflow and creates discussion entries.
+ * 
+ * @param ids - Array of request IDs to process
+ * @param action - Action to perform (APPROVE or REJECT)
+ * @param comment - Optional comment explaining the quick action
+ * @returns Count of processed requests
+ */
 export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'REJECT', comment?: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || session.user.role === "EMPLOYEE") throw new Error("Unauthorized");
@@ -237,8 +246,8 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
             }
         }
 
-        const status = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
-        const approvalStatus = action === 'APPROVE' ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED;
+        const status: RequestStatus = action === 'APPROVE' ? RequestStatus.APPROVED : RequestStatus.REJECTED;
+        const approvalStatus: ApprovalStatus = action === 'APPROVE' ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED;
 
         // 1. Update TripRequests
         await prisma.tripRequest.updateMany({
@@ -265,19 +274,34 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
             companyId: req.companyId,
             actorId: session.user.id,
             action: action === 'APPROVE' ? 'ADMIN_BULK_APPROVE' : 'ADMIN_BULK_REJECT',
-            description: `Admin ${action.toLowerCase()}d request "${req.title}" via bulk action`,
-            metadata: { comment }
+            description: `Admin ${action.toLowerCase()}d request "${req.title}" via quick action (approval workflow bypassed)`,
+            metadata: { comment, quickAction: true }
         }));
 
         await prisma.activityLog.createMany({ data: logs });
 
-        // 4. Notifications
+        // 4. Create Discussion Entries for each request
+        const actionVerb = action === 'APPROVE' ? 'approved' : 'rejected';
+        const systemMessage = `🚀 **Quick ${action === 'APPROVE' ? 'Approval' : 'Rejection'}** by ${session.user.name || 'Administrator'}\n\n` +
+            `⚠️ **Notice:** This action bypassed the normal approval workflow.\n\n` +
+            (comment ? `**Reason:** ${comment}` : `No additional comments provided.`);
+
+        const messages = requests.map(req => ({
+            requestId: req.id,
+            senderId: session.user.id!,
+            content: systemMessage
+        }));
+
+        await prisma.message.createMany({ data: messages });
+
+        // 5. Notifications
         for (const req of requests) {
             await createNotification({
                 userId: req.userId,
-                title: action === 'APPROVE' ? "Request Approved" : "Request Rejected",
-                message: `An administrator has ${action.toLowerCase()}d your request "${req.title}"`,
+                title: action === 'APPROVE' ? "Request Approved (Quick Action)" : "Request Rejected (Quick Action)",
+                message: `An administrator has ${actionVerb} your request "${req.title}" via quick action, bypassing the approval workflow.`,
                 type: action === 'APPROVE' ? "SUCCESS" : "ERROR",
+                sendEmail: true
             });
         }
 
@@ -288,6 +312,7 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
 
         if (company) {
             revalidatePath(`/company/${company.slug}/admin/requests`);
+            revalidatePath(`/company/${company.slug}/dashboard/requests`);
         }
 
         return { count: ids.length };

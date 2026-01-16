@@ -10,7 +10,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    FileText
+    FileText,
+    AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,14 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -49,6 +58,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; action: 'APPROVE' | 'REJECT' | null; ids: string[] }>({ open: false, action: null, ids: [] });
 
     const fetchRequests = useCallback(async () => {
         setIsLoading(true);
@@ -93,28 +103,30 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
 
     const handleBulkAction = async (action: 'APPROVE' | 'REJECT') => {
         if (selectedIds.length === 0) return;
-
-        const promise = bulkProcessRequests(selectedIds, action);
-        toast.promise(promise, {
-            loading: `Processing ${selectedIds.length} requests...`,
-            success: (data: { count: number }) => {
-                setSelectedIds([]);
-                setPage(1); // Reset to first page to see updates
-                return `Successfully processed ${data.count} requests`;
-            },
-            error: (err: { message?: string }) => err.message || "Failed to process requests"
-        });
+        setConfirmDialog({ open: true, action, ids: selectedIds });
     };
 
     const handleRowAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
-        const promise = bulkProcessRequests([id], action);
+        setConfirmDialog({ open: true, action, ids: [id] });
+    };
+
+    const executeQuickAction = async () => {
+        if (!confirmDialog.action || confirmDialog.ids.length === 0) return;
+
+        const promise = bulkProcessRequests(confirmDialog.ids, confirmDialog.action);
         toast.promise(promise, {
-            loading: `Processing request...`,
-            success: () => {
+            loading: `Processing ${confirmDialog.ids.length} request(s)...`,
+            success: (data: { count: number }) => {
+                setSelectedIds([]);
+                setConfirmDialog({ open: false, action: null, ids: [] });
+                setPage(1); // Reset to first page to see updates
                 fetchRequests();
-                return `Request ${action.toLowerCase()}d successfully`;
+                return `Successfully processed ${data.count} request(s) via quick action`;
             },
-            error: (err: { message?: string }) => err.message || "Failed to process request"
+            error: (err: { message?: string }) => {
+                setConfirmDialog({ open: false, action: null, ids: [] });
+                return err.message || "Failed to process requests";
+            }
         });
     };
 
@@ -173,10 +185,15 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
                         <option value="ALL">All Status</option>
+                        <option value="DRAFT">Draft</option>
                         <option value="PENDING_COMPANY_APPROVAL">Pending Approval</option>
+                        <option value="PENDING_AGENT_ACTION">Pending Agent</option>
+                        <option value="IN_PROGRESS">In Progress</option>
                         <option value="APPROVED">Approved</option>
+                        <option value="BOOKED">Booked</option>
                         <option value="COMPLETED">Completed</option>
                         <option value="REJECTED">Rejected</option>
+                        <option value="CANCELLED">Cancelled</option>
                     </select>
                 </div>
 
@@ -399,6 +416,63 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                     </div>
                 </div>
             </div>
+
+            {/* Quick Action Confirmation Dialog */}
+            <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, action: null, ids: [] })}>
+                <DialogContent className="sm:max-w-[500px] rounded-xl">
+                    <DialogHeader className="space-y-4">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                                <AlertTriangle className="text-orange-600" size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <DialogTitle className="text-xl font-semibold text-gray-900 mb-2">
+                                    {confirmDialog.action === 'APPROVE' ? 'Quick Approve' : 'Quick Reject'} {confirmDialog.ids.length} Request{confirmDialog.ids.length > 1 ? 's' : ''}
+                                </DialogTitle>
+                                <DialogDescription className="text-sm text-gray-600 space-y-2">
+                                    <p className="font-medium text-orange-600">
+                                        ⚠️ This action will bypass the normal approval workflow.
+                                    </p>
+                                    <p>
+                                        The request{confirmDialog.ids.length > 1 ? 's' : ''} will be immediately {confirmDialog.action === 'APPROVE' ? 'approved' : 'rejected'} and a notice will be added to the discussion thread.
+                                    </p>
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <p className="text-sm font-medium text-gray-900 mb-2">What will happen:</p>
+                            <ul className="text-sm text-gray-600 space-y-1.5 ml-4 list-disc">
+                                <li>Request status will change to {confirmDialog.action === 'APPROVE' ? 'APPROVED' : 'REJECTED'}</li>
+                                <li>All pending approval steps will be bypassed</li>
+                                <li>A system message will be added to the discussion</li>
+                                <li>The requester will be notified via email</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 mt-6">
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDialog({ open: false, action: null, ids: [] })}
+                            className="h-10 rounded-lg font-medium"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={executeQuickAction}
+                            className={`h-10 rounded-lg font-medium ${confirmDialog.action === 'APPROVE'
+                                ? 'bg-green-600 hover:bg-green-700'
+                                : 'bg-red-600 hover:bg-red-700'
+                                }`}
+                        >
+                            Confirm Quick {confirmDialog.action === 'APPROVE' ? 'Approval' : 'Rejection'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div >
     );
 }
