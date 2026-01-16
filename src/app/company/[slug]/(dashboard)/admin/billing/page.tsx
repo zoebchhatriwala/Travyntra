@@ -1,5 +1,13 @@
 import { getCompanyInvoices } from "./actions";
 import { BillingList } from "./_components/billing-list";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Billing Console | Travyntra",
+        description: "View invoices, manage reconciliation, and track travel expenditure."
+    };
+}
 
 export default async function BillingPage({
     params,

@@ -311,10 +311,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Destination</FormLabel>
-                                                <FormControl>
-                                                    <div className="flex gap-2">
-                                                        <div className="relative flex-1">
-                                                            <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                <div className="flex gap-2">
+                                                    <div className="relative flex-1">
+                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                        <FormControl>
                                                             <Input
                                                                 placeholder="City, Country"
                                                                 {...field}
@@ -322,18 +322,18 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                 className="pl-9 bg-white cursor-pointer hover:bg-gray-50"
                                                                 onClick={() => setAddressDialogOpen(true)}
                                                             />
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="icon"
-                                                            onClick={() => setAddressDialogOpen(true)}
-                                                            title="Edit Address"
-                                                        >
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Button>
+                                                        </FormControl>
                                                     </div>
-                                                </FormControl>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={() => setAddressDialogOpen(true)}
+                                                        title="Edit Address"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                                 <FormMessage />
                                                 <ManualAddressDialog
                                                     open={addressDialogOpen}
@@ -351,12 +351,12 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Estimated Budget</FormLabel>
-                                                <FormControl>
-                                                    <div className="relative">
-                                                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{currency}</span>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{currency}</span>
+                                                    <FormControl>
                                                         <Input type="number" placeholder="0.00" className="pl-12" {...field} />
-                                                    </div>
-                                                </FormControl>
+                                                    </FormControl>
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -589,10 +589,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                     name="carPickup"
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormControl>
-                                                                <div className="flex gap-2">
-                                                                    <div className="relative flex-1">
-                                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                            <div className="flex gap-2">
+                                                                <div className="relative flex-1">
+                                                                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                    <FormControl>
                                                                         <Input
                                                                             placeholder="Pickup Address..."
                                                                             {...field}
@@ -600,18 +600,18 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                             className="pl-9 cursor-pointer hover:bg-gray-100"
                                                                             onClick={() => setPickupAddressDialogOpen(true)}
                                                                         />
-                                                                    </div>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => setPickupAddressDialogOpen(true)}
-                                                                        title="Edit Pickup Address"
-                                                                    >
-                                                                        <Pencil className="h-4 w-4" />
-                                                                    </Button>
+                                                                    </FormControl>
                                                                 </div>
-                                                            </FormControl>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => setPickupAddressDialogOpen(true)}
+                                                                    title="Edit Pickup Address"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                             <FormMessage />
                                                             <ManualAddressDialog
                                                                 open={pickupAddressDialogOpen}
@@ -627,10 +627,10 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                     name="carDropoff"
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormControl>
-                                                                <div className="flex gap-2">
-                                                                    <div className="relative flex-1">
-                                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                            <div className="flex gap-2">
+                                                                <div className="relative flex-1">
+                                                                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                    <FormControl>
                                                                         <Input
                                                                             placeholder="Dropoff Address..."
                                                                             {...field}
@@ -638,18 +638,18 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                                             className="pl-9 cursor-pointer hover:bg-gray-100"
                                                                             onClick={() => setDropoffAddressDialogOpen(true)}
                                                                         />
-                                                                    </div>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => setDropoffAddressDialogOpen(true)}
-                                                                        title="Edit Dropoff Address"
-                                                                    >
-                                                                        <Pencil className="h-4 w-4" />
-                                                                    </Button>
+                                                                    </FormControl>
                                                                 </div>
-                                                            </FormControl>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => setDropoffAddressDialogOpen(true)}
+                                                                    title="Edit Dropoff Address"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                             <FormMessage />
                                                             <ManualAddressDialog
                                                                 open={dropoffAddressDialogOpen}

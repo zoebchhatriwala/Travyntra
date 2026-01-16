@@ -235,6 +235,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                         value={selectedTemplateId}
                                         onValueChange={handleApplyTemplate}
                                         disabled={isClosed}
+                                        aria-label="Select tax template"
                                     >
                                         <SelectTrigger className="h-8 text-xs flex-1">
                                             <SelectValue placeholder="Select a tax template..." />
@@ -263,6 +264,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                     disabled={isClosed}
                                     {...form.register(`taxes.${index}.label`)}
                                     className="h-9 text-xs"
+                                    aria-label="Tax Name"
                                 />
                                 {form.formState.errors.taxes?.[index]?.label && (
                                     <p className="text-[10px] text-red-500">{form.formState.errors.taxes[index]?.label?.message}</p>
@@ -272,6 +274,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                         disabled={isClosed}
                                         defaultValue={field.type}
                                         onValueChange={(val) => form.setValue(`taxes.${index}.type`, val as "PERCENTAGE" | "FIXED")}
+                                        aria-label="Tax Type"
                                     >
                                         <SelectTrigger className="h-9 text-xs w-32">
                                             <SelectValue />
@@ -289,6 +292,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                             disabled={isClosed}
                                             {...form.register(`taxes.${index}.value`, { valueAsNumber: true })}
                                             className="h-9 text-xs"
+                                            aria-label="Tax Value"
                                         />
                                         {form.formState.errors.taxes?.[index]?.value && (
                                             <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.taxes[index]?.value?.message}</p>
@@ -301,6 +305,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                                         disabled={isClosed}
                                         onClick={() => remove(index)}
                                         className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm shrink-0"
+                                        aria-label="Remove tax"
                                     >
                                         <Trash2 size={16} />
                                     </Button>

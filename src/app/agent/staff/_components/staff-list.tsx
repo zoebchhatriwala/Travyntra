@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { createAgencyStaff, updateStaffStatus, deleteAgencyStaff, updateStaffRole } from "../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -135,6 +136,7 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
                         className="pl-9 bg-white"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Search staff"
                     />
                 </div>
                 <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -153,16 +155,16 @@ export function StaffList({ initialStaff }: { initialStaff: User[] }) {
                         </DialogHeader>
                         <form onSubmit={handleAddStaff} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Full Name</label>
-                                <Input name="name" required placeholder="John Doe" />
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input id="name" name="name" required placeholder="John Doe" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Email Address</label>
-                                <Input name="email" type="email" required placeholder="john@example.com" />
+                                <Label htmlFor="email">Email Address</Label>
+                                <Input id="email" name="email" type="email" required placeholder="john@example.com" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Password</label>
-                                <Input name="password" type="password" required placeholder="••••••••" minLength={8} />
+                                <Label htmlFor="password">Password</Label>
+                                <Input id="password" name="password" type="password" required placeholder="••••••••" minLength={8} />
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={isLoading}>

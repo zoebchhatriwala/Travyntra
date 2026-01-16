@@ -2,6 +2,14 @@ import Image from "next/image";
 import { getCompanyStaff } from "./actions";
 import { StaffList } from "./_components/staff-list";
 import { Users2, ShieldCheck } from "lucide-react";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Staff Directory | Travyntra",
+        description: "Manage company staff, roles, and permissions."
+    };
+}
 
 export default async function StaffManagementPage({
     params

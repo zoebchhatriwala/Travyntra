@@ -274,7 +274,7 @@ export async function bulkProcessRequests(ids: string[], action: 'APPROVE' | 'RE
             companyId: req.companyId,
             actorId: session.user.id,
             action: action === 'APPROVE' ? 'ADMIN_BULK_APPROVE' : 'ADMIN_BULK_REJECT',
-            description: `Admin ${action.toLowerCase()}d request "${req.title}" via quick action (approval workflow bypassed)`,
+            description: `Admin ${action.toLowerCase()}'d request "${req.title}" via quick action (approval workflow bypassed)`,
             metadata: { comment, quickAction: true }
         }));
 

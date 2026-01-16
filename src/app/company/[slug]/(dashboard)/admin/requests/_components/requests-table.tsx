@@ -177,12 +177,14 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                             className="pl-12 h-12 rounded-corner-lg border-gray-100 focus:ring-indigo-500"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
+                            aria-label="Search requests or employees"
                         />
                     </div>
                     <select
                         className="h-12 px-4 rounded-corner-lg border-gray-100 bg-gray-50 text-sm font-bold text-gray-700 outline-none focus:ring-2 ring-indigo-500"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
+                        aria-label="Filter by request status"
                     >
                         <option value="ALL">All Status</option>
                         <option value="DRAFT">Draft</option>
@@ -257,6 +259,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                         checked={selectedIds.length === requests.length && requests.length > 0}
                                         onCheckedChange={toggleSelectAll}
                                         className="rounded-corner-sm border-gray-300"
+                                        aria-label="Select all requests"
                                     />
                                 </th>
                                 <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest w-auto">Request Details</th>
@@ -295,6 +298,7 @@ export function RequestsTable({ slug, initialRequests, total: initialTotal, tota
                                                 checked={selectedIds.includes(req.id)}
                                                 onCheckedChange={() => toggleSelect(req.id)}
                                                 className="rounded-corner-sm border-gray-300"
+                                                aria-label={`Select request: ${req.title}`}
                                             />
                                         </td>
                                         <td className="p-6">

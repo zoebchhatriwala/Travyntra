@@ -15,7 +15,7 @@ interface LocationSelectorProps {
     allowCustom?: boolean;
 }
 
-export function LocationSelector({ mode, value, onChange, onCountryChange, placeholder, className, allowCustom }: LocationSelectorProps) {
+export function LocationSelector({ mode, value, onChange, onCountryChange, placeholder, className, allowCustom, ...props }: LocationSelectorProps & Omit<React.ComponentProps<"input">, "onChange" | "value">) {
 
 
     // Wrapper to adapt server action to combobox expectation
@@ -45,6 +45,7 @@ export function LocationSelector({ mode, value, onChange, onCountryChange, place
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder || "Enter address or location..."}
                     className={`pl-9 bg-white ${className || ""}`}
+                    {...props}
                 />
             </div>
         )
@@ -65,6 +66,8 @@ export function LocationSelector({ mode, value, onChange, onCountryChange, place
             searchPlaceholder="Search city, code, station..."
             className={className}
             allowCustom={allowCustom}
+            // Spread props (id, aria-*) to the command input if supported, currently AsyncCombobox might need update too but this is a start
+            {...props}
         />
     );
 }

@@ -26,7 +26,7 @@ export function SidebarBrand({ logo, title, subtitle, href = "/" }: { logo: Reac
     const { isCollapsed } = useSidebar();
 
     return (
-        <a href={href} className="flex items-center gap-3 group">
+        <a href={href} className="flex items-center gap-3 group" aria-label={title}>
             <div className="shrink-0 transition-transform group-hover:scale-105">
                 {logo}
             </div>
@@ -141,6 +141,7 @@ export function SidebarLayout({
                             size="icon"
                             onClick={toggleCollapse}
                             className="h-6 w-6 rounded-full border-gray-200 bg-white text-gray-500 shadow-sm hover:text-indigo-600 hover:scale-110 transition-all p-0"
+                            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         >
                             <ChevronLeft size={14} className={cn("transition-transform", isCollapsed && "rotate-180")} />
                         </Button>
@@ -162,6 +163,7 @@ export function SidebarLayout({
                                 size="icon"
                                 className="lg:hidden text-gray-500"
                                 onClick={() => setIsMobileOpen(true)}
+                                aria-label="Open main menu"
                             >
                                 <Menu size={20} />
                             </Button>

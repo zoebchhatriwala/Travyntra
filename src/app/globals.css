@@ -12,7 +12,7 @@
 
   /* Secondary - Warm Amber */
   --md-sys-color-secondary: #F59E0B;
-  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-on-secondary: #0F172A; /* Slate 900 for contrast (was White) */
   --md-sys-color-secondary-container: #FEF3C7;
   --md-sys-color-on-secondary-container: #78350F;
 
@@ -35,7 +35,7 @@
   --md-sys-color-outline: #CBD5E1;
 
   /* Error */
-  --md-sys-color-error: #EF4444;
+  --md-sys-color-error: #DC2626; /* Red 600 for 4.5:1 contrast (was Red 500) */
   --md-sys-color-on-error: #FFFFFF;
 
   /* Radii */

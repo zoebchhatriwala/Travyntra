@@ -261,7 +261,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                             value={searchParams.get("status") || "ALL"}
                             onValueChange={(value) => handleFilterChange("status", value === "ALL" ? null : value)}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger aria-label="Filter by invoice status">
                                 <SelectValue placeholder="All Statuses" />
                             </SelectTrigger>
                             <SelectContent>
@@ -278,12 +278,14 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                 placeholder="Start Date"
                                 value={searchParams.get("startDate") || ""}
                                 onChange={(e) => handleFilterChange("startDate", e.target.value || null)}
+                                aria-label="Filter by start date"
                             />
                             <Input
                                 type="date"
                                 placeholder="End Date"
                                 value={searchParams.get("endDate") || ""}
                                 onChange={(e) => handleFilterChange("endDate", e.target.value || null)}
+                                aria-label="Filter by end date"
                             />
                         </div>
                     </div>
@@ -347,7 +349,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                             <div className="flex items-center justify-end gap-2">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors" aria-label="More options">
                                                             <MoreVertical size={16} className="text-gray-400" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
@@ -381,7 +383,7 @@ export function BillingList({ invoices, currency, companySlug, metadata, stats }
                                                 </DropdownMenu>
 
                                                 <Link href={`/company/${companySlug}/dashboard/requests/${invoice.requestId}`}>
-                                                    <Button variant="ghost" size="icon" className="rounded-corner-lg h-8 w-8 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-indigo-50 transition-all border border-transparent group-hover:border-indigo-100">
+                                                    <Button variant="ghost" size="icon" className="rounded-corner-lg h-8 w-8 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-indigo-50 transition-all border border-transparent group-hover:border-indigo-100" aria-label="View request details">
                                                         <ArrowUpRight size={18} className="text-indigo-600" />
                                                     </Button>
                                                 </Link>

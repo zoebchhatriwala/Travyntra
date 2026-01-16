@@ -116,6 +116,7 @@ function NotificationsContent() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Notifications</h1>
             {/* Controls */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <form onSubmit={handleSearch} className="relative w-full md:w-96">
@@ -125,6 +126,7 @@ function NotificationsContent() {
                         className="pl-10 h-11 rounded-corner-sm focus:ring-2 focus:ring-indigo-500/20"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
+                        aria-label="Search notifications"
                     />
                 </form>
 
@@ -225,6 +227,7 @@ function NotificationsContent() {
                         onClick={() => handlePageChange(Math.max(1, page - 1))}
                         disabled={page === 1}
                         className="rounded-corner-lg w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
+                        aria-label="Previous page"
                     >
                         <ChevronLeft size={20} />
                     </Button>
@@ -272,6 +275,7 @@ function NotificationsContent() {
                         onClick={() => handlePageChange(Math.min(data.pages, page + 1))}
                         disabled={page === data.pages}
                         className="rounded-corner-lg w-12 h-12 hover:bg-white hover:shadow-xl transition-all disabled:opacity-30"
+                        aria-label="Next page"
                     >
                         <ChevronRight size={20} />
                     </Button>

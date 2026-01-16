@@ -337,7 +337,7 @@ function StaffCard({
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-corner-md" disabled={isLoading === member.id}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-corner-md" disabled={isLoading === member.id} aria-label="More actions">
                                 <MoreHorizontal size={18} />
                             </Button>
                         </DropdownMenuTrigger>
