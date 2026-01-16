@@ -921,9 +921,18 @@ export async function updateTripRequest(requestId: string, data: {
 
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
 
-        // Revalidate auto-approval if the request was previously auto-approved
-        const { WorkflowEngine } = await import("@/lib/workflow-engine");
-        await WorkflowEngine.handleRequestUpdate(requestId, session.user.id);
+        // Revalidate auto-approval/workflow ONLY if significant changes occurred
+        // We define significant changes as any change to the trip parameters handled above
+        if (changes.length > 0) {
+            // Check specifically for Destination change (manually approved trips are revoked only on this)
+            const destinationChanged = !!(
+                data.destination &&
+                JSON.stringify(data.destination) !== JSON.stringify(request.destination)
+            );
+
+            const { WorkflowEngine } = await import("@/lib/workflow-engine");
+            await WorkflowEngine.handleRequestUpdate(requestId, session.user.id, { destinationChanged });
+        }
 
         return { success: true };
     } catch (e) {

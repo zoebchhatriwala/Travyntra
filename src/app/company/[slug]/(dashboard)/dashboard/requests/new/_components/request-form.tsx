@@ -311,9 +311,9 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Destination</FormLabel>
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center gap-2">
                                                     <div className="relative flex-1">
-                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                                         <FormControl>
                                                             <Input
                                                                 placeholder="City, Country"
@@ -352,7 +352,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                             <FormItem>
                                                 <FormLabel>Estimated Budget</FormLabel>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{currency}</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currency}</span>
                                                     <FormControl>
                                                         <Input type="number" placeholder="0.00" className="pl-12" {...field} />
                                                     </FormControl>
@@ -591,7 +591,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormItem>
                                                             <div className="flex gap-2">
                                                                 <div className="relative flex-1">
-                                                                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                                                     <FormControl>
                                                                         <Input
                                                                             placeholder="Pickup Address..."
@@ -629,7 +629,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                         <FormItem>
                                                             <div className="flex gap-2">
                                                                 <div className="relative flex-1">
-                                                                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                                                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                                                     <FormControl>
                                                                         <Input
                                                                             placeholder="Dropoff Address..."

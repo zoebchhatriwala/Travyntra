@@ -1,9 +1,9 @@
 import { prisma } from "./prisma";
-import { RequestStatus, ApprovalType, ApprovalStatus, Prisma, WorkflowActionType, NotificationType, BidStatus } from "@prisma/client";
+import { RequestStatus, ApprovalType, ApprovalStatus, Prisma, WorkflowActionType, NotificationType, UserRole } from "@prisma/client";
 import { AutoApprovalEngine } from "./auto-approval-engine";
 import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "@/types/workflow/auto-approval-policy";
 import { createNotification } from "./notifications";
-import { UserRole } from "./constants/roles";
+
 
 /**
  * Engine responsible for managing the lifecycle and state transitions of the trip request approval workflow.
@@ -593,9 +593,14 @@ export class WorkflowEngine {
      * 
      * @param {string} requestId - The ID of the updated trip request.
      * @param {string} actorId - The ID of the user who made the update.
+     * @param {Object} [domainEvents] - Significant domain events that occurred during update.
      * @returns {Promise<void>}
      */
-    static async handleRequestUpdate(requestId: string, actorId: string): Promise<void> {
+    static async handleRequestUpdate(
+        requestId: string,
+        actorId: string,
+        domainEvents?: { destinationChanged?: boolean }
+    ): Promise<void> {
         // Fetch the request to check its current status
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
@@ -631,10 +636,32 @@ export class WorkflowEngine {
                 await this.revokeApproval(requestId, actorId, evaluation.reason);
             }
         } else {
-            // If it wasn't auto-approved but now it qualifies, apply auto-approval
-            // Only if it's currently in PENDING_COMPANY_APPROVAL status
-            if (evaluation.shouldAutoApprove && request.status === RequestStatus.PENDING_COMPANY_APPROVAL) {
-                await this.applyAutoApproval(requestId, actorId, evaluation);
+            // Check statuses that imply the request has already been approved
+            const approvedStatuses: RequestStatus[] = [
+                RequestStatus.APPROVED,
+                RequestStatus.PENDING_AGENT_ACTION,
+                RequestStatus.BOOKED,
+                RequestStatus.IN_PROGRESS
+            ];
+
+            // If it was MANUALLY approved (no autoApprovedStep) but now changed
+            if (approvedStatuses.includes(request.status)) {
+                // Revoke approval ONLY if the destination changed (Critical for travel safety/risk)
+                if (domainEvents?.destinationChanged) {
+                    await this.revokeApproval(
+                        requestId,
+                        actorId,
+                        "Destination changed after manual approval.",
+                        "⚠️ Approval revoked: Destination was changed after approval.",
+                        `⚠️ **Approval Revoked**: The destination was modified after approval.\n\nThe request has been reset to the standard approval workflow.`
+                    );
+                }
+            } else {
+                // If it wasn't approved yet, we can check if it NOW qualifies for auto-approval
+                // Only if it's currently in PENDING_COMPANY_APPROVAL status
+                if (evaluation.shouldAutoApprove && request.status === RequestStatus.PENDING_COMPANY_APPROVAL) {
+                    await this.applyAutoApproval(requestId, actorId, evaluation);
+                }
             }
         }
     }
@@ -704,9 +731,17 @@ export class WorkflowEngine {
      * @param {string} requestId - The ID of the trip request.
      * @param {string} actorId - The ID of the user revoking the approval.
      * @param {string} reason - The reason for revocation.
+     * @param {string} [logComment] - Optional custom log comment.
+     * @param {string} [systemMessage] - Optional custom system message content.
      * @returns {Promise<void>}
      */
-    private static async revokeApproval(requestId: string, actorId: string, reason: string): Promise<void> {
+    private static async revokeApproval(
+        requestId: string,
+        actorId: string,
+        reason: string,
+        logComment?: string,
+        systemMessage?: string
+    ): Promise<void> {
         // Fetch the request and its workflow steps
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
@@ -745,16 +780,22 @@ export class WorkflowEngine {
         for (const step of sortedSteps) {
             const isFirst = step.order === sortedSteps[0].order;
 
-            await prisma.requestApprovalStep.update({
+            // Use upsert to ensure the step link exists even if workflow definition changed
+            const requestStep = await prisma.requestApprovalStep.upsert({
                 where: {
                     requestId_stepId: {
                         requestId,
                         stepId: step.id
                     }
                 },
-                data: {
+                update: {
                     status: isFirst ? ApprovalStatus.PENDING : ApprovalStatus.WAITING,
                     metadata: Prisma.JsonNull
+                },
+                create: {
+                    requestId,
+                    stepId: step.id,
+                    status: isFirst ? ApprovalStatus.PENDING : ApprovalStatus.WAITING
                 }
             });
 
@@ -763,10 +804,7 @@ export class WorkflowEngine {
                 // Clear existing user approvals for this step
                 await prisma.userApproval.deleteMany({
                     where: {
-                        requestApprovalStep: {
-                            requestId,
-                            stepId: step.id
-                        }
+                        requestApprovalStepId: requestStep.id
                     }
                 });
 
@@ -776,32 +814,78 @@ export class WorkflowEngine {
                     include: { approvers: true }
                 });
 
-                if (stepWithApprovers) {
-                    const requestStep = await prisma.requestApprovalStep.findUnique({
-                        where: { requestId_stepId: { requestId, stepId: step.id } }
+                if (stepWithApprovers && stepWithApprovers.approvers.length > 0) {
+                    await prisma.userApproval.createMany({
+                        data: stepWithApprovers.approvers.map(approver => ({
+                            requestApprovalStepId: requestStep.id,
+                            userId: approver.id,
+                            status: ApprovalStatus.PENDING
+                        }))
                     });
-
-                    if (requestStep) {
-                        await prisma.userApproval.createMany({
-                            data: stepWithApprovers.approvers.map(approver => ({
-                                requestApprovalStepId: requestStep.id,
-                                userId: approver.id,
-                                status: ApprovalStatus.PENDING
-                            }))
-                        });
-                    }
                 }
             } else {
                 // Clear existing user approvals for non-first steps
                 await prisma.userApproval.deleteMany({
                     where: {
-                        requestApprovalStep: {
-                            requestId,
-                            stepId: step.id
-                        }
+                        requestApprovalStepId: requestStep.id
                     }
                 });
             }
+        } // End of loop over sortedSteps
+
+        // 3. Reset any ACCEPTED bids to PENDING
+        // If a request is modified significantly, previous bid acceptances are invalid.
+        const acceptedBids = await prisma.agentBid.findMany({
+            where: {
+                requestId,
+                status: 'ACCEPTED'
+            }
+        });
+
+        if (acceptedBids.length > 0) {
+            // Notify the Agents that their bid approval was reversed
+            for (const bid of acceptedBids) {
+                // Find users of the agent company to notify
+                const agentAdmins = await prisma.user.findMany({
+                    where: {
+                        companyId: bid.agentId,
+                        role: UserRole.TRAVEL_AGENT,
+                        isActive: true
+                    }
+                });
+
+                // Create notification for each agent user
+                for (const user of agentAdmins) {
+                    await createNotification({
+                        userId: user.id,
+                        title: "Bid Approval Revoked",
+                        message: `The approval of your bid for "${request.title}" has been reversed because the request approval was revoked/updated.`,
+                        type: NotificationType.WARNING,
+                        link: `/agent/bids.ts`, // Assuming a general list or specific bid link if available in agent portal
+                        sendEmail: true
+                    });
+                }
+            }
+
+            await prisma.agentBid.updateMany({
+                where: {
+                    requestId,
+                    status: 'ACCEPTED'
+                },
+                data: {
+                    status: 'PENDING'
+                }
+            });
+
+            // Log the bid reset
+            await prisma.workflowAction.create({
+                data: {
+                    requestId,
+                    actorId,
+                    action: WorkflowActionType.AUTO_APPROVAL_REVOKED,
+                    comment: `⚠️ Bids reset: ${acceptedBids.length} accepted bid(s) reset to PENDING due to request changes.`
+                }
+            });
         }
 
         // 3. Log action
@@ -810,7 +894,7 @@ export class WorkflowEngine {
                 requestId,
                 actorId,
                 action: WorkflowActionType.AUTO_APPROVAL_REVOKED,
-                comment: `⚠️ Auto-approval revoked: Request update triggered re-evaluation. Reason: ${reason}`
+                comment: logComment || `⚠️ Auto-approval revoked: Request update triggered re-evaluation. Reason: ${reason}`
             }
         });
 
@@ -819,7 +903,7 @@ export class WorkflowEngine {
             data: {
                 requestId,
                 senderId: actorId,
-                content: `⚠️ **Approval Revoked**: This request no longer qualifies for automatic approval.\n\nReason: ${reason}\n\nThe request has been reset to the standard approval workflow.`
+                content: systemMessage || `⚠️ **Approval Revoked**: This request no longer qualifies for automatic approval.\n\nReason: ${reason}\n\nThe request has been reset to the standard approval workflow.`
             }
         });
 
@@ -846,51 +930,6 @@ export class WorkflowEngine {
         }
 
 
-        // 6. Make the bids PENDING, and notify the agents
-        const approvedBids = await prisma.agentBid.findMany({
-            where: {
-                requestId,
-                status: BidStatus.ACCEPTED
-            }
-        });
-
-        // Update the status of the bids to PENDING
-        if (approvedBids.length > 0) {
-            // Notify the Agent that their bid was 
-            for (const bid of approvedBids) {
-                // Find users of the agent company to notify
-                const agentAdmins = await prisma.user.findMany({
-                    where: {
-                        companyId: bid.agentId,
-                        role: UserRole.TRAVEL_AGENT,
-                        isActive: true
-                    }
-                });
-
-                // Create notification for each agent user
-                for (const user of agentAdmins) {
-                    await createNotification({
-                        userId: user.id,
-                        title: "Bid Status Update",
-                        message: `The approval of your bid for "${request.title}" has been reversed because the request approval was revoked.`,
-                        type: NotificationType.WARNING,
-                        link: `/agent/bids/${bid.id}`,
-                        sendEmail: true
-                    });
-                }
-            }
-
-            // Update the status of the bids to PENDING
-            await prisma.agentBid.updateMany({
-                where: {
-                    id: {
-                        in: approvedBids.map(bid => bid.id)
-                    }
-                },
-                data: {
-                    status: BidStatus.PENDING
-                }
-            });
-        }
     }
 }
+

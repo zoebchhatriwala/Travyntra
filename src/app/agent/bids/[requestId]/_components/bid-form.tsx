@@ -172,7 +172,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                 )}
             </CardHeader>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pb-6">
                     <div className="space-y-2">
                         <Label htmlFor="amount">Bid Amount ({currency})</Label>
                         <Input
@@ -335,7 +335,7 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <Label htmlFor="message">Proposal Details</Label>
                         <Textarea
                             id="message"
@@ -345,7 +345,9 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
                             {...form.register("message")}
                         />
                         {form.formState.errors.message && (
-                            <p className="text-sm text-red-500">{form.formState.errors.message.message}</p>
+                            <p className="absolute -bottom-5 left-0 text-sm text-red-500 animate-in fade-in slide-in-from-top-1">
+                                {form.formState.errors.message.message}
+                            </p>
                         )}
                     </div>
                 </CardContent>
