@@ -453,10 +453,6 @@ export async function getTripRequest(requestId: string) {
                     orderBy: { createdAt: 'desc' },
                     include: { uploader: { select: { name: true } } }
                 },
-                workflow: {
-                    orderBy: { timestamp: 'desc' },
-                    include: { actor: { select: { name: true, role: true } } }
-                },
                 parentTrip: {
                     select: { id: true, title: true }
                 },

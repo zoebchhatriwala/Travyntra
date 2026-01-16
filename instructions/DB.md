@@ -42,6 +42,7 @@ Aligned with `SPECS.md`, the database must be:
 - **Protocol**:
     - **Hard Financials** (Invoices/Expenses): Use Native SQL Types (`Decimal` + `String` Currency) for precise math and reporting.
     - **Soft Financials** (Budgets/Bids/Estimates): Use `Money` JSON object for flexibility and multi-currency presentation.
+    - **Internal Audit** (WorkflowAction): This table is for backend auditing only. It records state transitions but MUST NOT be exposed to the user interface. Display logic should rely on `TripRequest.status` and `ActivityLog`.
 - **Action**: Ensure `Expense` and `Invoice` maintain `Decimal` types but are clearly documented.
 
 ## 4. Maintenance Log

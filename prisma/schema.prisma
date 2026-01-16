@@ -7,27 +7,27 @@ datasource db {
 }
 
 model Company {
-  id                    String            @id @default(uuid())
+  id                    String              @id @default(uuid())
   name                  String
-  slug                  String            @unique
-  domain                String?           @unique
-  type                  CompanyType       @default(ENTERPRISE)
-  status                CompanyStatus     @default(PENDING)
-  plan                  SubscriptionPlan  @default(FREE)
+  slug                  String              @unique
+  domain                String?             @unique
+  type                  CompanyType         @default(ENTERPRISE)
+  status                CompanyStatus       @default(PENDING)
+  plan                  SubscriptionPlan    @default(FREE)
   subscriptionExpiresAt DateTime?
   logoUrl               String?
-  currency              String            @default("USD")
-  timezone              String            @default("UTC")
+  currency              String              @default("USD")
+  timezone              String              @default("UTC")
   country               String?
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
   activities            ActivityLog[]
   bids                  AgentBid[]
   workflow              ApprovalWorkflow?
-  issuedInvoices        Invoice[]         @relation("AgencyInvoices")
-  invoices              Invoice[]         @relation("CompanyInvoices")
-  assignedRequests      TripRequest[]     @relation("AgentRequests")
-  requests              TripRequest[]     @relation("CompanyRequests")
+  issuedInvoices        Invoice[]           @relation("AgencyInvoices")
+  invoices              Invoice[]           @relation("CompanyInvoices")
+  assignedRequests      TripRequest[]       @relation("AgentRequests")
+  requests              TripRequest[]       @relation("CompanyRequests")
   users                 User[]
   integrationsAsClient  AgencyIntegration[] @relation("CompanyIntegrations")
   integrationsAsAgency  AgencyIntegration[] @relation("AgencyIntegrations")
@@ -61,48 +61,48 @@ model User {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String            @id @default(uuid())
   userId    String
   title     String
   message   String
   type      NotificationType? @default(INFO)
   link      String?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TripRequest {
-  id              String                @id @default(uuid())
-  userId          String
-  companyId       String
-  assignedAgentId String?
-  status          RequestStatus         @default(DRAFT)
-  title           String
-  destination     Json
-  startDate       DateTime
-  endDate         DateTime
-  purpose         String?
-  budget          Json?
-  cost            Json?
-  preferences     Json?
-  parentTripId    String?
-  isGroup         Boolean               @default(false)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  bids            AgentBid[]
-  documents       Document[]
-  expenses        Expense[]
-  invoice         Invoice?
-  messages        Message[]
-  approvalSteps   RequestApprovalStep[]
-  assignedAgent   Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id], onDelete: SetNull)
-  company         Company               @relation("CompanyRequests", fields: [companyId], references: [id], onDelete: Cascade)
-  parentTrip      TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
-  childTrips      TripRequest[]         @relation("GroupTrip")
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workflow        WorkflowAction[]
-  collaborators   User[]                @relation("RequestCollaborators")
+  id               String                @id @default(uuid())
+  userId           String
+  companyId        String
+  assignedAgentId  String?
+  status           RequestStatus         @default(DRAFT)
+  title            String
+  destination      Json
+  startDate        DateTime
+  endDate          DateTime
+  purpose          String?
+  budget           Json?
+  cost             Json?
+  preferences      Json?
+  parentTripId     String?
+  isGroup          Boolean               @default(false)
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  bids             AgentBid[]
+  documents        Document[]
+  expenses         Expense[]
+  invoice          Invoice?
+  messages         Message[]
+  approvalSteps    RequestApprovalStep[]
+  assignedAgent    Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  company          Company               @relation("CompanyRequests", fields: [companyId], references: [id], onDelete: Cascade)
+  parentTrip       TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
+  childTrips       TripRequest[]         @relation("GroupTrip")
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflow         WorkflowAction[]
+  collaborators    User[]                @relation("RequestCollaborators")
   fulfillmentItems FulfillmentItem[]
 
   @@index([companyId, status])
@@ -140,15 +140,17 @@ model FulfillmentItem {
   documents   Document[]  @relation("FulfillmentItemDocuments")
 }
 
+/// Internal audit log for workflow transitions.
+/// NOTE: This data is strictly for backend audit purposes and should NOT be exposed to the frontend UI.
 model WorkflowAction {
-  id        String      @id @default(uuid())
+  id        String             @id @default(uuid())
   requestId String
   actorId   String
   action    WorkflowActionType
   comment   String?
-  timestamp DateTime    @default(now())
-  actor     User        @relation(fields: [actorId], references: [id], onDelete: Cascade)
-  request   TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  timestamp DateTime           @default(now())
+  actor     User               @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  request   TripRequest        @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -178,16 +180,16 @@ model Document {
 }
 
 model Expense {
-  id          String      @id @default(uuid())
+  id          String          @id @default(uuid())
   requestId   String
   amount      Decimal
-  currency    String      @default("USD")
+  currency    String          @default("USD")
   category    ExpenseCategory
   description String?
   receiptUrl  String?
   incurredAt  DateTime
-  createdAt   DateTime    @default(now())
-  request     TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  request     TripRequest     @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@index([requestId])
 }
@@ -263,7 +265,7 @@ model Invoice {
   company   Company       @relation("CompanyInvoices", fields: [companyId], references: [id], onDelete: Cascade)
   request   TripRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
   pdfUrl    String?
-  
+
   @@index([companyId, status])
   @@index([agencyId, status])
 }
@@ -406,7 +408,7 @@ model TaxTemplate {
   agencyId    String
   name        String
   description String?
-  taxes       Json     // Array of {label: string, value: number, type: "PERCENTAGE" | "FIXED"}
+  taxes       Json // Array of {label: string, value: number, type: "PERCENTAGE" | "FIXED"}
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
