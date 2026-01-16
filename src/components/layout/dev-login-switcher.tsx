@@ -14,7 +14,8 @@ import {
     Briefcase,
     Globe,
     Filter,
-    Copy
+    Copy,
+    UserCog
 } from "lucide-react";
 import { getDevUsers } from "@/app/actions/dev";
 import {
@@ -377,14 +378,16 @@ function UserItem({ user, session, onClick, colorClass, textClass, minimal = fal
             )}
         >
             <div className={cn(
-                "rounded-lg flex items-center justify-center text-white shadow-sm transition-all group-hover:scale-105",
+                "rounded-lg flex items-center justify-center shadow-sm transition-all group-hover:scale-105",
                 colorClass,
-                minimal ? "w-8 h-8" : "w-10 h-10"
+                minimal ? "w-8 h-8" : "w-10 h-10",
+                "text-white"
             )}>
-                {user.role === 'SUPER_ADMIN' ? <ShieldAlert size={minimal ? 14 : 18} /> :
-                    user.role === 'TRAVEL_AGENT' ? <Globe size={minimal ? 14 : 18} /> :
-                        user.role === 'COMPANY_ADMIN' ? <Building size={minimal ? 14 : 18} /> :
-                            <User size={minimal ? 14 : 18} />}
+                {user.role === 'SUPER_ADMIN' ? <ShieldAlert className="text-white" size={minimal ? 14 : 18} /> :
+                    user.role === 'TRAVEL_AGENT' ? <Globe className="text-white" size={minimal ? 14 : 18} /> :
+                        user.role === 'COMPANY_ADMIN' ? <Building className="text-white" size={minimal ? 14 : 18} /> :
+                            user.role === 'AGENCY_EMPLOYEE' ? <UserCog className="text-white" size={minimal ? 14 : 18} /> :
+                                <User className="text-white" size={minimal ? 14 : 18} />}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
