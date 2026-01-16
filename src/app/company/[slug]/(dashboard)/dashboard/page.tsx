@@ -8,6 +8,12 @@ import { Plus, Plane, Clock, ArrowRight, FileText, CheckCircle2 } from "lucide-r
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatStatus, getStatusColor } from "@/lib/utils";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Staff Dashboard",
+    description: "Track your journeys, submit requests, and access travel assets.",
+};
 
 export default async function EmployeeDashboardPage({
     params

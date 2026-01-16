@@ -1,5 +1,5 @@
 
-import { Building2 } from "lucide-react";
+
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { getServerSession } from "next-auth";
@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth-options";
 import { EmployeeNav } from "./_components/employee-nav";
 import { CompanyNav } from "../admin/_components/company-nav";
 import { SidebarLayout, SidebarBrand } from "@/components/layout/sidebar-layout";
+import { Logo } from "@/components/ui/logo";
 
 export default async function EmployeeLayout({
     children,
@@ -27,11 +28,7 @@ export default async function EmployeeLayout({
                     href={isAdmin ? `/company/${slug}/admin` : `/company/${slug}/dashboard`}
                     title="Travyntra"
                     subtitle={isAdmin ? "Company Admin" : "Staff Portal"}
-                    logo={
-                        <div className="w-10 h-10 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                            <Building2 size={24} />
-                        </div>
-                    }
+                    logo={<Logo />}
                 />
             }
             userMenu={<UserMenu />}

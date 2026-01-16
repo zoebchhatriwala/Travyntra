@@ -21,6 +21,12 @@ import { authOptions } from "@/lib/auth-options";
 import { getServerSession } from "next-auth";
 
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Company Admin Console",
+    description: "Manage staff, approve requests, and oversee corporate travel operations.",
+};
 
 export default async function CompanyAdminPage({
     params

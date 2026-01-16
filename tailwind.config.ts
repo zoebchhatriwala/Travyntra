@@ -87,6 +87,20 @@ const config: Config = {
                 "corner-xl": "var(--md-sys-shape-corner-xl)",
                 "corner-full": "var(--md-sys-shape-corner-full)",
             },
+            boxShadow: {
+                'joy': '0 20px 25px -5px rgb(79 70 229 / 0.1), 0 8px 10px -6px rgb(79 70 229 / 0.1)',
+            },
+            keyframes: {
+                blob: {
+                    "0%": { transform: "translate(0px, 0px) scale(1)" },
+                    "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                    "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                    "100%": { transform: "translate(0px, 0px) scale(1)" }
+                }
+            },
+            animation: {
+                blob: "blob 7s infinite",
+            },
         },
     },
     plugins: [tailwindAnimate],

@@ -15,8 +15,43 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Travyntra | Travel, Simplified at Scale",
-  description: "A unified platform to manage journeys, streamline operations, and deliver seamless travel experiences.",
+  metadataBase: new URL("https://travyntra.com"),
+  title: {
+    default: "Travyntra | Corporate Joy for Business Travel",
+    template: "%s | Travyntra"
+  },
+  description: "The operating system for business travel. A multi-tenant ecosystem connecting Agencies, Companies, and Staff with joy and precision.",
+  keywords: ["Corporate Travel", "Travel Management", "Business Travel", "SaaS", "Workflow Automation", "Expense Management"],
+  authors: [{ name: "Travyntra Team" }],
+  creator: "Travyntra",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://travyntra.com",
+    title: "Travyntra | Corporate Joy for Business Travel",
+    description: "The operating system for business travel. A multi-tenant ecosystem connecting Agencies, Companies, and Staff with joy and precision.",
+    siteName: "Travyntra",
+    images: [
+      {
+        url: "/og-image", // Next.js will resolve this to the generated image
+        width: 1200,
+        height: 630,
+        alt: "Travyntra - Corporate Joy",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Travyntra | Corporate Joy for Business Travel",
+    description: "The operating system for business travel. A multi-tenant ecosystem connecting Agencies, Companies, and Staff with joy and precision.",
+    images: ["/og-image"],
+    creator: "@travyntra",
+  },
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 

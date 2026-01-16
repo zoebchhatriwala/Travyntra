@@ -1,12 +1,13 @@
 
 
-import { Building2 } from "lucide-react";
+
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { AgencyNav } from "./_components/agency-nav";
 import { SidebarLayout, SidebarBrand } from "@/components/layout/sidebar-layout";
+import { Logo } from "@/components/ui/logo";
 import { redirect } from "next/navigation";
 
 export default async function AgentLayout({
@@ -33,11 +34,7 @@ export default async function AgentLayout({
                     href="/agent/dashboard"
                     title="Travyntra"
                     subtitle="Agency Portal"
-                    logo={
-                        <div className="w-10 h-10 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                            <Building2 size={24} />
-                        </div>
-                    }
+                    logo={<Logo />}
                 />
             }
             userMenu={<UserMenu />}

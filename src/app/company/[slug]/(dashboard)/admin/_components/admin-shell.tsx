@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { CompanyNav } from "./company-nav";
 import { SidebarLayout, SidebarBrand, useSidebar } from "@/components/layout/sidebar-layout";
+import { Logo } from "@/components/ui/logo";
 
 interface AdminShellProps {
     children: React.ReactNode;
@@ -63,11 +64,7 @@ export function AdminShell({ children, slug, companyPlan }: AdminShellProps) {
                     href={`/company/${slug}/admin`}
                     title="Travyntra"
                     subtitle="Company Admin"
-                    logo={
-                        <div className="w-10 h-10 bg-indigo-600 rounded-corner-md flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                            <Building2 size={24} />
-                        </div>
-                    }
+                    logo={<Logo />}
                 />
             }
             userMenu={<UserMenu />}

@@ -10,6 +10,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/ui/logo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Travyntra | Operating System for Business Travel",
+  description: "Join the Joyful Revolution. A unified platform connecting Agencies, Companies, and Staff for seamless corporate travel management.",
+  openGraph: {
+    title: "Travyntra | Operating System for Business Travel",
+    description: "Join the Joyful Revolution. A unified platform connecting Agencies, Companies, and Staff for seamless corporate travel management.",
+  },
+};
 
 export default function Home() {
   return (
@@ -17,7 +28,8 @@ export default function Home() {
       {/* Navigation */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-6xl h-16 z-50 flex items-center glass rounded-corner-lg border border-white/20 shadow-xl px-6">
         <div className="flex justify-between items-center w-full">
-          <div className="text-2xl font-black text-indigo-600 tracking-tighter">
+          <div className="text-2xl font-black text-indigo-600 tracking-tighter flex items-center">
+            <Logo width={32} height={32} className="mr-2" />
             Travyntra
           </div>
 

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travyntra | Investor Deck 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#4338CA', // Indigo 700
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            900: '#312E81',
+                        },
+                        secondary: {
+                            DEFAULT: '#F59E0B', // Amber 500
+                            50: '#FFFBEB',
+                            100: '#FEF3C7',
+                            900: '#78350F',
+                        },
+                        tertiary: {
+                            DEFAULT: '#10B981', // Emerald 500
+                            50: '#ECFDF5',
+                            100: '#D1FAE5',
+                            900: '#064E3B',
+                        },
+                        surface: '#FFFFFF',
+                        background: '#F8FAFC',
+                    },
+                    boxShadow: {
+                        'joy': '0 20px 25px -5px rgb(79 70 229 / 0.1), 0 8px 10px -6px rgb(79 70 229 / 0.1)',
+                        'glow': '0 0 20px rgba(67, 56, 202, 0.3)',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scroll Snap Behavior for "Deck" Feel */
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .deck-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .deck-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        section {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        /* Animations */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .active .reveal-up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 {
+            transition-delay: 100ms;
+        }
+
+        .delay-200 {
+            transition-delay: 200ms;
+        }
+
+        .delay-300 {
+            transition-delay: 300ms;
+        }
+
+        .delay-500 {
+            transition-delay: 500ms;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Gradients */
+        .bg-mesh {
+            background-color: #F8FAFC;
+            background-image:
+                radial-gradient(at 40% 20%, hsla(252, 100%, 94%, 1) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, hsla(189, 100%, 96%, 1) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(341, 100%, 96%, 1) 0px, transparent 50%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #4338CA 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Navigation Dots */
+        .nav-dot {
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            height: 32px;
+            background-color: #4338CA;
+        }
+    </style>
+</head>
+
+<body class="text-slate-900 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Navigation Dots -->
+    <div class="fixed right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400 active"
+            onclick="scrollToSlide(0)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(1)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(2)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(3)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(4)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(5)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(6)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(7)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(8)"></div>
+        <div class="nav-dot w-2 h-2 rounded-full bg-slate-300 cursor-pointer hover:bg-slate-400"
+            onclick="scrollToSlide(9)"></div>
+    </div>
+
+    <div class="deck-container" id="deck">
+
+        <!-- SLIDE 1: HERO -->
+        <section class="bg-mesh relative" id="slide-0">
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-30 pointer-events-none">
+                <div
+                    class="absolute top-10 left-10 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob">
+                </div>
+                <div
+                    class="absolute top-10 right-10 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000">
+                </div>
+                <div
+                    class="absolute -bottom-32 left-1/2 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000">
+                </div>
+            </div>
+
+            <div class="container mx-auto max-w-6xl relative z-10 text-center">
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-slate-200 backdrop-blur-sm mb-8 reveal-up">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-sm font-semibold text-slate-600 uppercase tracking-wider">Seed Funding Pitch
+                        Deck</span>
+                </div>
+
+                <h1
+                    class="font-display text-7xl md:text-8xl font-black tracking-tight mb-6 leading-[0.9] reveal-up delay-100">
+                    <span class="text-slate-900">Corporate Travel</span><br>
+                    <span class="text-gradient">Finally Solved.</span>
+                </h1>
+
+                <p class="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto mb-12 font-light reveal-up delay-200">
+                    The first <strong class="text-slate-900 font-semibold">Three-Sided Marketplace</strong> connecting
+                    Companies, Employees, and Agencies in one intelligent operating system.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto reveal-up delay-300">
+                    <div
+                        class="p-6 bg-white rounded-2xl shadow-joy border border-slate-100 text-left hover:-translate-y-1 transition-transform duration-300">
+                        <div
+                            class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-700 font-bold mb-4">
+                            01</div>
+                        <h3 class="font-display font-bold text-lg text-slate-900">Total Control</h3>
+                        <p class="text-slate-500 text-sm mt-1">For Finance CFOs</p>
+                    </div>
+                    <div
+                        class="p-6 bg-white rounded-2xl shadow-joy border border-slate-100 text-left hover:-translate-y-1 transition-transform duration-300">
+                        <div
+                            class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-700 font-bold mb-4">
+                            02</div>
+                        <h3 class="font-display font-bold text-lg text-slate-900">Zero Friction</h3>
+                        <p class="text-slate-500 text-sm mt-1">For Modern Employees</p>
+                    </div>
+                    <div
+                        class="p-6 bg-white rounded-2xl shadow-joy border border-slate-100 text-left hover:-translate-y-1 transition-transform duration-300">
+                        <div
+                            class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-700 font-bold mb-4">
+                            03</div>
+                        <h3 class="font-display font-bold text-lg text-slate-900">High Volume</h3>
+                        <p class="text-slate-500 text-sm mt-1">For Travel Agencies</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: THE PROBLEM -->
+        <section class="bg-white" id="slide-1">
+            <div class="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="space-y-8">
+                    <div class="reveal-up">
+                        <h4 class="text-rose-500 font-bold tracking-widest uppercase mb-2">The Pain Point</h4>
+                        <h2 class="font-display text-5xl font-bold text-slate-900 leading-tight">The "Black Hole" of
+                            <br>Corporate Spend.
+                        </h2>
+                    </div>
+
+                    <p class="text-lg text-slate-600 leading-relaxed reveal-up delay-100">
+                        Companies today are bleeding money through fragmented travel processes. Without a unified layer,
+                        "Travel Management" is just a series of disconnected emails, PDFs, and invoices.
+                    </p>
+
+                    <div class="space-y-6 reveal-up delay-200">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 text-rose-600 text-xl font-bold">
+                                !</div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-lg">20-30% Overspend</h3>
+                                <p class="text-slate-500 text-sm">Due to lack of pre-approval enforcement and comparison
+                                    shopping.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 text-rose-600 text-xl font-bold">
+                                @</div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-lg">Communication Chaos</h3>
+                                <p class="text-slate-500 text-sm">Approvals get stuck in email chains. Tickets are lost
+                                    in Slack. Visas expire unnoticed.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 text-rose-600 text-xl font-bold">
+                                $</div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-lg">Financial Blindness</h3>
+                                <p class="text-slate-500 text-sm">Invoices arrive 45 days post-trip. Finance has no
+                                    real-time liability view.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative reveal-up delay-300">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-tr from-rose-100 to-indigo-100 rounded-[2rem] transform rotate-3 scale-95 opacity-50">
+                    </div>
+                    <div
+                        class="relative bg-slate-900 rounded-[2rem] p-8 shadow-2xl overflow-hidden border border-slate-700">
+                        <!-- Mock UI: Chaos -->
+                        <div class="flex flex-col gap-4 opacity-50 blur-[1px]">
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <div class="h-4 bg-slate-600 rounded w-1/3 mb-2"></div>
+                                <div class="h-3 bg-slate-700 rounded w-full"></div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 ml-8">
+                                <div class="h-4 bg-slate-600 rounded w-1/4 mb-2"></div>
+                                <div class="h-3 bg-slate-700 rounded w-3/4"></div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <div class="h-4 bg-slate-600 rounded w-1/2 mb-2"></div>
+                                <div class="h-3 bg-slate-700 rounded w-full"></div>
+                            </div>
+                        </div>
+
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="bg-rose-500 text-white px-6 py-3 rounded-full font-bold shadow-lg transform -rotate-6 border-4 border-slate-900">
+                                SYSTEM FAILURE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: THE SOLUTION -->
+        <section class="bg-slate-50" id="slide-2">
+            <div class="container mx-auto max-w-7xl">
+                <div class="text-center max-w-3xl mx-auto mb-16 reveal-up">
+                    <h4 class="text-indigo-600 font-bold tracking-widest uppercase mb-2">The Solution</h4>
+                    <h2 class="font-display text-5xl font-bold text-slate-900 mb-6">A Unified Operating System</h2>
+                    <p class="text-slate-600 text-lg">Travyntra connects the dots. We replaced the chaos with an
+                        elegant, multi-tenant workflow engine that creates value for every stakeholder.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div
+                        class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-joy transition-all duration-300 reveal-up delay-100">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                            🛡</div>
+                        <h3 class="font-display text-xl font-bold text-slate-900 mb-3">Leak-Proof Workflows</h3>
+                        <p class="text-slate-600 mb-6 leading-relaxed">Configurable approval chains. Requests are
+                            validated against budget & policies <em>before</em> they reach an agent. No rogue spending.
+                        </p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-center gap-2">✓ Visual Workflow Builder</li>
+                            <li class="flex items-center gap-2">✓ "Any" vs "All" Approval Logic</li>
+                            <li class="flex items-center gap-2">✓ Policy-Based Auto-Approval</li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div
+                        class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-joy transition-all duration-300 reveal-up delay-200 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">
+                            USP</div>
+                        <div
+                            class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                            🤝</div>
+                        <h3 class="font-display text-xl font-bold text-slate-900 mb-3">3-Sided Marketplace</h3>
+                        <p class="text-slate-600 mb-6 leading-relaxed">Agencies bid on corporate requests. Competition
+                            ensures companies get the best price, while agents get high-intent leads.</p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-center gap-2">✓ Competitive Bidding System</li>
+                            <li class="flex items-center gap-2">✓ Verified Agency Partners</li>
+                            <li class="flex items-center gap-2">✓ Performance Rating System</li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div
+                        class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-joy transition-all duration-300 reveal-up delay-300">
+                        <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                            💬</div>
+                        <h3 class="font-display text-xl font-bold text-slate-900 mb-3">Contextual Threads</h3>
+                        <p class="text-slate-600 mb-6 leading-relaxed">Kill the email chain. Every trip request is a
+                            workspace with chat, files, and @mentions. All history is audit-logged.</p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-center gap-2">✓ Slack-style Communication</li>
+                            <li class="flex items-center gap-2">✓ Integrated Document Vault</li>
+                            <li class="flex items-center gap-2">✓ Smart Notifications</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: PRODUCT DEMO (UI) -->
+        <section class="bg-slate-900 relative overflow-hidden" id="slide-3">
+            <!-- Background Effects -->
+            <div
+                class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-600 rounded-full mix-blend-screen filter blur-[100px] opacity-10">
+            </div>
+
+            <div class="container mx-auto max-w-7xl relative z-10 flex flex-col items-center pt-20">
+                <div class="text-center mb-12 reveal-up">
+                    <h2 class="font-display text-5xl font-bold text-white mb-4">Designed for 'Corporate Joy'</h2>
+                    <p class="text-indigo-200 text-lg max-w-2xl mx-auto">We applied modern B2C aesthetics to B2B
+                        infrastructure. <br>Because enterprise software shouldn't make you cry.</p>
+                </div>
+
+                <div
+                    class="w-full max-w-5xl aspect-video bg-white/5 border border-white/10 rounded-3xl backdrop-blur-sm shadow-2xl p-2 md:p-4 reveal-up delay-100">
+                    <!-- Abstract UI Representation -->
+                    <div class="w-full h-full bg-slate-50 rounded-2xl overflow-hidden flex flex-col">
+                        <!-- Header -->
+                        <div class="h-16 bg-white border-b border-slate-200 flex items-center px-6 justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-8 h-8 bg-indigo-600 rounded-lg"></div>
+                                <div class="h-4 w-24 bg-slate-200 rounded-full"></div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="h-8 w-8 bg-slate-100 rounded-full"></div>
+                                <div class="h-8 w-8 bg-indigo-100 rounded-full"></div>
+                            </div>
+                        </div>
+                        <!-- Body -->
+                        <div class="flex-1 flex p-6 gap-6">
+                            <!-- Sidebar -->
+                            <div class="w-64 hidden md:block space-y-3">
+                                <div class="h-10 w-full bg-indigo-50 rounded-lg border border-indigo-100"></div>
+                                <div class="h-10 w-full bg-white rounded-lg"></div>
+                                <div class="h-10 w-full bg-white rounded-lg"></div>
+                                <div class="mt-8 h-px bg-slate-200"></div>
+                                <div class="h-4 w-20 bg-slate-200 rounded"></div>
+                            </div>
+                            <!-- Main Content -->
+                            <div class="flex-1 space-y-6">
+                                <div class="flex justify-between items-center">
+                                    <div class="space-y-2">
+                                        <div class="h-8 w-64 bg-slate-800 rounded-lg"></div>
+                                        <div class="h-4 w-32 bg-slate-300 rounded"></div>
+                                    </div>
+                                    <div class="h-10 w-32 bg-indigo-600 rounded-full shadow-lg shadow-indigo-200"></div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="h-32 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                                        <div class="w-10 h-10 bg-emerald-100 rounded-full mb-3"></div>
+                                        <div class="h-4 w-16 bg-slate-200 rounded mb-2"></div>
+                                        <div class="h-6 w-24 bg-slate-800 rounded"></div>
+                                    </div>
+                                    <div class="h-32 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                                        <div class="w-10 h-10 bg-amber-100 rounded-full mb-3"></div>
+                                        <div class="h-4 w-16 bg-slate-200 rounded mb-2"></div>
+                                        <div class="h-6 w-24 bg-slate-800 rounded"></div>
+                                    </div>
+                                    <div class="h-32 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                                        <div class="w-10 h-10 bg-rose-100 rounded-full mb-3"></div>
+                                        <div class="h-4 w-16 bg-slate-200 rounded mb-2"></div>
+                                        <div class="h-6 w-24 bg-slate-800 rounded"></div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="bg-white rounded-2xl border border-slate-200 h-64 shadow-sm p-6 flex flex-col gap-4">
+                                    <div class="h-4 w-full bg-slate-100 rounded"></div>
+                                    <div class="h-4 w-full bg-slate-100 rounded"></div>
+                                    <div class="h-4 w-2/3 bg-slate-100 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-12 flex gap-16 text-white/50 text-sm font-semibold tracking-wider uppercase reveal-up delay-200 pt-10">
+                    <div>Next.js 15</div>
+                    <div>Modern UI System</div>
+                    <div>Real-time Sockets</div>
+                    <div>PostgreSQL</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: MARKET OPPORTUNITY -->
+        <section class="bg-white" id="slide-4">
+            <div class="container mx-auto max-w-7xl">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal-up">
+                        <h4 class="text-indigo-600 font-bold tracking-widest uppercase mb-2">Market Size</h4>
+                        <h2 class="font-display text-5xl font-bold text-slate-900 mb-6">A $1.4 Trillion<br>Rebound.</h2>
+                        <p class="text-slate-600 text-lg mb-8">
+                            Business travel has not only recovered; it's evolved. Companies are now tech-first,
+                            demanding platforms that enforce compliance while enabling distributed teams.
+                        </p>
+
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-900">Total Addressable Market (TAM)</span>
+                                    <span class="text-indigo-600 font-bold">$1.4T</span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-3">
+                                    <div class="bg-indigo-600 h-3 rounded-full" style="width: 100%"></div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">Global Business Travel Spend</p>
+                            </div>
+
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-900">Serviceable Market (SAM)</span>
+                                    <span class="text-indigo-600 font-bold">$350B</span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-3">
+                                    <div class="bg-indigo-500 h-3 rounded-full" style="width: 25%"></div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">SMEs & Mid-Market Enterprises in Target Regions
+                                </p>
+                            </div>
+
+                            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-indigo-900">Serviceable Obtainable (SOM)</span>
+                                    <span class="text-indigo-700 font-bold">$3.5B</span>
+                                </div>
+                                <div class="w-full bg-indigo-200 rounded-full h-3">
+                                    <div class="bg-indigo-600 h-3 rounded-full" style="width: 5%"></div>
+                                </div>
+                                <p class="text-xs text-indigo-700 mt-2">Year 1-3 Target Capture (1%)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-900 text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden reveal-up delay-200">
+                        <div
+                            class="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full filter blur-[80px] opacity-30">
+                        </div>
+                        <h3 class="font-display text-3xl font-bold mb-8">Why Now?</h3>
+
+                        <div class="space-y-8">
+                            <div class="flex gap-4">
+                                <div class="text-4xl">📉</div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">CFO Pressure</h4>
+                                    <p class="text-slate-400 text-sm">Economic tightening means every dollar of OPEX is
+                                        scrutinized. "Unmanaged" travel is no longer acceptable.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="text-4xl">🌍</div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">Distributed Teams</h4>
+                                    <p class="text-slate-400 text-sm">Remote work means <em>more</em> offsites and team
+                                        gatherings, requiring complex logistics (Group Trips).</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="text-4xl">📱</div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">Consumer Expectations</h4>
+                                    <p class="text-slate-400 text-sm">Employees refuse to use legacy tools like Concur.
+                                        They want Airbnb-like UX.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: BUSINESS MODEL -->
+        <section class="bg-slate-50" id="slide-5">
+            <div class="container mx-auto max-w-6xl">
+                <div class="text-center mb-16 reveal-up">
+                    <h2 class="font-display text-5xl font-bold text-slate-900 mb-6">How We Make Money</h2>
+                    <p class="text-slate-600 text-lg">A robust, recurring revenue model with upside from transaction
+                        volume.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div
+                        class="bg-white p-8 rounded-3xl shadow-lg border-t-4 border-indigo-600 hover:-translate-y-2 transition-transform duration-300 reveal-up delay-100">
+                        <div class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4">SaaS Revenue</div>
+                        <h3 class="font-display text-2xl font-bold text-slate-900 mb-2">Agency Subscription</h3>
+                        <div class="text-4xl font-black text-slate-900 mb-4">Tiered<span
+                                class="text-lg text-slate-400 font-normal">/mo</span></div>
+                        <p class="text-slate-500 text-sm mb-6 border-b border-slate-100 pb-6">Agencies pay for access to
+                            the marketplace and bidding engine.</p>
+                        <ul class="space-y-3 text-sm font-medium text-slate-700">
+                            <li class="flex gap-2"><span>✅</span> Unlimited Bids</li>
+                            <li class="flex gap-2"><span>✅</span> Fulfillment Console</li>
+                            <li class="flex gap-2"><span>✅</span> Client CRM</li>
+                        </ul>
+                    </div>
+
+                    <div
+                        class="bg-slate-900 text-white p-8 rounded-3xl shadow-2xl border-t-4 border-emerald-500 transform scale-105 z-10 reveal-up delay-200">
+                        <div
+                            class="inline-block bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded mb-4">
+                            HIGH GROWTH</div>
+                        <div class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-4">Take Rate</div>
+                        <h3 class="font-display text-2xl font-bold mb-2">Transaction Fee</h3>
+                        <div class="text-4xl font-black mb-4">% Fee<span
+                                class="text-lg text-slate-400 font-normal">/booking</span></div>
+                        <p class="text-slate-400 text-sm mb-6 border-b border-white/10 pb-6">We take a percentage
+                            of every approved and booked itinerary.</p>
+                        <ul class="space-y-3 text-sm font-medium text-indigo-100">
+                            <li class="flex gap-2"><span>✅</span> Frictionless Billing</li>
+                            <li class="flex gap-2"><span>✅</span> Scale with Volume</li>
+                            <li class="flex gap-2"><span>✅</span> No Setup Fees</li>
+                        </ul>
+                    </div>
+
+                    <div
+                        class="bg-white p-8 rounded-3xl shadow-lg border-t-4 border-amber-500 hover:-translate-y-2 transition-transform duration-300 reveal-up delay-300">
+                        <div class="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4">Expansion</div>
+                        <h3 class="font-display text-2xl font-bold text-slate-900 mb-2">Enterprise License</h3>
+                        <div class="text-4xl font-black text-slate-900 mb-4">Custom<span
+                                class="text-lg text-slate-400 font-normal">/seat</span></div>
+                        <p class="text-slate-500 text-sm mb-6 border-b border-slate-100 pb-6">For corporations >500
+                            employees needing private instances.</p>
+                        <ul class="space-y-3 text-sm font-medium text-slate-700">
+                            <li class="flex gap-2"><span>✅</span> SSO & SCIM</li>
+                            <li class="flex gap-2"><span>✅</span> Custom Integrations</li>
+                            <li class="flex gap-2"><span>✅</span> Dedicated Support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: ROADMAP -->
+        <section class="bg-white overflow-y-auto" id="slide-6">
+            <div class="container mx-auto max-w-5xl py-20">
+                <div class="text-center mb-16 reveal-up">
+                    <h2 class="font-display text-5xl font-bold text-slate-900 mb-6">Execution Strategy</h2>
+                    <p class="text-slate-600 text-lg">We are shipping fast. Phase 1-9 completed in record time.</p>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-px bg-slate-200"></div>
+
+                    <!-- Item 1 -->
+                    <div class="relative flex items-center justify-between mb-16 reveal-up">
+                        <div class="w-5/12 text-right pr-8">
+                            <h3 class="font-bold text-xl text-slate-900">Foundation & Core</h3>
+                            <p class="text-slate-500 mt-2">Multi-tenancy, Auth, Workflows, Discussion Threads.</p>
+                            <span
+                                class="inline-block mt-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">COMPLETED</span>
+                        </div>
+                        <div
+                            class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-4 border-white shadow">
+                        </div>
+                        <div class="w-5/12 pl-8 text-slate-400 text-sm font-mono">Jan 07 - Jan 10, 2026</div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="relative flex items-center justify-between mb-16 reveal-up delay-100">
+                        <div class="w-5/12 text-right pr-8 text-slate-400 text-sm font-mono">Jan 11 - Jan 14, 2026</div>
+                        <div
+                            class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-4 border-white shadow">
+                        </div>
+                        <div class="w-5/12 pl-8">
+                            <h3 class="font-bold text-xl text-slate-900">Marketplace & Fulfillment</h3>
+                            <p class="text-slate-500 mt-2">Agency Portal, Bidding System, Document Vault, Corporate Joy
+                                Design.</p>
+                            <span
+                                class="inline-block mt-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">COMPLETED</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="relative flex items-center justify-between mb-16 reveal-up delay-200">
+                        <div class="w-5/12 text-right pr-8">
+                            <h3 class="font-bold text-xl text-indigo-700">Financial Layer</h3>
+                            <p class="text-slate-500 mt-2">Tax Templates, Invoice Gen, Budget Revisions, FX Caching.</p>
+                            <span
+                                class="inline-block mt-3 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold animate-pulse">ACTIVE
+                                SPRINT</span>
+                        </div>
+                        <div
+                            class="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-indigo-600 rounded-full border-4 border-white shadow-lg ring-4 ring-indigo-100">
+                        </div>
+                        <div class="w-5/12 pl-8 text-indigo-600 font-bold font-mono">Jan 15 - Present</div>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="relative flex items-center justify-between reveal-up delay-300">
+                        <div class="w-5/12 text-right pr-8 text-slate-400 text-sm font-mono">Feb 2026+</div>
+                        <div
+                            class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-2 border-slate-300 rounded-full">
+                        </div>
+                        <div class="w-5/12 pl-8 opacity-50">
+                            <h3 class="font-bold text-xl text-slate-900">GTM & Expansion</h3>
+                            <p class="text-slate-500 mt-2">SME Pilot Launch &rarr; Enterprise Scalability. Self-Booking
+                                Tool (OBT) Integration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: THE ASK -->
+        <section class="bg-indigo-900 text-white relative overflow-hidden" id="slide-7">
+            <div
+                class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+            </div>
+
+            <div class="container mx-auto max-w-5xl relative z-10 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div class="reveal-up">
+                    <h2 class="font-display text-6xl font-black mb-6">Investment.</h2>
+                    <p class="text-indigo-200 text-xl leading-relaxed mb-8">
+                        We are raising Seed Capital to scale our engineering
+                        team, onboard the first 50 Agencies, and capture significant market share.
+                    </p>
+                    <div class="flex gap-4">
+                        <div class="px-6 py-4 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl font-bold">18 mo</div>
+                            <div class="text-indigo-300 text-sm">Runway</div>
+                        </div>
+                        <div class="px-6 py-4 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl font-bold">50+</div>
+                            <div class="text-indigo-300 text-sm">SME Pilot Clients</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white text-slate-900 p-10 rounded-3xl shadow-2xl reveal-up delay-200">
+                    <h3 class="font-bold text-2xl mb-6">Use of Funds</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-2">
+                                <span>Engineering & Product</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-indigo-600 h-2 rounded-full" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-2">
+                                <span>Sales & GTM</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-2">
+                                <span>Ops & Legal</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-amber-500 h-2 rounded-full" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 9: CONTACT -->
+        <section class="bg-white" id="slide-8">
+            <div class="container mx-auto text-center max-w-4xl">
+                <div class="mb-12 reveal-up">
+                    <h1 class="font-display text-7xl font-black text-slate-900 mb-6">Join the Journey.</h1>
+                    <p class="text-2xl text-slate-500">Corporate travel is a trillion-dollar problem.<br>We have the
+                        solution.</p>
+                </div>
+
+                <div class="flex justify-center gap-6 reveal-up delay-100">
+                    <a href="mailto:invest@travyntra.com"
+                        class="group relative px-8 py-4 bg-indigo-600 text-white font-bold rounded-full overflow-hidden shadow-lg hover:shadow-indigo-500/50 transition-all duration-300">
+                        <div
+                            class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer">
+                        </div>
+                        <span class="relative flex items-center gap-2">
+                            invest@travyntra.com
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="https://travyntra.com" target="_blank"
+                        class="px-8 py-4 bg-white text-slate-900 border border-slate-200 font-bold rounded-full hover:bg-slate-50 transition-colors">
+                        View Demo
+                    </a>
+                </div>
+
+                <div
+                    class="mt-24 grid grid-cols-3 gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 reveal-up delay-300">
+                    <!-- Placeholders for "Trusted By" logos if applicable, or investor logos -->
+                    <div class="font-display font-bold text-xl flex items-center justify-center">Next.js</div>
+                    <div class="font-display font-bold text-xl flex items-center justify-center">Vercel</div>
+                    <div class="font-display font-bold text-xl flex items-center justify-center">Supabase</div>
+                </div>
+
+                <footer class="mt-24 text-slate-400 text-sm">
+                    &copy; 2026 Travyntra Inc. Confidential Investor Materials.
+                </footer>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Smooth scroll handling
+        function scrollToSlide(index) {
+            const deck = document.getElementById('deck');
+            const slide = document.getElementById(`slide-${index}`);
+            if (slide) {
+                slide.scrollIntoView({ behavior: 'smooth' });
+                // Note: The scroll event listener below will handle updating the dots
+            }
+        }
+
+        // Animation and Dot Observer
+        const observerOptions = {
+            root: document.getElementById('deck'),
+            threshold: 0.5
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Update dots
+                    const id = entry.target.id;
+                    const index = parseInt(id.split('-')[1]);
+                    document.querySelectorAll('.nav-dot').forEach((dot, idx) => {
+                        if (idx === index) dot.classList.add('active', 'bg-indigo-600', 'scale-125');
+                        else dot.classList.remove('active', 'bg-indigo-600', 'scale-125');
+                    });
+
+                    // Trigger animations
+                    entry.target.classList.add('active');
+                    const reveals = entry.target.querySelectorAll('.reveal-up');
+                    reveals.forEach(el => {
+                        // Reset animation slightly to re-trigger if needed, or just let CSS handle it via class
+                    });
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Shimmer animation configuration
+        tailwind.config.theme.extend.keyframes = {
+            ...tailwind.config.theme.extend.keyframes,
+            shimmer: {
+                '100%': { transform: 'translateX(100%)' }
+            },
+            blob: {
+                "0%": { transform: "translate(0px, 0px) scale(1)" },
+                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                "100%": { transform: "translate(0px, 0px) scale(1)" }
+            }
+        };
+        tailwind.config.theme.extend.animation = {
+            ...tailwind.config.theme.extend.animation,
+            shimmer: 'shimmer 1.5s infinite',
+            blob: "blob 7s infinite",
+        };
+    </script>
+</body>
+
+</html>

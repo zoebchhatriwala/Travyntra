@@ -10,6 +10,12 @@ import { UserRole } from "@prisma/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { type LocationDisplay as Location } from "@/types/common/location";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Agency Console",
+    description: "Manage bids, fulfillment, and revenue for your agency.",
+};
 
 export default async function AgencyDashboard() {
     const session = await getServerSession(authOptions);
