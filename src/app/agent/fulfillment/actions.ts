@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { RequestStatus, UserRole, Prisma } from "@prisma/client";
+import { RequestStatus, UserRole, Prisma, DocType } from "@prisma/client";
 import { ActivityLogAction } from "@/types/common/enums";
 import { createNotification } from "@/lib/notifications";
 
@@ -329,6 +329,8 @@ export async function uploadFulfillmentDocument(formData: FormData) {
             }
         }
 
+        const docType = (formData.get('type') as string) || "OTHER";
+
         // Upload files
         const { uploadFile } = await import("@/lib/storage");
 
@@ -346,7 +348,7 @@ export async function uploadFulfillmentDocument(formData: FormData) {
                     name: file.name,
                     s3Key,
                     url,
-                    type: "OTHER" // Type is now less relevant since docs are linked to items
+                    type: docType as DocType
                 }
             });
 

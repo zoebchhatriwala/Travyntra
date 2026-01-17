@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { DocType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -35,7 +36,7 @@ interface FulfillmentItem {
         id: string;
         name: string;
         url: string;
-        type: string;
+        type: DocType;
         createdAt: Date;
         uploader: { name: string | null };
     }[];
@@ -55,6 +56,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
     const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
     const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+    const [selectedDocType, setSelectedDocType] = useState<DocType>(DocType.TICKET);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { confirm, ConfirmDialog } = useConfirm();
 
@@ -132,6 +134,7 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
             Array.from(files).forEach(file => formData.append('files', file));
             formData.append('requestId', requestId);
             formData.append('fulfillmentItemId', itemId);
+            formData.append('type', selectedDocType);
 
             const result = await uploadFulfillmentDocument(formData);
             if (result.error) {
@@ -323,7 +326,12 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                                                 <File size={14} className="text-indigo-600" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-xs font-medium text-gray-700 truncate">{doc.name}</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-xs font-medium text-gray-700 truncate">{doc.name}</p>
+                                                                    <span className="text-[8px] font-black bg-gray-200 text-gray-500 px-1 rounded uppercase tracking-tighter">
+                                                                        {doc.type}
+                                                                    </span>
+                                                                </div>
                                                                 <p className="text-[10px] text-gray-400">
                                                                     {format(new Date(doc.createdAt), "MMM d, h:mm a")}
                                                                 </p>
@@ -377,11 +385,25 @@ export function FulfillmentChecklist({ requestId, items, isCompleted }: Fulfillm
                                                         <span className="text-xs font-medium">Uploading...</span>
                                                     </div>
                                                 ) : (
-                                                    <>
-                                                        <Upload size={16} className="mx-auto text-gray-400 mb-1" />
-                                                        <p className="text-xs font-medium text-gray-600">Upload documents</p>
-                                                        <p className="text-[10px] text-gray-400">PDF, Images • Max 10MB</p>
-                                                    </>
+                                                    <div className="flex flex-col gap-2">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <Upload size={16} className="text-gray-400" />
+                                                            <p className="text-xs font-medium text-gray-600">Upload documents</p>
+                                                        </div>
+                                                        <div className="flex items-center justify-center gap-3 mt-1" onClick={(e) => e.stopPropagation()}>
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type:</span>
+                                                            <select
+                                                                value={selectedDocType}
+                                                                onChange={(e) => setSelectedDocType(e.target.value as DocType)}
+                                                                className="text-[10px] font-bold bg-white border border-gray-200 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                                                            >
+                                                                {Object.values(DocType).map(type => (
+                                                                    <option key={type} value={type}>{type}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <p className="text-[10px] text-gray-400 mt-1">PDF, Images • Max 10MB</p>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

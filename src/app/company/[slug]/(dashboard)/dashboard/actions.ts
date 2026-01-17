@@ -452,8 +452,7 @@ export async function getTripRequest(requestId: string) {
                 documents: {
                     orderBy: { createdAt: 'desc' },
                     include: {
-                        uploader: { select: { name: true } },
-                        fulfillmentItem: { select: { title: true } }
+                        uploader: { select: { name: true } }
                     }
                 },
                 parentTrip: {
