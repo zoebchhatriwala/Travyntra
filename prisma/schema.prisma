@@ -211,6 +211,7 @@ model WorkflowStep {
   name             String
   order            Int
   type             ApprovalType          @default(ANY)
+  kind             WorkflowStepKind      @default(INTERNAL_APPROVAL)
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   deletedAt        DateTime?
@@ -297,6 +298,7 @@ enum UserRole {
 enum RequestStatus {
   DRAFT
   PENDING_COMPANY_APPROVAL
+  PENDING_QUOTATION
   PENDING_AGENT_ACTION
   IN_PROGRESS
   APPROVED
@@ -416,4 +418,9 @@ model TaxTemplate {
   agency Company @relation("AgencyTaxTemplates", fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@index([agencyId])
+}
+
+enum WorkflowStepKind {
+  INTERNAL_APPROVAL
+  AGENT_QUOTATION
 }

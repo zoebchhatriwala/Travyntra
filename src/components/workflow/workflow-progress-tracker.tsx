@@ -112,10 +112,18 @@ export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps)
                                             </span>
                                         </div>
 
+                                        {/* Step Type Description */}
                                         <p className="text-xs text-gray-600 mb-4">
-                                            {step.stepType === 'ALL'
-                                                ? 'All approvers must approve'
-                                                : 'Any approver can approve'}
+                                            {step.kind === 'AGENT_QUOTATION' ? (
+                                                <span className="flex items-center gap-1 text-indigo-600 font-medium">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                                                    Waiting for agent bids
+                                                </span>
+                                            ) : (
+                                                step.stepType === 'ALL'
+                                                    ? 'All approvers must approve'
+                                                    : 'Any approver can approve'
+                                            )}
                                         </p>
 
                                         {/* Auto-approval Metadata */}
@@ -128,6 +136,23 @@ export function WorkflowProgressTracker({ steps }: WorkflowProgressTrackerProps)
                                                 <p className="text-sm font-bold text-gray-900 leading-tight">
                                                     {step.metadata.reason || "This step was automatically approved by the system."}
                                                 </p>
+                                            </div>
+                                        )}
+
+                                        {/* Agent Quotation Info */}
+                                        {step.kind === 'AGENT_QUOTATION' && (
+                                            <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-indigo-900">Broadcasting to Agencies</p>
+                                                        <p className="text-xs text-indigo-600">Request is visible to all connected travel agents.</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
 

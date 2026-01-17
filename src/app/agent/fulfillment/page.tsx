@@ -11,7 +11,7 @@ import { redirect } from "next/navigation";
 import { SearchInput } from "@/components/ui/search-input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
-import { Prisma, RequestStatus } from "@prisma/client";
+import { BidStatus, Prisma, RequestStatus } from "@prisma/client";
 import { parseMoney, formatMoney } from "@/lib/utils/money";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -41,7 +41,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
     // i.e., the request is assigned to this agency
     const whereCondition: Prisma.TripRequestWhereInput = {
         assignedAgentId: agencyId,
-        // Only show IN_PROGRESS, BOOKED, or COMPLETED statuses for fulfillment
+        // Only show requests that are in progress, booked, or completed
         status: {
             in: [RequestStatus.IN_PROGRESS, RequestStatus.BOOKED, RequestStatus.COMPLETED]
         }
@@ -70,7 +70,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                 company: { select: { name: true, logoUrl: true, currency: true } },
                 user: { select: { name: true, email: true } },
                 bids: {
-                    where: { agentId: agencyId, status: "ACCEPTED" },
+                    where: { agentId: agencyId, status: BidStatus.ACCEPTED },
                     select: { amount: true }
                 },
                 documents: {

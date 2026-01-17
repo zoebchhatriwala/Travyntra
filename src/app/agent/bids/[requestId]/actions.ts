@@ -13,6 +13,7 @@ import { convertMoney } from "@/lib/services/currency";
 import { createNotification } from "@/lib/notifications";
 import { type ApprovalStepMetadata, type CombinedConfig, type BudgetThresholdConfig, AutoApprovalRuleType } from "@/types/workflow/auto-approval-policy";
 import { AutoApprovalEngine } from "@/lib/auto-approval-engine";
+import { WorkflowEngine } from "@/lib/workflow-engine";
 
 interface BidTax {
     label: string;
@@ -592,14 +593,26 @@ export async function approveBid(bidId: string, requestId: string) {
         const formattedTotal = formatMoney(totalMoney);
 
         // 3. Update Request: Assign Agent, Set Cost, Update Status
-        await prisma.tripRequest.update({
-            where: { id: requestId },
-            data: {
-                assignedAgentId: bid.agentId,
-                status: "IN_PROGRESS", // Or BOOKED, depending on workflow. usually IN_PROGRESS means fulfillment started.
-                cost: totalMoney as unknown as Prisma.InputJsonValue
-            }
-        });
+        if (bid.request.status === RequestStatus.PENDING_QUOTATION) {
+            await prisma.tripRequest.update({
+                where: { id: requestId },
+                data: {
+                    assignedAgentId: bid.agentId,
+                    // Status is updated by WorkflowEngine
+                    cost: totalMoney as unknown as Prisma.InputJsonValue
+                }
+            });
+            await WorkflowEngine.completeAgentQuotation(requestId, session.user.id);
+        } else {
+            await prisma.tripRequest.update({
+                where: { id: requestId },
+                data: {
+                    assignedAgentId: bid.agentId,
+                    status: "IN_PROGRESS",
+                    cost: totalMoney as unknown as Prisma.InputJsonValue
+                }
+            });
+        }
 
         // 4. Log Activity
         await prisma.activityLog.create({
@@ -673,6 +686,11 @@ export async function unapproveBid(bidId: string, requestId: string) {
             }
         });
         if (!bid) return { error: "Bid not found" };
+
+        // Guard against unapproving if workflow has proceeded
+        if (bid.request.status === RequestStatus.PENDING_COMPANY_APPROVAL) {
+            return { error: "Cannot unapprove bid because the request has moved to a subsequent approval step." };
+        }
 
         // 1. Reset all bids for this request to PENDING
         await prisma.agentBid.updateMany({

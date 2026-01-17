@@ -1,4 +1,4 @@
-import { ApprovalType } from "@prisma/client";
+import { ApprovalType, WorkflowStepKind } from "@prisma/client";
 import { type ApprovalStepMetadata } from "./auto-approval-policy";
 
 /**
@@ -9,6 +9,7 @@ export interface WorkflowStepConfig {
     name: string;
     order: number;
     type: ApprovalType;
+    kind?: WorkflowStepKind;
     approverIds: string[];
 }
 
@@ -23,6 +24,7 @@ export interface WorkflowProgressStep {
     stepName: string;
     stepOrder: number;
     stepType: string; // or ApprovalType
+    kind?: WorkflowStepKind;
     status: string; // or ApprovalStatus
     approvers: Array<UserProfile & { role: string }>;
     approvals: Array<{

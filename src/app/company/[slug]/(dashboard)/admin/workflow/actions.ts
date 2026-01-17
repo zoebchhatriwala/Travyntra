@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ApprovalType } from "@prisma/client";
+import { ApprovalType, WorkflowStepKind } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 
@@ -66,6 +66,7 @@ export async function saveWorkflowConfig(
         name: string;
         order: number;
         type: ApprovalType;
+        kind?: WorkflowStepKind;
         approverIds: string[];
 
     }[]
@@ -110,6 +111,7 @@ export async function saveWorkflowConfig(
                     name: step.name,
                     order: step.order,
                     type: step.type,
+                    kind: step.kind || WorkflowStepKind.INTERNAL_APPROVAL,
                     approvers: {
                         connect: step.approverIds.map(id => ({ id }))
                     }

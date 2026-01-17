@@ -301,13 +301,24 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Tax Template Management System
    - ✅ Enhanced notification system with tax breakdowns
    - [x] Budget Analytics (Completed)
-
-### Latest Updates (January 16, 2026) ✅
-1. **Financial Analytics** (Phase 10)
+3. **Financial Analytics** (Phase 10)
    - ✅ **Budget Analytics Dashboard**: Visualized spending trends vs budget estimates.
    - ✅ **Metrics**: Total Spend, Budget Utilization, Average Trip Cost.
    - ✅ **Visuals**: Monthly bar charts comparing Actual vs Budget.
    - ✅ **Integration**: Added to Admin Dashboard Quick Access.
+
+4. **Agent Quotation Workflow Automation (Phase 9/10)**
+   - ✅ **Workflow Step**: Added `AGENT_QUOTATION` step kind to `WorkflowEngine`.
+   - ✅ **Agent Notification**: Implemented automatic notifications to eligible agents when bidding opens.
+   - ✅ **Opportunity View**: Exposed requests in `PENDING_QUOTATION` state to Agency Dashboard.
+   - ✅ **Bid Approval Flow**: Admin approval now triggers transition to the next workflow step (e.g. Finance Approval).
+
+### Latest Updates (January 17, 2026) ✅
+1. **Agent Quotation Workflow Automation**
+   - ✅ **Schema Update**: Added `WorkflowStepKind` and `PENDING_QUOTATION` status.
+   - ✅ **Workflow Engine**: Refactored `WorkflowEngine` to pause for Agent Quotation and resume upon Bid Approval.
+   - ✅ **Bid Logic**: Updated bid approval actions to bridge the gap between `AgentBid` and `TripRequest` workflow.
+   - ✅ **Notification Logic**: Targeted notifications for Agents when opportunities open.
 
 2. **Auto-Approval Policy System** (Phase 9)
    - ✅ TypeScript interfaces for auto-approval policies
@@ -368,6 +379,17 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - **Workflow Integrity**: Approval logic must reside in the `WorkflowEngine` to maintain a single source of truth for request transitions.
 
 - **Dynamic List Standards**: Any list capable of indefinite growth (e.g., Requests, Users, Logs) MUST implement server-side pagination and search/filtering capabilities.
+
+- **Code Style Protocol**:
+    - **Vertical Spacing & Commenting**: Code MUST be segmented into logical blocks. Each block MUST be preceded by a descriptive comment and followed by a newline. Avoid bunching multiple logic steps together without separation.
+      *Example*:
+      ```typescript
+      // Fetch user data
+      const user = await getUser();
+
+      // Validate permissions
+      if (!user.isAdmin) return;
+      ```
 
 - **Currency & FX Protocol**: 
     - Use `https://api.fxratesapi.com/latest` for all currency conversions.

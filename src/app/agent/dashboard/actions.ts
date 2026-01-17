@@ -24,7 +24,7 @@ export async function getAgencyStats() {
 
     let openOpportunities = 0;
     let activeBids = 0;
-     
+
     let pendingFulfillment = 0;
 
     if (isAgent) {
@@ -32,7 +32,9 @@ export async function getAgencyStats() {
             // Requests that are APPROVED (by company) but not yet assigned to anyone
             prisma.tripRequest.count({
                 where: {
-                    status: RequestStatus.APPROVED,
+                    status: {
+                        in: [RequestStatus.APPROVED, RequestStatus.PENDING_QUOTATION]
+                    },
                     assignedAgentId: null,
                     company: {
                         integrationsAsClient: {
@@ -109,7 +111,9 @@ export async function getRecentOpportunities() {
     // Filter: Must be from integrated companies
     return await prisma.tripRequest.findMany({
         where: {
-            status: RequestStatus.APPROVED,
+            status: {
+                in: [RequestStatus.APPROVED, RequestStatus.PENDING_QUOTATION]
+            },
             assignedAgentId: null,
             company: {
                 integrationsAsClient: {

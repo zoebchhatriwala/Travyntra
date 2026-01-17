@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { submitBid, updateBid, getConversionPreview } from "../actions";
+import { RequestStatus } from "@prisma/client";
 import { getTaxTemplates } from "@/app/agent/settings/tax-templates/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,9 +155,19 @@ export function BidForm({ requestId, requestStatus, currency = "USD", requestCur
             setIsSubmitting(false);
         }
     }
-    const isClosed = requestStatus !== "APPROVED" && requestStatus !== "PENDING_AGENT_BIDS";
-    // Note: status might vary, let's assume anything not in bidding phase is closed.
-    // Based on Phase 3: PENDING_COMPANY_APPROVAL -> APPROVED -> IN_PROGRESS
+
+    // Determine if the bidding window is open based on the request status
+    // Open for:
+    // - PENDING_QUOTATION: Standard bidding
+    // - APPROVED: Direct placement can occur
+    // - PENDING_AGENT_ACTION: Assigned agent can update details
+    const allowedStatuses: RequestStatus[] = [
+        RequestStatus.PENDING_QUOTATION,
+        RequestStatus.APPROVED,
+        RequestStatus.PENDING_AGENT_ACTION
+    ];
+
+    const isClosed = !requestStatus || !allowedStatuses.includes(requestStatus as RequestStatus);
 
     return (
         <Card className={isClosed ? "opacity-75 bg-gray-50" : ""}>

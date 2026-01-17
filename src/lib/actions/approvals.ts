@@ -8,6 +8,7 @@ import { ApprovalStatus, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
 import { type ApprovalStepMetadata } from "@/types/workflow/auto-approval-policy";
+import { WorkflowEngine } from "@/lib/workflow-engine";
 
 /**
  * Interface representing a geographic location.
@@ -491,103 +492,19 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
          * Handle forward progression if the current step has been successfully APPROVED.
          */
         if (currentAggregateStatus === ApprovalStatus.APPROVED) {
-            // identify the numerical order of the recently completed step
+            // Identify the order of the completed step
             const currentStepOrderValue = approvalStepRecord.step.order;
-            // determine the next step in the workflow by finding the one with the next sequential order
-            const findNextStepPredicate = (s: { step: { order: number } }) => s.step.order === currentStepOrderValue + 1;
-            const nextWorkflowStepRecord = approvalStepRecord.request.approvalSteps.find(findNextStepPredicate);
 
-            // identify if this was the final step
-            const workflowExhausted = !nextWorkflowStepRecord;
+            // Delegate workflow transition (next step calculation, notifications, status updates)
+            // to the centralized Workflow Engine.
+            await WorkflowEngine.moveToNextStep(
+                approvalStepRecord.requestId,
+                currentStepOrderValue,
+                activeUserId
+            );
 
-            if (workflowExhausted) {
-                // If no more steps remain, update the main trip request status to fully APPROVED
-                await prisma.tripRequest.update({
-                    where: {
-                        id: approvalStepRecord.requestId
-                    },
-                    data: {
-                        status: 'APPROVED'
-                    }
-                });
+            return { success: true };
 
-                // define completion notification
-                const completionTitle = "Request Fully Approved!";
-                const completionMsg = `Your request "${requestTitle}" has been fully approved and is ready for fulfillment`;
-
-                const completionNotification = {
-                    userId: requesterUserId,
-                    title: completionTitle,
-                    message: completionMsg,
-                    type: "SUCCESS" as const,
-                    link: requestRelativeLink,
-                    sendEmail: true
-                };
-
-                // Notify the author of full approval
-                await createNotification(completionNotification);
-            } else {
-                // identify the identifier for the next progressive step
-                const nextStepRecordId = nextWorkflowStepRecord.id;
-
-                // Update the status of the next step to PENDING to activate it for approvers
-                await prisma.requestApprovalStep.update({
-                    where: {
-                        id: nextStepRecordId
-                    },
-                    data: {
-                        status: ApprovalStatus.PENDING
-                    }
-                });
-
-                // retrieve the identification for the next step configuration to find targeted approvers
-                const targetedStepDefId = nextWorkflowStepRecord.stepId;
-                const nextStepConfigQuery = {
-                    where: {
-                        id: targetedStepDefId
-                    },
-                    include: {
-                        approvers: {
-                            select: {
-                                id: true,
-                                name: true
-                            }
-                        }
-                    }
-                };
-
-                // Fetch configuration details for the next sequential step
-                const nextStepConfigDetails = await prisma.workflowStep.findUnique(nextStepConfigQuery);
-
-                // If configuration exists
-                if (nextStepConfigDetails) {
-                    // retrieve list of approvers to notify
-                    const nextStepApproversList = nextStepConfigDetails.approvers;
-                    const nextStepNameValue = nextStepConfigDetails.name;
-
-                    // construct the notification item generator
-                    const notifyApproverItem = (approver: { id: string, name: string | null }) => {
-                        // define generic identifier
-                        const approverIdStr = approver.id;
-
-                        // define notification details
-                        const approverNoticePayload = {
-                            userId: approverIdStr,
-                            title: "New Approval Request",
-                            message: `"${requestTitle}" requires your approval (${nextStepNameValue})`,
-                            type: "INFO" as const,
-                            link: requestRelativeLink,
-                            sendEmail: true
-                        };
-
-                        // return the creation promise
-                        return createNotification(approverNoticePayload);
-                    };
-
-                    // batch initialize notifications for all approvers assigned to the next step
-                    await Promise.all(nextStepApproversList.map(notifyApproverItem));
-                }
-            }
         } else if (currentAggregateStatus === ApprovalStatus.REJECTED) {
             /** 
              * Handle rejection: Rejection at any step halts the workflow and terminates the request.
@@ -790,6 +707,7 @@ export async function getRequestApprovalProgress(requestId: string): Promise<App
                 stepName: stepDefinition.name,
                 stepOrder: stepDefinition.order,
                 stepType: stepDefinition.type,
+                kind: stepDefinition.kind,
                 status: step.status,
                 approvers: mappedApprovers,
                 approvals: individualDecisions,
