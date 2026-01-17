@@ -231,6 +231,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Budget Analytics**: Spending trends and forecasts. (Implemented Jan 16)
 - [x] **Expense Reports**: Per-request and per-employee breakdowns - Analytics Page.
 
+### Phase 10.5: Testing & Quality Assurance 🛠️ PLANNED
+- [ ] **Unit Tests**: Full coverage for `WorkflowEngine` and `PolicyEngine`.
+- [ ] **Integration Tests**: Server actions for Approvals, Bidding, and Fulfillment.
+- [ ] **E2E Tests**: Critical paths using Playwright (Request -> Fulfillment).
+- [ ] **Performance Benchmarking**: Audit expensive Prisma queries and currency conversion caching.
+
 ### Phase 11: Subscription & Super Admin Refinement 🛠️ PLANNED
 - [ ] **Plan Architecture**: Define capability-based plans (Starter, Growth, Enterprise).
     - **Features**: Active Requests/Month, Company Integrations, Tax Templates, Analytics, Support SLA, Team Accounts, Dedicated Manager.
@@ -282,7 +288,13 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ Asset Vault: Search, Filters, Pagination
 
 ### Immediate Priorities
-1. **UX & Request Refinements** (Phases 8)
+1. **Testing & Quality Assurance** (Phase 10.5) 🎯
+   - [ ] Establish Vitest & Playwright infrastructure.
+   - [ ] Test coverage for `WorkflowEngine` logic.
+   - [ ] Test coverage for `PolicyEngine` (Auto-approvals).
+   - [ ] Integration tests for critical Server Actions.
+
+2. **UX & Request Refinements** (Phases 8)
    - ✅ Real country selector in settings
    - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
    - ✅ Custom Train Option (Manual Entry)
