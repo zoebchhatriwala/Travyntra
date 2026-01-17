@@ -2,7 +2,7 @@
 CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'TRAVEL_AGENT', 'COMPANY_ADMIN', 'EMPLOYEE', 'AGENCY_EMPLOYEE');
 
 -- CreateEnum
-CREATE TYPE "RequestStatus" AS ENUM ('DRAFT', 'PENDING_COMPANY_APPROVAL', 'PENDING_AGENT_ACTION', 'IN_PROGRESS', 'APPROVED', 'BOOKED', 'COMPLETED', 'REJECTED', 'CANCELLED');
+CREATE TYPE "RequestStatus" AS ENUM ('DRAFT', 'PENDING_COMPANY_APPROVAL', 'PENDING_QUOTATION', 'PENDING_AGENT_ACTION', 'IN_PROGRESS', 'APPROVED', 'BOOKED', 'COMPLETED', 'REJECTED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "DocType" AS ENUM ('PASSPORT', 'VISA', 'TICKET', 'INVOICE', 'OTHER');
@@ -32,13 +32,16 @@ CREATE TYPE "IntegrationStatus" AS ENUM ('ACTIVE', 'INACTIVE');
 CREATE TYPE "BidStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'ARCHIVED');
 
 -- CreateEnum
-CREATE TYPE "WorkflowActionType" AS ENUM ('REQUEST_CREATED', 'SUBMITTED', 'APPROVED_STEP', 'REJECTED', 'APPROVED', 'AUTO_APPROVED', 'CANCELLED');
+CREATE TYPE "WorkflowActionType" AS ENUM ('REQUEST_CREATED', 'SUBMITTED', 'APPROVED_STEP', 'REJECTED', 'APPROVED', 'AUTO_APPROVED', 'AUTO_APPROVAL_REVOKED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "NotificationType" AS ENUM ('INFO', 'SUCCESS', 'WARNING', 'ERROR');
 
 -- CreateEnum
 CREATE TYPE "ExpenseCategory" AS ENUM ('FLIGHT', 'HOTEL', 'TRAIN', 'MEALS', 'TRANSPORT', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "WorkflowStepKind" AS ENUM ('INTERNAL_APPROVAL', 'AGENT_QUOTATION');
 
 -- CreateTable
 CREATE TABLE "Company" (
@@ -97,7 +100,7 @@ CREATE TABLE "TripRequest" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "companyId" TEXT NOT NULL,
-    "assignedAgentId" TEXT,
+    "agencyId" TEXT,
     "status" "RequestStatus" NOT NULL DEFAULT 'DRAFT',
     "title" TEXT NOT NULL,
     "destination" JSONB NOT NULL,
@@ -119,7 +122,7 @@ CREATE TABLE "TripRequest" (
 CREATE TABLE "AgentBid" (
     "id" TEXT NOT NULL,
     "requestId" TEXT NOT NULL,
-    "agentId" TEXT NOT NULL,
+    "agencyId" TEXT NOT NULL,
     "amount" JSONB,
     "taxes" JSONB,
     "message" TEXT,
@@ -217,6 +220,7 @@ CREATE TABLE "WorkflowStep" (
     "name" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "type" "ApprovalType" NOT NULL DEFAULT 'ANY',
+    "kind" "WorkflowStepKind" NOT NULL DEFAULT 'INTERNAL_APPROVAL',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -341,10 +345,10 @@ CREATE INDEX "TripRequest_companyId_status_idx" ON "TripRequest"("companyId", "s
 CREATE INDEX "TripRequest_userId_status_idx" ON "TripRequest"("userId", "status");
 
 -- CreateIndex
-CREATE INDEX "AgentBid_requestId_agentId_idx" ON "AgentBid"("requestId", "agentId");
+CREATE INDEX "AgentBid_requestId_agencyId_idx" ON "AgentBid"("requestId", "agencyId");
 
 -- CreateIndex
-CREATE INDEX "AgentBid_agentId_status_idx" ON "AgentBid"("agentId", "status");
+CREATE INDEX "AgentBid_agencyId_status_idx" ON "AgentBid"("agencyId", "status");
 
 -- CreateIndex
 CREATE INDEX "Expense_requestId_idx" ON "Expense"("requestId");
@@ -383,97 +387,97 @@ CREATE INDEX "_UserToWorkflowStep_B_index" ON "_UserToWorkflowStep"("B");
 CREATE INDEX "_RequestCollaborators_B_index" ON "_RequestCollaborators"("B");
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_assignedAgentId_fkey" FOREIGN KEY ("assignedAgentId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_parentTripId_fkey" FOREIGN KEY ("parentTripId") REFERENCES "TripRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TripRequest" ADD CONSTRAINT "TripRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AgentBid" ADD CONSTRAINT "AgentBid_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "FulfillmentItem" ADD CONSTRAINT "FulfillmentItem_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "FulfillmentItem" ADD CONSTRAINT "FulfillmentItem_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "WorkflowAction" ADD CONSTRAINT "WorkflowAction_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Message" ADD CONSTRAINT "Message_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Document" ADD CONSTRAINT "Document_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Document" ADD CONSTRAINT "Document_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Document" ADD CONSTRAINT "Document_uploaderId_fkey" FOREIGN KEY ("uploaderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Document" ADD CONSTRAINT "Document_uploaderId_fkey" FOREIGN KEY ("uploaderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Document" ADD CONSTRAINT "Document_fulfillmentItemId_fkey" FOREIGN KEY ("fulfillmentItemId") REFERENCES "FulfillmentItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Document" ADD CONSTRAINT "Document_fulfillmentItemId_fkey" FOREIGN KEY ("fulfillmentItemId") REFERENCES "FulfillmentItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Expense" ADD CONSTRAINT "Expense_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Expense" ADD CONSTRAINT "Expense_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApprovalWorkflow" ADD CONSTRAINT "ApprovalWorkflow_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ApprovalWorkflow" ADD CONSTRAINT "ApprovalWorkflow_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkflowStep" ADD CONSTRAINT "WorkflowStep_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "ApprovalWorkflow"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "WorkflowStep" ADD CONSTRAINT "WorkflowStep_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "ApprovalWorkflow"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RequestApprovalStep" ADD CONSTRAINT "RequestApprovalStep_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RequestApprovalStep" ADD CONSTRAINT "RequestApprovalStep_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RequestApprovalStep" ADD CONSTRAINT "RequestApprovalStep_stepId_fkey" FOREIGN KEY ("stepId") REFERENCES "WorkflowStep"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RequestApprovalStep" ADD CONSTRAINT "RequestApprovalStep_stepId_fkey" FOREIGN KEY ("stepId") REFERENCES "WorkflowStep"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_requestApprovalStepId_fkey" FOREIGN KEY ("requestApprovalStepId") REFERENCES "RequestApprovalStep"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_requestApprovalStepId_fkey" FOREIGN KEY ("requestApprovalStepId") REFERENCES "RequestApprovalStep"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserApproval" ADD CONSTRAINT "UserApproval_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "TripRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_targetId_fkey" FOREIGN KEY ("targetId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AgencyIntegration" ADD CONSTRAINT "AgencyIntegration_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TaxTemplate" ADD CONSTRAINT "TaxTemplate_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;

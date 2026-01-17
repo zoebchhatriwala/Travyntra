@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, BidStatus, InvoiceStatus } from "@prisma/client";
+import { PrismaClient, UserRole, CompanyStatus, SubscriptionPlan, CompanyType, RequestStatus, ApprovalType, BidStatus, InvoiceStatus, User } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -150,7 +150,7 @@ async function main() {
         { name: "Alex Johnson", email: "alex@nebula.tech" },
     ];
 
-    const companyUsers: any[] = [];
+    const companyUsers: User[] = [];
 
     for (const adminData of adminsToCreate) {
         const u = await prisma.user.create({
@@ -209,7 +209,7 @@ async function main() {
             name: "Manager Approval",
             order: 1,
             type: ApprovalType.ANY,
-            approvers: { connect: { id: adminUser.id } }
+            approvers: { connect: { id: adminUser!.id } }
         }
     });
 
@@ -263,7 +263,7 @@ async function main() {
             // Create Request
             const request = await prisma.tripRequest.create({
                 data: {
-                    userId: userRecord.id,
+                    userId: userRecord!.id,
                     companyId: clientCompany.id,
                     title: `${TRIP_PURPOSES[Math.floor(Math.random() * TRIP_PURPOSES.length)]} - ${destination.name}`,
                     destination: { city: destination.name, country: destination.country },
@@ -281,7 +281,7 @@ async function main() {
             // If it went to agency (Booked/Completed)
             if (status === RequestStatus.BOOKED || status === RequestStatus.COMPLETED) {
                 // Link Agent
-                await prisma.tripRequest.update({ where: { id: request.id }, data: { assignedAgentId: agency.id } });
+                await prisma.tripRequest.update({ where: { id: request.id }, data: { agencyId: agency.id } });
 
                 // Bid in Agent Currency (GBP) or Destination Currency (e.g. EUR)
                 // Let's mix it up. 70% Agent Currency.
@@ -289,7 +289,7 @@ async function main() {
                 const bidCurrency = isAgentCurrency ? "GBP" : destination.currency;
 
                 // Approximate exchange rates for seed realism
-                const rates: any = { "GBP": 0.78, "EUR": 0.92, "JPY": 145, "SGD": 1.34, "AED": 3.67, "USD": 1 };
+                const rates: Record<string, number> = { "GBP": 0.78, "EUR": 0.92, "JPY": 145, "SGD": 1.34, "AED": 3.67, "USD": 1 };
                 const rate = rates[bidCurrency] || 1;
                 const bidAmount = Math.round(actualCost * rate);
 
@@ -298,7 +298,7 @@ async function main() {
                 await prisma.message.create({
                     data: {
                         requestId: request.id,
-                        senderId: userRecord.id,
+                        senderId: userRecord!.id,
                         content: `Hi, I need to be near the convention center in ${destination.name}.`,
                         createdAt: new Date(tripCreatedDate.getTime() + 3600000) // 1 hr later
                     }
@@ -319,7 +319,7 @@ async function main() {
                 await prisma.agentBid.create({
                     data: {
                         requestId: request.id,
-                        agentId: agency.id,
+                        agencyId: agency.id,
                         amount: createMoney(bidAmount, bidCurrency),
                         status: BidStatus.ACCEPTED,
                         message: "Standard package negotiation final.",

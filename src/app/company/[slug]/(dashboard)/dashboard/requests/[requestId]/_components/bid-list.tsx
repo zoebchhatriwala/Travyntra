@@ -19,7 +19,7 @@ interface Bid {
     convertedAmount?: Money | null;
     status: string;
     message?: string | null;
-    agent: {
+    agency: {
         name: string;
         logoUrl?: string | null;
     };
@@ -104,13 +104,13 @@ export function BidList({ bids, requestId, isAuthorized }: { bids: Bid[], reques
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                                 <div className="w-5 h-5 rounded bg-gray-200 flex items-center justify-center overflow-hidden">
-                                    {bid.agent.logoUrl ? (
-                                        <Image src={bid.agent.logoUrl} alt="" width={20} height={20} className="w-full h-full object-cover" />
+                                    {bid.agency.logoUrl ? (
+                                        <Image src={bid.agency.logoUrl} alt="" width={20} height={20} className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-[10px] font-bold text-gray-500">{bid.agent.name[0]}</span>
+                                        <span className="text-[10px] font-bold text-gray-500">{bid.agency.name[0]}</span>
                                     )}
                                 </div>
-                                <span className="font-medium text-gray-900">{bid.agent.name}</span>
+                                <span className="font-medium text-gray-900">{bid.agency.name}</span>
                             </div>
                             {bid.message && (
                                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-corner-md max-w-lg border border-gray-100">

@@ -40,7 +40,7 @@ export default async function RequestDetailsPage({
             company: { select: { name: true, logoUrl: true, slug: true, currency: true, timezone: true } },
             user: { select: { id: true, name: true, email: true, avatarUrl: true, role: true } },
             bids: {
-                where: { agentId: session.user.companyId }
+                where: { agencyId: session.user.companyId }
             },
             messages: {
                 include: {

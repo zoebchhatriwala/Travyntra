@@ -529,11 +529,12 @@ export class WorkflowEngine {
     /**
      * Notifies connected agencies that a request is now open for bidding.
      */
-    private static async notifyAgentsForOpportunity(requestId: string): Promise<void> {
+    public static async notifyAgentsForOpportunity(requestId: string): Promise<void> {
         const request = await prisma.tripRequest.findUnique({
             where: { id: requestId },
             include: { company: true }
         });
+
         if (!request) return;
 
         // Find active integrations
@@ -544,8 +545,6 @@ export class WorkflowEngine {
             },
             include: { agency: true }
         });
-
-        console.log(`[NotifyAgents] Request ${requestId} (Company ${request.companyId}): Found ${integrations.length} active integrations.`);
 
         if (integrations.length === 0) return;
 
@@ -560,8 +559,6 @@ export class WorkflowEngine {
                 isActive: true
             }
         });
-
-        console.log(`[NotifyAgents] Found ${agents.length} agents to notify in agencies: ${agencyIds.join(', ')}`);
 
         // Send notifications
         await Promise.all(agents.map(agent =>
@@ -769,12 +766,12 @@ export class WorkflowEngine {
             };
 
             // If there is an agency linked to the request notify them
-            if (completedRequest.assignedAgentId) {
+            if (completedRequest.agencyId) {
                 // Check if bid is approved
                 // Note: assignedAgentId is a Company ID, so we look for a bid from this agent
                 const approvedBid = await prisma.agentBid.findFirst({
                     where: {
-                        agentId: completedRequest.assignedAgentId,
+                        agencyId: completedRequest.agencyId,
                         requestId: requestId,
                         status: BidStatus.ACCEPTED
                     }
@@ -795,7 +792,7 @@ export class WorkflowEngine {
                     // Get the agents associated with the assigned company
                     const agents = await prisma.user.findMany({
                         where: {
-                            companyId: completedRequest.assignedAgentId,
+                            companyId: completedRequest.agencyId,
                             role: UserRole.TRAVEL_AGENT,
                             isActive: true
                         }
@@ -1005,7 +1002,7 @@ export class WorkflowEngine {
             where: { id: requestId },
             data: {
                 status: RequestStatus.PENDING_COMPANY_APPROVAL,
-                assignedAgentId: null, // Clear assignment if any
+                agencyId: null, // Clear assignment if any
                 cost: Prisma.JsonNull // Clear cost if any
             }
         });
@@ -1088,7 +1085,7 @@ export class WorkflowEngine {
                 // Find users of the agent company to notify
                 const agentAdmins = await prisma.user.findMany({
                     where: {
-                        companyId: bid.agentId,
+                        companyId: bid.agencyId,
                         role: UserRole.TRAVEL_AGENT,
                         isActive: true
                     }

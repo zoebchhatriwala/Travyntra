@@ -439,7 +439,7 @@ export async function getTripRequest(requestId: string) {
                 },
                 bids: {
                     include: {
-                        agent: {
+                        agency: {
                             select: { name: true, logoUrl: true }
                         }
                     },
@@ -451,7 +451,10 @@ export async function getTripRequest(requestId: string) {
                 },
                 documents: {
                     orderBy: { createdAt: 'desc' },
-                    include: { uploader: { select: { name: true } } }
+                    include: {
+                        uploader: { select: { name: true } },
+                        fulfillmentItem: { select: { title: true } }
+                    }
                 },
                 parentTrip: {
                     select: { id: true, title: true }
@@ -532,8 +535,8 @@ export async function getTripRequest(requestId: string) {
                 createdAt: bid.createdAt,
                 updatedAt: bid.updatedAt,
                 requestId: bid.requestId,
-                agentId: bid.agentId,
-                agent: bid.agent,
+                agencyId: bid.agencyId,
+                agency: bid.agency,
                 amount,
                 totalAmount, // Return total in original currency
                 convertedAmount

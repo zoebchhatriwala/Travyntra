@@ -40,7 +40,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
     // Fulfillment Console shows requests where this agency has won the bid
     // i.e., the request is assigned to this agency
     const whereCondition: Prisma.TripRequestWhereInput = {
-        assignedAgentId: agencyId,
+        agencyId: agencyId,
         // Only show requests that are in progress, booked, or completed
         status: {
             in: [RequestStatus.IN_PROGRESS, RequestStatus.BOOKED, RequestStatus.COMPLETED]
@@ -70,7 +70,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
                 company: { select: { name: true, logoUrl: true, currency: true } },
                 user: { select: { name: true, email: true } },
                 bids: {
-                    where: { agentId: agencyId, status: BidStatus.ACCEPTED },
+                    where: { agencyId: agencyId, status: BidStatus.ACCEPTED },
                     select: { amount: true }
                 },
                 documents: {
@@ -86,7 +86,7 @@ export default async function FulfillmentPage({ searchParams }: PageProps) {
         // Stats for the dashboard
         prisma.tripRequest.groupBy({
             by: ['status'],
-            where: { assignedAgentId: agencyId },
+            where: { agencyId: agencyId },
             _count: true
         })
     ]);

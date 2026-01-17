@@ -37,13 +37,13 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
         const request = await prisma.tripRequest.findFirst({
             where: {
                 id: requestId,
-                assignedAgentId: agencyId,
+                agencyId: agencyId,
                 status: RequestStatus.COMPLETED
             },
             include: {
                 company: { select: { id: true, slug: true, name: true, currency: true } },
                 bids: {
-                    where: { agentId: agencyId, status: "ACCEPTED" },
+                    where: { agencyId: agencyId, status: "ACCEPTED" },
                     select: { amount: true }
                 },
                 invoice: true
@@ -59,7 +59,7 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
         }
 
         const acceptedBid = await prisma.agentBid.findFirst({
-            where: { requestId, agentId: agencyId, status: "ACCEPTED" },
+            where: { requestId, agencyId: agencyId, status: "ACCEPTED" },
             select: { amount: true, taxes: true }
         });
 

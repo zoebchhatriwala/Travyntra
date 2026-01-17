@@ -4,7 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { ApprovalStatus, RequestStatus } from "@prisma/client";
+import { ApprovalStatus, RequestStatus, WorkflowStepKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
 import { type ApprovalStepMetadata } from "@/types/workflow/auto-approval-policy";
@@ -794,7 +794,9 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
         const candidatesQuery = {
             where: {
                 companyId: companyId,
-                status: RequestStatus.PENDING_COMPANY_APPROVAL
+                status: {
+                    in: [RequestStatus.PENDING_COMPANY_APPROVAL, RequestStatus.PENDING_QUOTATION]
+                }
             },
             select: {
                 id: true,
@@ -829,6 +831,10 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
 
         // extract workflow steps for reuse
         const newWorkflowStepsList = activeWorkflowObj!.steps;
+        // Check if the new workflow starts with Agent Quotation
+        const firstStep = newWorkflowStepsList[0];
+        const isAgentQuoteStart = firstStep?.kind === WorkflowStepKind.AGENT_QUOTATION;
+
         // retrieve the company slug for linking
         const companySlugValue = activeWorkflowObj!.company.slug;
 
@@ -880,6 +886,21 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
                 }
 
                 // 2. RECONSTRUCT APPROVAL STEPS ACCORDING TO THE UPDATED WORKFLOW
+
+                // If the new workflow starts with Agent Quotation, update request status
+                if (isAgentQuoteStart) {
+                    await tx.tripRequest.update({
+                        where: { id: reqId },
+                        data: { status: RequestStatus.PENDING_QUOTATION }
+                    });
+                } else {
+                    // Otherwise, ensure it defaults to PENDING_COMPANY_APPROVAL
+                    // This handles shifting BACK from Agent first to Manager first
+                    await tx.tripRequest.update({
+                        where: { id: reqId },
+                        data: { status: RequestStatus.PENDING_COMPANY_APPROVAL }
+                    });
+                }
 
                 for (let stepIdx = 0; stepIdx < newWorkflowStepsList.length; stepIdx++) {
                     // retrieve the specific step definition
@@ -960,9 +981,15 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
                 // Register the user as notified
                 notifiedUserSet.add(reqAuthorId);
             }
+
+            // 5. IF AGENT QUOTATION START, NOTIFY AGENTS
+            if (isAgentQuoteStart) {
+                // We notify agents that a new opportunity is available (moved from pending company approval)
+                await WorkflowEngine.notifyAgentsForOpportunity(reqId);
+            }
         }
 
-        // 5. ALERT THE APPROVERS ASSIGNED TO THE FIRST STEP OF THE NEW WORKFLOW
+        // 6. ALERT THE APPROVERS ASSIGNED TO THE FIRST STEP OF THE NEW WORKFLOW (IF UNLESS AGENT START)
 
         // identify the primary step definition
         const initialWorkflowStepDef = newWorkflowStepsList[0];
@@ -971,8 +998,8 @@ export async function resetPendingApprovalSteps(companyId: string, editorId: str
         // identify count of approvers
         const hasStartApprovers = initialApproversCollection.length > 0;
 
-        // If approvers exist for the first stage
-        if (hasStartApprovers) {
+        // If approvers exist for the first stage AND it's not an agent step
+        if (hasStartApprovers && !isAgentQuoteStart) {
             // construct a comma-separated list of all reset request titles for the alert message
             const mapTitleToString = (r: { title: string }) => r.title;
             const titlesStringsArray = targetRequestsToReset.map(mapTitleToString);

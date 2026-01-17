@@ -26,7 +26,7 @@ model Company {
   workflow              ApprovalWorkflow?
   issuedInvoices        Invoice[]           @relation("AgencyInvoices")
   invoices              Invoice[]           @relation("CompanyInvoices")
-  assignedRequests      TripRequest[]       @relation("AgentRequests")
+  agencyRequests        TripRequest[]       @relation("AgencyRequests")
   requests              TripRequest[]       @relation("CompanyRequests")
   users                 User[]
   integrationsAsClient  AgencyIntegration[] @relation("CompanyIntegrations")
@@ -76,7 +76,7 @@ model TripRequest {
   id               String                @id @default(uuid())
   userId           String
   companyId        String
-  assignedAgentId  String?
+  agencyId         String?
   status           RequestStatus         @default(DRAFT)
   title            String
   destination      Json
@@ -96,7 +96,7 @@ model TripRequest {
   invoice          Invoice?
   messages         Message[]
   approvalSteps    RequestApprovalStep[]
-  assignedAgent    Company?              @relation("AgentRequests", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  agency           Company?              @relation("AgencyRequests", fields: [agencyId], references: [id], onDelete: SetNull)
   company          Company               @relation("CompanyRequests", fields: [companyId], references: [id], onDelete: Cascade)
   parentTrip       TripRequest?          @relation("GroupTrip", fields: [parentTripId], references: [id], onDelete: SetNull)
   childTrips       TripRequest[]         @relation("GroupTrip")
@@ -113,18 +113,18 @@ model AgentBid {
   id        String      @id @default(uuid())
   requestId String
   /// The ID of the agency company
-  agentId   String
+  agencyId  String
   amount    Json?
   taxes     Json?
   message   String?
   status    BidStatus   @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  agent     Company     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agency    Company     @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   request   TripRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
-  @@index([requestId, agentId])
-  @@index([agentId, status])
+  @@index([requestId, agencyId])
+  @@index([agencyId, status])
 }
 
 model FulfillmentItem {

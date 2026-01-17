@@ -21,7 +21,7 @@ export async function getFulfillmentRequest(requestId: string) {
     const request = await prisma.tripRequest.findFirst({
         where: {
             id: requestId,
-            assignedAgentId: agencyId // Only return if this agency is assigned
+            agencyId: agencyId // Only return if this agency is assigned
         },
         include: {
             company: {
@@ -34,7 +34,7 @@ export async function getFulfillmentRequest(requestId: string) {
             },
             user: { select: { name: true, email: true } },
             bids: {
-                where: { agentId: agencyId, status: "ACCEPTED" },
+                where: { agencyId: agencyId, status: "ACCEPTED" },
                 select: { amount: true, updatedAt: true }
             },
             fulfillmentItems: {
@@ -111,7 +111,7 @@ export async function addFulfillmentItem(requestId: string, title: string, descr
         const request = await prisma.tripRequest.findFirst({
             where: {
                 id: requestId,
-                assignedAgentId: agencyId
+                agencyId: agencyId
             },
             include: { fulfillmentItems: true }
         });
@@ -162,7 +162,7 @@ export async function updateFulfillmentItem(
             where: {
                 id: itemId,
                 requestId,
-                request: { assignedAgentId: agencyId }
+                request: { agencyId: agencyId }
             }
         });
 
@@ -201,7 +201,7 @@ export async function deleteFulfillmentItem(itemId: string, requestId: string) {
             where: {
                 id: itemId,
                 requestId,
-                request: { assignedAgentId: agencyId }
+                request: { agencyId: agencyId }
             },
             include: { documents: true }
         });
@@ -247,7 +247,7 @@ export async function toggleFulfillmentItem(itemId: string, requestId: string, i
             where: {
                 id: itemId,
                 requestId,
-                request: { assignedAgentId: agencyId }
+                request: { agencyId: agencyId }
             }
         });
 
@@ -304,7 +304,7 @@ export async function uploadFulfillmentDocument(formData: FormData) {
             where: {
                 id: fulfillmentItemId,
                 requestId,
-                request: { assignedAgentId: agencyId }
+                request: { agencyId: agencyId }
             },
             include: {
                 request: {
@@ -353,12 +353,20 @@ export async function uploadFulfillmentDocument(formData: FormData) {
             uploadedDocs.push(doc);
         }
 
+        // Prepare attachments metadata for chat rendering
+        const attachmentData = uploadedDocs.map(d => ({
+            url: d.url,
+            name: d.name
+        }));
+
+        const messageContent = `**Document uploaded** for "${item.title}"\n\n__ATTACHMENTS__${JSON.stringify(attachmentData)}`;
+
         // Post a system message about the upload
         await prisma.message.create({
             data: {
                 requestId,
                 senderId: session.user.id,
-                content: `**Document uploaded** for "${item.title}": ${files.map(f => f.name).join(', ')}`
+                content: messageContent
             }
         });
 
@@ -411,7 +419,7 @@ export async function deleteDocument(documentId: string, requestId: string) {
                 id: documentId,
                 requestId,
                 request: {
-                    assignedAgentId: agencyId
+                    agencyId: agencyId
                 }
             }
         });
@@ -450,7 +458,7 @@ export async function markAsBooked(requestId: string) {
         const request = await prisma.tripRequest.findFirst({
             where: {
                 id: requestId,
-                assignedAgentId: agencyId,
+                agencyId: agencyId,
                 status: RequestStatus.IN_PROGRESS
             },
             select: { companyId: true, userId: true, title: true, company: { select: { slug: true } } }
@@ -520,7 +528,7 @@ export async function markAsCompleted(requestId: string) {
         const request = await prisma.tripRequest.findFirst({
             where: {
                 id: requestId,
-                assignedAgentId: agencyId,
+                agencyId: agencyId,
                 status: { in: [RequestStatus.IN_PROGRESS, RequestStatus.BOOKED] }
             },
             include: {

@@ -95,7 +95,7 @@ export default async function RequestOverviewPage({
                                 </div>
                             ) : (
                                 <div className="space-y-2 max-h-[180px] overflow-y-auto">
-                                    {request.documents.map((doc: { id: string; url: string; name: string; type: string }) => (
+                                    {request.documents.map((doc: { id: string; url: string; name: string; type: string; fulfillmentItem: { title: string } | null }) => (
                                         <a
                                             key={doc.id}
                                             href={doc.url}
@@ -109,7 +109,7 @@ export default async function RequestOverviewPage({
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-medium text-white truncate">{doc.name}</p>
-                                                <p className="text-[10px] text-indigo-200">{doc.type}</p>
+                                                <p className="text-[10px] text-indigo-200">{doc.fulfillmentItem?.title || doc.type}</p>
                                             </div>
                                             <svg className="w-4 h-4 text-indigo-300 group-hover:text-white transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

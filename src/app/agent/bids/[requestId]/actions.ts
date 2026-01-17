@@ -155,7 +155,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
         const newBid = await prisma.agentBid.create({
             data: {
                 requestId,
-                agentId,
+                agencyId: agentId,
                 amount: bidAmount as unknown as Prisma.InputJsonValue,
                 taxes: taxes as unknown as Prisma.InputJsonValue,
                 message,
@@ -256,7 +256,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     const bid = await prisma.agentBid.findUnique({
         where: { id: bidId },
         include: {
-            agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+            agency: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
             request: { include: { company: true } }
         }
     });
@@ -307,7 +307,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     await prisma.tripRequest.update({
         where: { id: requestId },
         data: {
-            assignedAgentId: bid.agentId,
+            agencyId: bid.agencyId,
             status: "IN_PROGRESS",
             cost: totalMoney as unknown as Prisma.InputJsonValue
         }
@@ -334,7 +334,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     });
 
     // 6. Notify the Agent's users
-    const agentUsers = bid.agent.users.map(u => u.id);
+    const agentUsers = bid.agency.users.map(u => u.id);
     await Promise.all(agentUsers.map(userId =>
         createNotification({
             userId,
@@ -541,7 +541,7 @@ export async function approveBid(bidId: string, requestId: string) {
         const bid = await prisma.agentBid.findUnique({
             where: { id: bidId },
             include: {
-                agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+                agency: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
                 request: { include: { company: true } }
             }
         });
@@ -597,7 +597,7 @@ export async function approveBid(bidId: string, requestId: string) {
             await prisma.tripRequest.update({
                 where: { id: requestId },
                 data: {
-                    assignedAgentId: bid.agentId,
+                    agencyId: bid.agencyId,
                     // Status is updated by WorkflowEngine
                     cost: totalMoney as unknown as Prisma.InputJsonValue
                 }
@@ -607,7 +607,7 @@ export async function approveBid(bidId: string, requestId: string) {
             await prisma.tripRequest.update({
                 where: { id: requestId },
                 data: {
-                    assignedAgentId: bid.agentId,
+                    agencyId: bid.agencyId,
                     status: "IN_PROGRESS",
                     cost: totalMoney as unknown as Prisma.InputJsonValue
                 }
@@ -635,7 +635,7 @@ export async function approveBid(bidId: string, requestId: string) {
         });
 
         // 6. Notify the Agent's users
-        const agentUsers = bid.agent.users.map(u => u.id);
+        const agentUsers = bid.agency.users.map(u => u.id);
         await Promise.all(agentUsers.map(userId =>
             createNotification({
                 userId,
@@ -676,7 +676,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
         const bid = await prisma.agentBid.findUnique({
             where: { id: bidId },
             include: {
-                agent: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
+                agency: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
                 request: {
                     include: {
                         company: true,
@@ -702,7 +702,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
         await prisma.tripRequest.update({
             where: { id: requestId },
             data: {
-                assignedAgentId: null,
+                agencyId: null,
                 status: RequestStatus.APPROVED,
                 cost: Prisma.JsonNull
             }
@@ -729,7 +729,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
         });
 
         // 5. Notify the Agent's users
-        const agentEmails = bid.agent.users.map(u => u.id);
+        const agentEmails = bid.agency.users.map(u => u.id);
         await Promise.all(agentEmails.map(userId =>
             createNotification({
                 userId,
@@ -773,7 +773,7 @@ export async function removeBid(bidId: string, requestId: string) {
             await prisma.tripRequest.update({
                 where: { id: requestId },
                 data: {
-                    assignedAgentId: null,
+                    agencyId: null,
                     status: RequestStatus.APPROVED,
                     cost: Prisma.JsonNull
                 }

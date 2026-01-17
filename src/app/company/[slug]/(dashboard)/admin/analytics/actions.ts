@@ -164,7 +164,7 @@ export async function getBudgetAnalytics(slug: string) {
 
         return {
             id: req.id,
-            title: (req as any).title || "Untitled Trip",
+            title: req.title || "Untitled Trip",
             userName: req.user.name || "Unknown User",
             userAvatar: req.user.avatarUrl,
             date: req.createdAt,

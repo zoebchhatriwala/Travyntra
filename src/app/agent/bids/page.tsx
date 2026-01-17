@@ -67,13 +67,13 @@ export default async function BidsPage({ searchParams }: PageProps) {
             // Open opportunities - approved, no agent assigned yet
             {
                 status: RequestStatus.APPROVED,
-                assignedAgentId: null,
+                agencyId: null,
             },
             // Agency has a PENDING bid (not yet decided)
             {
                 bids: {
                     some: {
-                        agentId: agencyId,
+                        agencyId: agencyId,
                         status: "PENDING"
                     }
                 }
@@ -82,7 +82,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
             {
                 bids: {
                     some: {
-                        agentId: agencyId,
+                        agencyId: agencyId,
                         status: "REJECTED"
                     }
                 }
@@ -92,7 +92,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
         NOT: {
             bids: {
                 some: {
-                    agentId: agencyId,
+                    agencyId: agencyId,
                     status: "ACCEPTED"
                 }
             }
@@ -145,7 +145,7 @@ export default async function BidsPage({ searchParams }: PageProps) {
                 company: { select: { name: true, logoUrl: true, currency: true, timezone: true } },
                 user: { select: { name: true } },
                 bids: {
-                    where: { agentId: agencyId },
+                    where: { agencyId: agencyId },
                     select: { amount: true, status: true }
                 }
             },

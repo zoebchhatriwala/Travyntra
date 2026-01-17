@@ -35,7 +35,7 @@ export async function getAgencyStats() {
                     status: {
                         in: [RequestStatus.APPROVED, RequestStatus.PENDING_QUOTATION]
                     },
-                    assignedAgentId: null,
+                    agencyId: null,
                     company: {
                         integrationsAsClient: {
                             some: {
@@ -46,7 +46,7 @@ export async function getAgencyStats() {
                     },
                     bids: {
                         none: {
-                            agentId: agencyId
+                            agencyId: agencyId
                         }
                     }
                 }
@@ -54,17 +54,17 @@ export async function getAgencyStats() {
             // Bids we've made that are still pending
             prisma.agentBid.count({
                 where: {
-                    agentId: agencyId,
+                    agencyId: agencyId,
                     status: BidStatus.PENDING,
                     request: {
-                        assignedAgentId: null
+                        agencyId: null
                     }
                 }
             }),
             // Fulfillment
             prisma.tripRequest.count({
                 where: {
-                    assignedAgentId: agencyId,
+                    agencyId: agencyId,
                     status: {
                         in: [RequestStatus.APPROVED, RequestStatus.BOOKED, RequestStatus.IN_PROGRESS]
                     }
@@ -78,7 +78,7 @@ export async function getAgencyStats() {
         // Agency Employee only sees fulfillment
         pendingFulfillment = await prisma.tripRequest.count({
             where: {
-                assignedAgentId: agencyId,
+                agencyId: agencyId,
                 status: {
                     in: [RequestStatus.APPROVED, RequestStatus.BOOKED, RequestStatus.IN_PROGRESS]
                 }
@@ -114,7 +114,7 @@ export async function getRecentOpportunities() {
             status: {
                 in: [RequestStatus.APPROVED, RequestStatus.PENDING_QUOTATION]
             },
-            assignedAgentId: null,
+            agencyId: null,
             company: {
                 integrationsAsClient: {
                     some: {
@@ -125,7 +125,7 @@ export async function getRecentOpportunities() {
             },
             bids: {
                 none: {
-                    agentId: agencyId
+                    agencyId: agencyId
                 }
             }
         },
