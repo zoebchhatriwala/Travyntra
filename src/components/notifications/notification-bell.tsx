@@ -157,7 +157,7 @@ export function NotificationBell() {
                                             <div className="flex-1 min-w-0 space-y-1">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <p className={cn(
-                                                        "text-xs font-black truncate",
+                                                        "text-xs font-black break-all",
                                                         !notification.read ? "text-gray-900" : "text-gray-600"
                                                     )}>
                                                         {notification.title}

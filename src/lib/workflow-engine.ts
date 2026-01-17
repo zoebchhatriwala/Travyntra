@@ -987,6 +987,7 @@ export class WorkflowEngine {
                         workflow: {
                             include: {
                                 steps: {
+                                    where: { deletedAt: null },
                                     orderBy: { order: 'asc' }
                                 }
                             }
@@ -1046,7 +1047,10 @@ export class WorkflowEngine {
 
                 // Re-fetch step with approvers
                 const stepWithApprovers = await prisma.workflowStep.findUnique({
-                    where: { id: step.id },
+                    where: {
+                        id: step.id,
+                        deletedAt: null
+                    },
                     include: { approvers: true }
                 });
 
@@ -1097,7 +1101,7 @@ export class WorkflowEngine {
                         title: "Bid Approval Revoked",
                         message: `The approval of your bid for "${request.title}" has been reversed because the request approval was revoked/updated.`,
                         type: NotificationType.WARNING,
-                        link: `/agent/bids.ts`, // Assuming a general list or specific bid link if available in agent portal
+                        link: `/agent/bids/${bid.id}`,
                         sendEmail: true
                     });
                 }
@@ -1147,7 +1151,10 @@ export class WorkflowEngine {
         const firstStep = sortedSteps[0];
         if (firstStep) {
             const stepWithApprovers = await prisma.workflowStep.findUnique({
-                where: { id: firstStep.id },
+                where: {
+                    id: firstStep.id,
+                    deletedAt: null
+                },
                 include: { approvers: true }
             });
 

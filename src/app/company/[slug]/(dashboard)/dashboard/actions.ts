@@ -462,6 +462,11 @@ export async function getTripRequest(requestId: string) {
                             select: { name: true, avatarUrl: true }
                         }
                     }
+                },
+                approvalSteps: {
+                    include: {
+                        approvals: true
+                    }
                 }
             }
         });
@@ -474,12 +479,15 @@ export async function getTripRequest(requestId: string) {
         }
 
         // Role-based access control
-        // If employee, must be owner or collaborator
+        // If employee, must be owner or collaborator OR an assigned approver
         if (session.user.role === 'EMPLOYEE') {
             const isOwner = request.userId === session.user.id;
             const isCollaborator = request.collaborators.some(c => c.id === session.user.id);
+            const isApprover = request.approvalSteps.some(step =>
+                step.approvals.some(approval => approval.userId === session.user.id)
+            );
 
-            if (!isOwner && !isCollaborator) {
+            if (!isOwner && !isCollaborator && !isApprover) {
                 return null;
             }
         }
