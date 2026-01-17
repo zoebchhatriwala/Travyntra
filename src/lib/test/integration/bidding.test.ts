@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { submitBid } from '../../../app/agent/bids/[requestId]/actions';
-import { prismaMock } from '../prisma';
+import { prismaMock } from '../helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { createMockTripRequest, createMockCompany } from '../factories';
+import { createMockTripRequest, createMockCompany } from '../helpers/factories';
 import { BidStatus, UserRole, TripRequest, AgentBid, User } from '@prisma/client';
 import { AutoApprovalEngine } from '../../auto-approval-engine';
 

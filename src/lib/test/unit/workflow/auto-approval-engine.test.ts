@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AutoApprovalEngine } from '../auto-approval-engine';
-import { prismaMock } from './prisma';
-import { createMockTripRequest, createMockCompany } from './factories';
+import { AutoApprovalEngine } from '@/lib/auto-approval-engine';
+import { prismaMock } from '@/lib/test/helpers/prisma';
+import { createMockTripRequest, createMockCompany } from '@/lib/test/helpers/factories';
 import { type TripRequest } from '@prisma/client';
 import { AutoApprovalRuleType } from '@/types/workflow/auto-approval-policy';
 

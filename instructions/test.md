@@ -40,10 +40,10 @@ Achieve high confidence in the application's core logic through a multi-layered 
     - [x] `moneyToDecimal` / `decimalToMoney` precision.
     - [x] Currency conversion with mock exchange rates.
     - [x] Invoice sum calculations including taxes.
-- [ ] **Full Test Coverage**:
-    - [ ] Achieve 100% coverage for `src/lib/workflow-engine.ts` (Current: 79%).
-    - [ ] Achieve 100% coverage for `src/lib/auto-approval-engine.ts` (Current: 81%).
-    - [ ] Achieve 100% coverage for `src/lib/utils/financials.ts` and `src/lib/utils/invoice.ts`.
+- [x] **Full Test Coverage**:
+    - [x] Achieve 100% coverage for `src/lib/workflow-engine.ts` (Current: 100%).
+    - [x] Achieve 100% coverage for `src/lib/auto-approval-engine.ts` (Current: 100%).
+    - [x] Achieve 100% coverage for `src/lib/utils/financials.ts` and `src/lib/utils/invoice.ts`.
 
 ### Integration Tests (Server Actions)
 - [ ] **Request Creation**: Form data parsing -> DB persistence -> Workflow trigger.

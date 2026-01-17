@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { createMoney, moneyToDecimal, formatMoney, parseMoney } from '../utils/money';
-import { calculateInvoiceDetails } from '../utils/invoice';
+import { createMoney, moneyToDecimal, formatMoney, parseMoney } from '@/lib/utils/money';
+import { calculateInvoiceDetails } from '@/lib/utils/invoice';
 import { type Money } from '@/types/finance/money';
 
 let convertCurrency: (amount: number, fromCurrency: string, toCurrency: string) => Promise<number>;
@@ -76,7 +76,7 @@ describe('Currency Service', () => {
     beforeEach(async () => {
         vi.useFakeTimers();
         vi.resetModules();
-        const currencyService = await import('../services/currency');
+        const currencyService = await import('@/lib/services/currency');
         convertCurrency = currencyService.convertCurrency;
         convertMoney = currencyService.convertMoney;
         vi.clearAllMocks();

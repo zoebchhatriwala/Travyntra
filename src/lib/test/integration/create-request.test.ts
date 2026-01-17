@@ -1,7 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { createTripRequest } from '@/app/company/[slug]/(dashboard)/dashboard/actions';
-import { prismaMock } from '../prisma';
+import { prismaMock } from '../helpers/prisma';
 import { getServerSession } from 'next-auth';
 import { TripRequest, Message } from '@prisma/client';
 import { WorkflowEngine } from '@/lib/workflow-engine';

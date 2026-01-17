@@ -9,7 +9,7 @@ import {
     isValidAddress,
     normalizeAddress,
     type PartialAddress
-} from '../utils/address';
+} from '@/lib/utils/address';
 
 describe('Address Utils', () => {
     const mockAddress: PartialAddress = {

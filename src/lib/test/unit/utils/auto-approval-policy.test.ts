@@ -1,6 +1,6 @@
 
 import { describe, it, expect } from 'vitest';
-import { parseAutoApprovalPolicy, createDefaultPolicy } from '../utils/auto-approval-policy';
+import { parseAutoApprovalPolicy, createDefaultPolicy } from '@/lib/utils/auto-approval-policy';
 
 describe('AutoApprovalPolicy Utils', () => {
 

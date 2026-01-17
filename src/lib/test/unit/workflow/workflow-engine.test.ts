@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { WorkflowEngine } from '../workflow-engine';
-import { prismaMock } from './prisma';
+import { WorkflowEngine } from '@/lib/workflow-engine';
+import { prismaMock } from '@/lib/test/helpers/prisma';
 import {
     createMockTripRequest,
     createMockCompany,
@@ -9,7 +9,7 @@ import {
     createMockUser,
     createMockRequestApprovalStep,
     createMockUserApproval
-} from './factories';
+} from '@/lib/test/helpers/factories';
 import {
     RequestStatus,
     ApprovalStatus,
@@ -29,17 +29,17 @@ import {
     type UserApproval,
     Prisma
 } from '@prisma/client';
-import { AutoApprovalEngine } from '../auto-approval-engine';
-import { createNotification } from '../notifications';
+import { AutoApprovalEngine } from '@/lib/auto-approval-engine';
+import { createNotification } from '@/lib/notifications';
 
 // Mock dependencies
-vi.mock('../auto-approval-engine', () => ({
+vi.mock('@/lib/auto-approval-engine', () => ({
     AutoApprovalEngine: {
         evaluateRequest: vi.fn(),
     },
 }));
 
-vi.mock('../notifications', () => ({
+vi.mock('@/lib/notifications', () => ({
     createNotification: vi.fn(),
 }));
 
@@ -558,7 +558,7 @@ describe('WorkflowEngine', () => {
                 if (where.id === 'step-1') return { ...mockStep1, approvers: [{ id: 'approver-1' }] } as unknown as WorkflowStep;
                 if (where.id === 'step-2') return { ...mockStep2, approvers: [] } as unknown as WorkflowStep;
                 return null;
-            }) as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            }) as any);
 
             prismaMock.agentBid.findMany.mockResolvedValue([mockBid] as unknown as AgentBid[]);
             prismaMock.user.findMany.mockResolvedValue([{ id: 'agent-admin-1', email: 'agent@test.com' }] as unknown as User[]);
@@ -567,7 +567,7 @@ describe('WorkflowEngine', () => {
                 if (where.requestId_stepId?.stepId === 'step-1') return { id: 'req-step-1' } as unknown as RequestApprovalStep;
                 if (where.requestId_stepId?.stepId === 'step-2') return { id: 'req-step-2' } as unknown as RequestApprovalStep;
                 return { id: 'req-step-unknown' } as unknown as RequestApprovalStep;
-            }) as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            }) as any);
 
             prismaMock.userApproval.deleteMany.mockResolvedValue({ count: 1 });
 

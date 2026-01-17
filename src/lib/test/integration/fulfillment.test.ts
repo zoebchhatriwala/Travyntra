@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { addFulfillmentItem, markAsCompleted } from '../../../app/agent/fulfillment/actions';
-import { prismaMock } from '../prisma';
+import { prismaMock } from '../helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { createMockTripRequest, createMockCompany } from '../factories';
+import { createMockTripRequest, createMockCompany } from '../helpers/factories';
 import { RequestStatus, UserRole, TripRequest, FulfillmentItem, User } from '@prisma/client';
 
 vi.mock('next-auth');

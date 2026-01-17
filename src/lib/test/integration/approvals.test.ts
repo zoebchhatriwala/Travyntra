@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { processApproval } from '../../actions/approvals';
-import { prismaMock } from '../prisma';
+import { prismaMock } from '../helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { createMockRequestApprovalStep, createMockWorkflowStep, createMockTripRequest, createMockCompany } from '../factories';
+import { createMockRequestApprovalStep, createMockWorkflowStep, createMockTripRequest, createMockCompany } from '../helpers/factories';
 import { ApprovalStatus, RequestStatus } from '@prisma/client';
 import { WorkflowEngine } from '../../workflow-engine';
 import { type RequestApprovalStep, type UserApproval } from '@prisma/client';

@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { exportToCSV, generatePDF } from '../utils/export';
+import { exportToCSV, generatePDF } from '@/lib/utils/export';
 import Papa from 'papaparse';
 import autoTable from 'jspdf-autotable';
 
