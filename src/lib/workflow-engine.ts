@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/prisma";
 import { RequestStatus, ApprovalType, ApprovalStatus, Prisma, WorkflowActionType, NotificationType, UserRole, WorkflowStepKind, IntegrationStatus, BidStatus } from "@prisma/client";
 import { AutoApprovalEngine } from "./auto-approval-engine";
 import { type ApprovalStepMetadata, type AutoApprovalEvaluation } from "@/types/workflow/auto-approval-policy";
@@ -132,7 +132,6 @@ export class WorkflowEngine {
 
         // If no valid workflow is found
         if (!shouldExecuteWorkflow) {
-            console.log(`[WorkflowEngine] No workflow found or no steps defined for company. Moving to Approved.`);
             // Define the new status for the request
             const nextStatus = RequestStatus.APPROVED;
 

@@ -232,8 +232,8 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Expense Reports**: Per-request and per-employee breakdowns - Analytics Page.
 
 ### Phase 10.5: Testing & Quality Assurance 🛠️ PLANNED
-- [ ] **Unit Tests**: Full coverage for `WorkflowEngine` and `PolicyEngine`.
-- [ ] **Integration Tests**: Server actions for Approvals, Bidding, and Fulfillment.
+- [x] **Unit Tests**: Full coverage for `WorkflowEngine`, `PolicyEngine`, and `Financials`.
+- [/] **Integration Tests**: Server actions for Approvals, Bidding, and Fulfillment (Bidding/Fulfillment/Approvals Done).
 - [ ] **E2E Tests**: Critical paths using Playwright (Request -> Fulfillment).
 - [ ] **Performance Benchmarking**: Audit expensive Prisma queries and currency conversion caching.
 

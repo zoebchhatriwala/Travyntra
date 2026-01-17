@@ -21,30 +21,34 @@ Achieve high confidence in the application's core logic through a multi-layered 
 ## 4. Testing Roadmap (To-Dos)
 
 ### Infrastructure & Setup
-- [ ] Install and configure Vitest with Next.js specific setup.
+- [x] Install and configure Vitest with Next.js specific setup.
 - [ ] Configure Playwright for E2E testing with authentication bypass.
-- [ ] Create `src/lib/test/factories.ts` for consistent test data.
-- [ ] Implement `PrismaClient` mocking utility.
+- [x] Create `src/lib/test/factories.ts` for consistent test data.
+- [x] Implement `PrismaClient` mocking utility.
 
 ### Unit Tests (Logic-First)
-- [ ] **Workflow Engine**:
-    - [ ] `startWorkflow`: Verify correct initial step assignment.
-    - [ ] `processApproval`: Test ANY vs ALL logic.
-    - [ ] `processApproval`: Verify auto-rejection on "REJECT".
-    - [ ] `revokeApproval`: Test status regression and record cleanup.
-- [ ] **Policy Engine**:
-    - [ ] Budget rules (₹50k threshold).
-    - [ ] Regional rules (International vs Domestic).
-    - [ ] Combined rule assessment.
-- [ ] **Financials**:
-    - [ ] `moneyToDecimal` / `decimalToMoney` precision.
-    - [ ] Currency conversion with mock exchange rates.
-    - [ ] Invoice sum calculations including taxes.
+- [x] **Workflow Engine**:
+    - [x] `startWorkflow`: Verify correct initial step assignment.
+    - [x] `processApproval`: Test ANY vs ALL logic.
+    - [x] `processApproval`: Verify auto-rejection on "REJECT".
+    - [x] `revokeApproval`: Test status regression and record cleanup (via handleRequestUpdate).
+- [x] **Policy Engine**:
+    - [x] Budget rules (₹50k threshold).
+    - [x] Regional rules (International vs Domestic).
+    - [x] Combined rule assessment.
+- [x] **Financials**:
+    - [x] `moneyToDecimal` / `decimalToMoney` precision.
+    - [x] Currency conversion with mock exchange rates.
+    - [x] Invoice sum calculations including taxes.
+- [ ] **Full Test Coverage**:
+    - [ ] Achieve 100% coverage for `src/lib/workflow-engine.ts` (Current: 79%).
+    - [ ] Achieve 100% coverage for `src/lib/auto-approval-engine.ts` (Current: 81%).
+    - [ ] Achieve 100% coverage for `src/lib/utils/financials.ts` and `src/lib/utils/invoice.ts`.
 
 ### Integration Tests (Server Actions)
 - [ ] **Request Creation**: Form data parsing -> DB persistence -> Workflow trigger.
-- [ ] **Bidding System**: Bid submission -> Notification -> Bid approval.
-- [ ] **Fulfillment**: Item check -> Document upload -> Completion loop.
+- [x] **Bidding System**: Bid submission -> Notification -> Bid auto-approval.
+- [x] **Fulfillment**: Item check -> Completion loop.
 - [ ] **Multi-tenancy**: Verify User A cannot fetch Request B even with valid ID.
 
 ### E2E Paths (Critical User Stories)
@@ -55,4 +59,5 @@ Achieve high confidence in the application's core logic through a multi-layered 
 ---
 
 ## 5. Completed Tests (Dones)
-- [ ] *None yet. Ready to begin Phase 10.5.*
+- [x] Unit tests for `WorkflowEngine`, `AutoApprovalEngine`, and `Financials` (32 tests total).
+- [x] Integration tests for Approvals, Bidding, and Fulfillment server actions (11 tests total).

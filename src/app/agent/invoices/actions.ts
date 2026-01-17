@@ -10,16 +10,9 @@ import { createNotification } from "@/lib/notifications";
 import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertCurrency } from "@/lib/services/currency";
 import { uploadFile } from "@/lib/storage";
+import { calculateInvoiceDetails, type CalculatedTax, type TaxBase } from "@/lib/utils/invoice";
 
-interface BidTax {
-    label: string;
-    value: number;
-    type: "PERCENTAGE" | "FIXED";
-}
-
-interface InvoiceTax extends BidTax {
-    calculatedAmount: number;
-}
+// Local interfaces replaced by utility types
 
 /**
  * Generate an invoice for a completed trip request
@@ -81,31 +74,13 @@ export async function generateInvoice(requestId: string, pdfUrl?: string) {
         const subtotal = Number(convertedSubtotal.toFixed(2));
         const invoiceCurrency = companyCurrency;
 
-        // Calculate total with taxes
-        let totalAmount = subtotal;
-        const bidTaxes = (acceptedBid.taxes as unknown as BidTax[]) || [];
-        const invoiceTaxes: InvoiceTax[] = [];
-
-        for (const tax of bidTaxes) {
-            let taxValue = 0;
-            if (tax.type === "PERCENTAGE") {
-                taxValue = (subtotal * tax.value) / 100;
-            } else {
-                // Fixed taxes need conversion to company currency
-                taxValue = await convertCurrency(tax.value, bidCurrency, companyCurrency);
-            }
-            // Round tax value to 2 decimals
-            taxValue = Number(taxValue.toFixed(2));
-
-            totalAmount += taxValue;
-            invoiceTaxes.push({
-                ...tax,
-                calculatedAmount: taxValue
-            });
-        }
-
-        // Final rounding of total amount to handle cumulative floating point errors
-        totalAmount = Number(totalAmount.toFixed(2));
+        // Calculate total with taxes using the utility
+        const { totalAmount, invoiceTaxes } = await calculateInvoiceDetails(
+            subtotal,
+            (acceptedBid.taxes as unknown as TaxBase[]) || [],
+            bidCurrency,
+            companyCurrency
+        );
 
         let invoice;
 
@@ -329,7 +304,7 @@ export async function getAgencyInvoices(
                 id: inv.id,
                 amount: Number(inv.amount),
                 subtotal: Number((inv as unknown as { subtotal?: number }).subtotal || 0),
-                taxes: ((inv as unknown as { taxes?: InvoiceTax[] }).taxes || []),
+                taxes: ((inv as unknown as { taxes?: CalculatedTax[] }).taxes || []),
                 currency: inv.currency,
                 // Convert for statistics
                 convertedAmount: await convertCurrency(Number(inv.amount), inv.currency, agency?.currency || "USD"),
