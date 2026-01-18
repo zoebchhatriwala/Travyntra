@@ -1,9 +1,10 @@
 
 import { NextAuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
+import { prisma as defaultPrisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 /**
  * Module augmentation for NextAuth to include custom user properties in the User, Session, and JWT objects.
@@ -63,9 +64,17 @@ declare module "next-auth/jwt" {
 }
 
 /**
- * NextAuth configuration object defining providers, callbacks, and specialized settings.
+ * Factory function to create NextAuth configuration with injectable dependencies.
+ * This allows for dependency injection during testing while maintaining production behavior.
+ * 
+ * @param prisma - Optional Prisma client instance. Defaults to the production prisma client.
+ * @param nodeEnv - Optional Node environment string. Defaults to process.env.NODE_ENV.
+ * @returns NextAuth configuration object
  */
-export const authOptions: NextAuthOptions = {
+export const createAuthOptions = (
+    prisma: PrismaClient = defaultPrisma,
+    nodeEnv: string = process.env.NODE_ENV || 'development'
+): NextAuthOptions => ({
     // Secret key for securing the session tokens
     secret: process.env.NEXTAUTH_SECRET || "travyntrasecretproject2026version",
 
@@ -95,7 +104,6 @@ export const authOptions: NextAuthOptions = {
              */
             async authorize(credentials) {
                 // Determine if the current environment is development
-                const nodeEnv = process.env.NODE_ENV;
                 const isDev = nodeEnv === 'development';
 
                 // Block impersonation if not in development mode
@@ -162,7 +170,8 @@ export const authOptions: NextAuthOptions = {
         // Standard credentials-based authentication provider
         CredentialsProvider({
             // Display name for the credentials provider
-            name: "Credentials",
+            name: "normal-login",
+            id: "normal-login",
             // Credential fields required for standard login
             credentials: {
                 email: { label: "Email", type: "email" },
@@ -182,6 +191,7 @@ export const authOptions: NextAuthOptions = {
                 if (!rawEmail) {
                     return null;
                 }
+
                 if (!rawPassword) {
                     return null;
                 }
@@ -356,4 +366,11 @@ export const authOptions: NextAuthOptions = {
         // Redirection for authentication errors
         error: "/login",
     },
-};
+});
+
+/**
+ * Default NextAuth configuration object for production use.
+ * Uses the default Prisma client instance.
+ */
+export const authOptions: NextAuthOptions = createAuthOptions();
+

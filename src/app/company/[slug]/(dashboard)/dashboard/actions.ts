@@ -11,6 +11,7 @@ import { type Money } from "@/types/finance/money";
 import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 import { type PartialAddress, formatAddressShort } from "@/lib/utils/address";
+import { BidTax } from "@/app/agent/bids/[requestId]/actions";
 
 /**
  * Retrieves dashboard statistics for the currently authenticated employee.
@@ -504,10 +505,10 @@ export async function getTripRequest(requestId: string) {
             if (amount) {
                 // Calculate total including taxes for the conversion preview
                 let totalDecimal = moneyToDecimal(amount);
-                const bidWithTaxes = bid as unknown as { taxes?: { type: string; value: number }[] };
-                const taxes = bidWithTaxes.taxes || [];
+                const bidWithTaxes = bid as unknown as { taxes?: BidTax[] };
+                const taxes = bidWithTaxes.taxes;
 
-                if (taxes.length > 0) {
+                if (taxes && Array.isArray(taxes) && taxes.length > 0) {
                     taxes.forEach(t => {
                         if (t.type === 'PERCENTAGE') {
                             totalDecimal += (moneyToDecimal(amount) * (t.value || 0)) / 100;

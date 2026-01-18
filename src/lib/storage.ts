@@ -4,6 +4,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { IS_PRODUCTION } from "./constants/enviroment";
 
 // Retrieve the AWS region from environment variables
 const region = process.env.AWS_REGION;
@@ -17,11 +18,8 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 // Retrieve the AWS S3 bucket name from environment variables
 const bucketName = process.env.AWS_S3_BUCKET_NAME;
 
-// Retrieve the current node environment
-const nodeEnv = process.env.NODE_ENV;
-
 // Determine if the application is running in production mode
-const isProduction = nodeEnv === "production";
+const isProduction = IS_PRODUCTION;
 
 // Initialize the S3 client variable
 let s3Client: S3Client | null = null;

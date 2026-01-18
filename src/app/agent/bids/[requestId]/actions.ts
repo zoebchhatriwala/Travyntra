@@ -15,7 +15,7 @@ import { type ApprovalStepMetadata, type CombinedConfig, type BudgetThresholdCon
 import { AutoApprovalEngine } from "@/lib/auto-approval-engine";
 import { WorkflowEngine } from "@/lib/workflow-engine";
 
-interface BidTax {
+export interface BidTax {
     label: string;
     value: number;
     type: 'PERCENTAGE' | 'FIXED';
@@ -118,7 +118,7 @@ export async function submitBid(requestId: string, amount: number, message: stri
                 // This is a bit of a fallback, but safe since it re-checks the current policy
                 policyMetadata = {
                     autoApproved: true,
-                    ruleType: evaluation.matchedRule?.type || AutoApprovalRuleType.BUDGET_THRESHOLD,
+                    ruleType: evaluation.matchedRule?.type,
                     ruleConfig: evaluation.matchedRule?.config,
                     reason: evaluation.reason
                 };
@@ -283,7 +283,7 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     let totalWithTaxes = amount;
     const taxes = (bid.taxes as unknown as BidTax[]) || [];
 
-    if (taxes.length > 0) {
+    if (taxes && taxes.length > 0) {
         taxes.forEach(t => {
             if (t.type === 'PERCENTAGE') {
                 totalWithTaxes += (amount * (t.value || 0)) / 100;
@@ -304,14 +304,26 @@ async function approveBidInternal(bidId: string, requestId: string, actorId: str
     const formattedTotal = formatMoney(totalMoney);
 
     // 3. Update Request: Assign Agent, Set Cost, Update Status
-    await prisma.tripRequest.update({
-        where: { id: requestId },
-        data: {
-            agencyId: bid.agencyId,
-            status: "IN_PROGRESS",
-            cost: totalMoney as unknown as Prisma.InputJsonValue
-        }
-    });
+    if (bid.request.status === RequestStatus.PENDING_QUOTATION) {
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                agencyId: bid.agencyId,
+                // Status is updated by WorkflowEngine
+                cost: totalMoney as unknown as Prisma.InputJsonValue
+            }
+        });
+        await WorkflowEngine.completeAgentQuotation(requestId, actorId);
+    } else {
+        await prisma.tripRequest.update({
+            where: { id: requestId },
+            data: {
+                agencyId: bid.agencyId,
+                status: "IN_PROGRESS",
+                cost: totalMoney as unknown as Prisma.InputJsonValue
+            }
+        });
+    }
 
     // 4. Log Activity
     await prisma.activityLog.create({
@@ -427,7 +439,7 @@ export async function updateBid(bidId: string, requestId: string, amount: number
                 isWithinThreshold = evaluation.matchedRule?.type === AutoApprovalRuleType.BUDGET_THRESHOLD || evaluation.matchedRule?.type === AutoApprovalRuleType.COMBINED;
                 policyMetadata = {
                     autoApproved: true,
-                    ruleType: evaluation.matchedRule?.type || AutoApprovalRuleType.BUDGET_THRESHOLD,
+                    ruleType: evaluation.matchedRule?.type,
                     ruleConfig: evaluation.matchedRule?.config,
                     reason: evaluation.reason
                 };
@@ -529,7 +541,6 @@ export async function updateBid(bidId: string, requestId: string, amount: number
  * @param {string} requestId - The ID of the trip request.
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
-
 export async function approveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     // Only company admins or super admins can approve bids
@@ -538,125 +549,23 @@ export async function approveBid(bidId: string, requestId: string) {
     }
 
     try {
-        const bid = await prisma.agentBid.findUnique({
-            where: { id: bidId },
-            include: {
-                agency: { include: { users: { where: { role: 'TRAVEL_AGENT' } } } },
-                request: { include: { company: true } }
-            }
-        });
-        if (!bid) return { error: "Bid not found" };
+        // Call internal approveBidInternal function
+        await approveBidInternal(bidId, requestId, session.user.id);
 
-        // 1. Update Bid Status
-        await prisma.agentBid.update({
-            where: { id: bidId },
-            data: { status: BidStatus.ACCEPTED }
-        });
-
-        // 2. Reject other bids? Optional, but often good practice. 
-        // For now, let's keep them pending or explicitly reject if desired, but business logic implies one winner.
-        // Let's set others to REJECTED for clarity.
-        await prisma.agentBid.updateMany({
-            where: {
-                requestId,
-                id: { not: bidId }
-            },
-            data: { status: BidStatus.REJECTED }
-        });
-
-        // Calculate total amount with taxes
-        const amount = moneyToDecimal(parseMoney(bid.amount));
-        let totalWithTaxes = amount;
-        const taxes = (bid.taxes as unknown as BidTax[]) || [];
-
-        if (taxes.length > 0) {
-            taxes.forEach(t => {
-                if (t.type === 'PERCENTAGE') {
-                    totalWithTaxes += (amount * (t.value || 0)) / 100;
-                } else {
-                    totalWithTaxes += (t.value || 0);
-                }
-            });
-        }
-
-        // Create full money object for the total cost
-        // We use the currency of the bid itself
-        const bidCurrency = (bid.amount as unknown as { currencyCode: string })?.currencyCode || "USD";
-        let totalMoney = createMoney(totalWithTaxes, bidCurrency);
-        const companyCurrency = bid.request.company.currency || "USD";
-
-        // If currencies differ, convert the total cost to the company's currency before saving
-        if (bidCurrency !== companyCurrency) {
-            totalMoney = await convertMoney(totalMoney, companyCurrency);
-        }
-
-        const formattedTotal = formatMoney(totalMoney);
-
-        // 3. Update Request: Assign Agent, Set Cost, Update Status
-        if (bid.request.status === RequestStatus.PENDING_QUOTATION) {
-            await prisma.tripRequest.update({
-                where: { id: requestId },
-                data: {
-                    agencyId: bid.agencyId,
-                    // Status is updated by WorkflowEngine
-                    cost: totalMoney as unknown as Prisma.InputJsonValue
-                }
-            });
-            await WorkflowEngine.completeAgentQuotation(requestId, session.user.id);
-        } else {
-            await prisma.tripRequest.update({
-                where: { id: requestId },
-                data: {
-                    agencyId: bid.agencyId,
-                    status: "IN_PROGRESS",
-                    cost: totalMoney as unknown as Prisma.InputJsonValue
-                }
-            });
-        }
-
-        // 4. Log Activity
-        await prisma.activityLog.create({
-            data: {
-                companyId: session.user.companyId!,
-                actorId: session.user.id,
-                action: ActivityLogAction.BID_APPROVED,
-                description: `Approved bid of ${formattedTotal} from agent.`,
-                metadata: { requestId, bidId }
-            }
-        });
-
-        // 5. System Message
-        await prisma.message.create({
-            data: {
-                requestId,
-                senderId: session.user.id,
-                content: `**Bid Accepted**: ${formattedTotal}. Agency has been assigned.`
-            }
-        });
-
-        // 6. Notify the Agent's users
-        const agentUsers = bid.agency.users.map(u => u.id);
-        await Promise.all(agentUsers.map(userId =>
-            createNotification({
-                userId,
-                title: "Bid Approved!",
-                message: `Your bid for "${bid.request.title}" has been accepted by the company.`,
-                type: NotificationType.SUCCESS,
-                link: `/agent/fulfillment/${requestId}`,
-                sendEmail: true
-            })
-        ));
-
+        // Revalidate paths
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
         revalidatePath(`/agent/bids/${requestId}`);
         revalidatePath(`/agent/bids`);
+
+        // Return success
         return { success: true };
 
     } catch (e) {
         console.error("Failed to approve bid:", e);
-        return { error: "Failed to approve bid" };
+        return { error: e instanceof Error ? e.message : "Failed to approve bid" };
     }
 }
+
 /**
  * Reverses a previously approved bid. 
  * Reopens the request for bidding and notifies the agent of the change.
@@ -665,7 +574,6 @@ export async function approveBid(bidId: string, requestId: string) {
  * @param {string} requestId - The ID of the trip request.
  * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
  */
-
 export async function unapproveBid(bidId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user || (session.user.role !== UserRole.COMPANY_ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
@@ -673,6 +581,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
     }
 
     try {
+        // Fetch bid details
         const bid = await prisma.agentBid.findUnique({
             where: { id: bidId },
             include: {
@@ -685,6 +594,8 @@ export async function unapproveBid(bidId: string, requestId: string) {
                 }
             }
         });
+
+        // Check if bid exists
         if (!bid) return { error: "Bid not found" };
 
         // Guard against unapproving if workflow has proceeded
@@ -729,7 +640,7 @@ export async function unapproveBid(bidId: string, requestId: string) {
         });
 
         // 5. Notify the Agent's users
-        const agentEmails = bid.agency.users.map(u => u.id);
+        const agentEmails = bid.agency?.users?.map(u => u.id) || [];
         await Promise.all(agentEmails.map(userId =>
             createNotification({
                 userId,
@@ -741,7 +652,10 @@ export async function unapproveBid(bidId: string, requestId: string) {
             })
         ));
 
+        // Revalidate paths
         revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
+
+        // Return success
         return { success: true };
     } catch (e) {
         console.error("Failed to unapprove bid:", e);
@@ -784,7 +698,7 @@ export async function removeBid(bidId: string, requestId: string) {
                 data: {
                     requestId,
                     senderId: session.user.id,
-                    content: `Mod **Bid Removed**: The accepted bid was removed. Request is open for bidding again.`
+                    content: `**Bid Removed**: The accepted bid was removed. Request is open for bidding again.`
                 }
             });
         }

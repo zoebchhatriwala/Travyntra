@@ -488,48 +488,8 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
         // retrieve the final step status value
         const currentAggregateStatus = aggregateStepStatus;
 
-        /**
-         * Handle forward progression if the current step has been successfully APPROVED.
-         */
-        if (currentAggregateStatus === ApprovalStatus.APPROVED) {
-            // Identify the order of the completed step
-            const currentStepOrderValue = approvalStepRecord.step.order;
-
-            // Delegate workflow transition (next step calculation, notifications, status updates)
-            // to the centralized Workflow Engine.
-            await WorkflowEngine.moveToNextStep(
-                approvalStepRecord.requestId,
-                currentStepOrderValue,
-                activeUserId
-            );
-
-            return { success: true };
-
-        } else if (currentAggregateStatus === ApprovalStatus.REJECTED) {
-            /** 
-             * Handle rejection: Rejection at any step halts the workflow and terminates the request.
-             */
-            await prisma.tripRequest.update({
-                where: {
-                    id: approvalStepRecord.requestId
-                },
-                data: {
-                    status: 'REJECTED'
-                }
-            });
-        }
-
-        // define paths to refresh in the application cache
-        const dashboardBasePath = `/company/${companySlugValue}/dashboard`;
-        const requestDetailPath = `${dashboardBasePath}/requests/${approvalStepRecord.requestId}`;
-        const approvalsListPagePath = `${dashboardBasePath}/approvals`;
-
-        // apply revalidation to ensure fresh data in the UI
-        revalidatePath(dashboardBasePath);
-        revalidatePath(requestDetailPath);
-        revalidatePath(approvalsListPagePath);
-
         // BULK APPROVAL LOGIC: recursively apply decisions to child trips if it is a GROUP trip
+        // This must run BEFORE any early returns to ensure bulk actions work for all statuses
         const bulkCheckQuery = {
             where: {
                 id: approvalStepRecord.requestId
@@ -590,6 +550,57 @@ export async function processApproval(params: ProcessApprovalParams): Promise<{ 
             // execute bulk processing for all children
             await Promise.all(childStepRecordsToProcess.map(processChildStepEntry));
         }
+
+        /**
+         * Handle forward progression if the current step has been successfully APPROVED.
+         */
+        if (currentAggregateStatus === ApprovalStatus.APPROVED) {
+            // Identify the order of the completed step
+            const currentStepOrderValue = approvalStepRecord.step.order;
+
+            // Delegate workflow transition (next step calculation, notifications, status updates)
+            // to the centralized Workflow Engine.
+            await WorkflowEngine.moveToNextStep(
+                approvalStepRecord.requestId,
+                currentStepOrderValue,
+                activeUserId
+            );
+
+            // define paths to refresh in the application cache
+            const dashboardBasePath = `/company/${companySlugValue}/dashboard`;
+            const requestDetailPath = `${dashboardBasePath}/requests/${approvalStepRecord.requestId}`;
+            const approvalsListPagePath = `${dashboardBasePath}/approvals`;
+
+            // apply revalidation to ensure fresh data in the UI
+            revalidatePath(dashboardBasePath);
+            revalidatePath(requestDetailPath);
+            revalidatePath(approvalsListPagePath);
+
+            return { success: true };
+
+        } else if (currentAggregateStatus === ApprovalStatus.REJECTED) {
+            /** 
+             * Handle rejection: Rejection at any step halts the workflow and terminates the request.
+             */
+            await prisma.tripRequest.update({
+                where: {
+                    id: approvalStepRecord.requestId
+                },
+                data: {
+                    status: 'REJECTED'
+                }
+            });
+        }
+
+        // define paths to refresh in the application cache
+        const dashboardBasePath = `/company/${companySlugValue}/dashboard`;
+        const requestDetailPath = `${dashboardBasePath}/requests/${approvalStepRecord.requestId}`;
+        const approvalsListPagePath = `${dashboardBasePath}/approvals`;
+
+        // apply revalidation to ensure fresh data in the UI
+        revalidatePath(dashboardBasePath);
+        revalidatePath(requestDetailPath);
+        revalidatePath(approvalsListPagePath);
 
         // Return the final success indicator
         return { success: true };

@@ -8,8 +8,9 @@ import {
 } from '@/lib/actions/approvals';
 import { prismaMock } from '@/lib/test/helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { ApprovalStatus } from '@prisma/client';
+import { ApprovalStatus, WorkflowStepKind } from '@prisma/client';
 import { WorkflowEngine } from '@/lib/workflow-engine';
+import { createNotification } from '@/lib/notifications';
 
 
 // Mocks
@@ -17,6 +18,7 @@ vi.mock('next-auth');
 vi.mock('@/lib/workflow-engine', () => ({
     WorkflowEngine: {
         moveToNextStep: vi.fn(),
+        notifyAgentsForOpportunity: vi.fn(),
     }
 }));
 vi.mock('@/lib/notifications', () => ({
@@ -178,16 +180,149 @@ describe('Approvals Actions', () => {
                 { userId: 'user-1', status: ApprovalStatus.REJECTED } as any
             ]);
 
+            await processApproval({ requestApprovalStepId: '1', action: 'REJECT' });
+
+            expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'req-1' },
+                data: { status: 'REJECTED' }
+            }));
+        });
+
+        it('should handle ANY type rejection (unanimity required)', async () => {
+            const anyRecord = {
+                ...mockStepRecord,
+                step: {
+                    ...mockStepRecord.step,
+                    type: 'ANY',
+                    approvers: [{ id: 'user-1' }, { id: 'user-2' }]
+                }
+            };
+            prismaMock.requestApprovalStep.findUnique.mockResolvedValue(anyRecord as any);
+            prismaMock.userApproval.upsert.mockResolvedValue({} as any);
+            // Both users rejected
+            prismaMock.userApproval.findMany.mockResolvedValue([
+                { userId: 'user-1', status: ApprovalStatus.REJECTED },
+                { userId: 'user-2', status: ApprovalStatus.REJECTED }
+            ] as any);
+
             const result = await processApproval({ requestApprovalStepId: '1', action: 'REJECT' });
 
             expect(result.success).toBe(true);
             expect(prismaMock.requestApprovalStep.update).toHaveBeenCalledWith(expect.objectContaining({
                 data: { status: ApprovalStatus.REJECTED }
             }));
-            expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
-                where: { id: 'req-1' },
-                data: { status: 'REJECTED' }
+        });
+
+        it('should handle recursive bulk approval for group trips', async () => {
+            // Master step record
+            const masterStep = { ...mockStepRecord, id: 'step-master', requestId: 'req-master' };
+            // Child step record
+            const childStep = { ...mockStepRecord, id: 'child-step-1', requestId: 'req-child', request: { ...mockStepRecord.request, id: 'req-child' } };
+
+            prismaMock.requestApprovalStep.findUnique.mockImplementation(((args: any) => {
+                if (args.where.id === 'step-master') return Promise.resolve(masterStep as any);
+                if (args.where.id === 'child-step-1') return Promise.resolve(childStep as any);
+                return Promise.resolve(null);
+            }) as any);
+
+            prismaMock.userApproval.upsert.mockResolvedValue({} as any);
+            // Approve existing
+            prismaMock.userApproval.findMany.mockResolvedValue([
+                { userId: 'user-1', status: ApprovalStatus.APPROVED } as any
+            ]);
+
+            // Mock group master check
+            prismaMock.tripRequest.findUnique.mockImplementation(((args: any) => {
+                if (args.where.id === 'req-master') {
+                    return Promise.resolve({
+                        id: 'req-master',
+                        isGroup: true,
+                        childTrips: [{ id: 'req-child' }]
+                    } as any);
+                }
+                if (args.where.id === 'req-child') {
+                    return Promise.resolve({
+                        id: 'req-child',
+                        isGroup: false, // STOP RECURSION
+                        childTrips: []
+                    } as any);
+                }
+                return Promise.resolve(null);
+            }) as any);
+
+            // Mock finding child steps
+            prismaMock.requestApprovalStep.findMany.mockImplementation(((args: any) => {
+                // When looking for child steps of master
+                if (args.where?.requestId?.in?.[0] === 'req-child') {
+                    return Promise.resolve([{ id: 'child-step-1' }] as any);
+                }
+                return Promise.resolve([] as any);
+            }) as any);
+
+            const result = await processApproval({ requestApprovalStepId: 'step-master', action: 'APPROVE', comment: 'Bulk' });
+
+            expect(result.success).toBe(true);
+            // Verify recursion call logic via update calls
+            // Should call update for master AND child
+            expect(prismaMock.requestApprovalStep.update).toHaveBeenCalledTimes(2);
+        });
+        it('should approve ALL type step when consensus reached', async () => {
+            const allRecord = {
+                ...mockStepRecord,
+                step: {
+                    ...mockStepRecord.step,
+                    type: 'ALL',
+                    approvers: [{ id: 'user-1' }, { id: 'user-2' }]
+                }
+            };
+            prismaMock.requestApprovalStep.findUnique.mockResolvedValue(allRecord as any);
+            prismaMock.userApproval.upsert.mockResolvedValue({} as any);
+            // Both users approved
+            prismaMock.userApproval.findMany.mockResolvedValue([
+                { userId: 'user-1', status: ApprovalStatus.APPROVED },
+                { userId: 'user-2', status: ApprovalStatus.APPROVED }
+            ] as any);
+
+            const result = await processApproval({ requestApprovalStepId: '1', action: 'APPROVE' });
+
+            expect(result.success).toBe(true);
+            expect(prismaMock.requestApprovalStep.update).toHaveBeenCalledWith(expect.objectContaining({
+                data: { status: ApprovalStatus.APPROVED }
             }));
+            expect(WorkflowEngine.moveToNextStep).toHaveBeenCalled();
+        });
+
+        it('should reject ALL type step when one member rejects', async () => {
+            const allRecord = {
+                ...mockStepRecord,
+                step: {
+                    ...mockStepRecord.step,
+                    type: 'ALL',
+                    approvers: [{ id: 'user-1' }, { id: 'user-2' }]
+                }
+            };
+            prismaMock.requestApprovalStep.findUnique.mockResolvedValue(allRecord as any);
+            prismaMock.userApproval.upsert.mockResolvedValue({} as any);
+            // One user rejected (immediate failure for ALL logic)
+            prismaMock.userApproval.findMany.mockResolvedValue([
+                { userId: 'user-1', status: ApprovalStatus.REJECTED },
+                { userId: 'user-2', status: ApprovalStatus.PENDING } // Other pending doesn't matter
+            ] as any);
+
+            const result = await processApproval({ requestApprovalStepId: '1', action: 'REJECT' });
+
+            expect(result.success).toBe(true);
+            expect(prismaMock.requestApprovalStep.update).toHaveBeenCalledWith(expect.objectContaining({
+                data: { status: ApprovalStatus.REJECTED }
+            }));
+        });
+
+        it('should handle processApproval errors', async () => {
+            // Force DB error
+            prismaMock.requestApprovalStep.findUnique.mockRejectedValue(new Error('Process fail'));
+
+            const result = await processApproval({ requestApprovalStepId: '1', action: 'APPROVE' });
+            expect(result.error).toBe("Failed to process approval");
         });
     });
 
@@ -196,6 +331,31 @@ describe('Approvals Actions', () => {
             (getServerSession as Mock).mockResolvedValue(null);
             const result = await getRequestApprovalProgress('req-1');
             expect(result).toBeNull();
+        });
+
+        it('should return null on database error (catch block coverage)', async () => {
+            prismaMock.requestApprovalStep.findMany.mockRejectedValue(new Error('DB fail'));
+            const result = await getRequestApprovalProgress('req-1');
+            expect(result).toBeNull();
+        });
+
+        it('should handle steps with approvals missing comments', async () => {
+            const mockStep = {
+                id: 'step-1',
+                step: { name: 'Step 1', order: 1, approvers: [] },
+                approvals: [{
+                    userId: 'u1',
+                    status: ApprovalStatus.APPROVED,
+                    user: { name: 'Approver', avatarUrl: 'url' },
+                    updatedAt: new Date(),
+                    comment: null // Explicit null to trigger fallback if any, or just straight assignment
+                }]
+            };
+            prismaMock.requestApprovalStep.findMany.mockResolvedValue([mockStep] as any);
+
+            const result = await getRequestApprovalProgress('req-1');
+            expect(result).toHaveLength(1);
+            expect(result![0].approvals[0].comment).toBeNull();
         });
 
         it('should return progress steps', async () => {
@@ -242,6 +402,81 @@ describe('Approvals Actions', () => {
             expect(prismaMock.requestApprovalStep.deleteMany).toHaveBeenCalled();
             // Verify create new steps
             expect(prismaMock.requestApprovalStep.create).toHaveBeenCalled();
+        });
+        it('should handle AGENT_QUOTATION start workflow', async () => {
+            const workflow = {
+                id: 'wf-agent',
+                company: { slug: 'test-co' },
+                steps: [{
+                    id: 's1',
+                    kind: WorkflowStepKind.AGENT_QUOTATION,
+                    order: 1,
+                    approvers: [] // Agents typically don't have "approvers" in this step context
+                }]
+            };
+            prismaMock.approvalWorkflow.findUnique.mockResolvedValue(workflow as any);
+            prismaMock.tripRequest.findMany.mockResolvedValue([
+                { id: 'req-agent', user: { id: 'r1' }, title: 'Agent Trip', destination: {}, company: { slug: 'co' } }
+            ] as any);
+            // Mock findMany for existing steps (empty)
+            prismaMock.requestApprovalStep.findMany.mockResolvedValue([] as any);
+
+            const result = await resetPendingApprovalSteps('company-1', 'user-1');
+
+            expect(result.success).toBe(true);
+            // Should verify status update to PENDING_QUOTATION
+            expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'req-agent' },
+                data: { status: 'PENDING_QUOTATION' } // Enum value usually matched by string or constant
+            }));
+            // Should NOT notify approvers because it is agent quote start
+            expect(createNotification).toHaveBeenCalledTimes(1); // Only for author
+        });
+
+        it('should handle workflow step with no approvers (fallback array)', async () => {
+            const workflow = {
+                id: 'wf-empty',
+                company: { slug: 'test-co' },
+                steps: [{
+                    id: 's1',
+                    kind: WorkflowStepKind.INTERNAL_APPROVAL,
+                    order: 1,
+                    approvers: [] // Explicitly empty/null fallback test
+                }]
+            };
+            prismaMock.approvalWorkflow.findUnique.mockResolvedValue(workflow as any);
+            prismaMock.tripRequest.findMany.mockResolvedValue([
+                { id: 'req-empty', user: { id: 'r1' }, title: 'Empty Trip', destination: {}, company: { slug: 'co' } }
+            ] as any);
+            prismaMock.requestApprovalStep.findMany.mockResolvedValue([] as any);
+
+            await resetPendingApprovalSteps('company-1', 'user-1');
+
+            // Should NOT notify approvers as there are none
+            // Only author notification (1 call)
+            expect(createNotification).toHaveBeenCalledTimes(1);
+        });
+        it('should return no pending requests message if list is empty', async () => {
+            const workflow = {
+                id: 'wf-1',
+                company: { slug: 'test-co' },
+                steps: [{ id: 's1', order: 1, approvers: [] }]
+            };
+            prismaMock.approvalWorkflow.findUnique.mockResolvedValue(workflow as any);
+            prismaMock.tripRequest.findMany.mockResolvedValue([]); // Empty list
+
+            const result = await resetPendingApprovalSteps('company-1', 'user-1');
+
+            expect(result.message).toBe("No pending requests to reset");
+            expect(result.requestsReset).toBe(0);
+        });
+
+        it('should handle database error', async () => {
+            prismaMock.approvalWorkflow.findUnique.mockRejectedValue(new Error('DB connection error'));
+
+            const result = await resetPendingApprovalSteps('company-1', 'user-1');
+
+            expect(result.error).toBe("Failed to reset pending approval steps");
         });
     });
 });

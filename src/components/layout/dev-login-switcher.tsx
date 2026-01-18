@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { IS_DEVELOPMENT } from "@/lib/constants/enviroment";
 
 // --- COLOR & GROUPING UTILS ---
 const COLORS = [
@@ -88,7 +89,7 @@ export function DevLoginSwitcher() {
     }, [selectedCompanies, isFilterInitialized]);
 
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
+        if (IS_DEVELOPMENT) {
             getDevUsers().then(data => {
                 setUsers(data || []);
             });
@@ -154,7 +155,8 @@ export function DevLoginSwitcher() {
         return { special: groups, companies: companyGroups };
     }, [filteredUsers]);
 
-    if (process.env.NODE_ENV !== 'development') return null;
+    // Only show in development
+    if (!IS_DEVELOPMENT) return null;
 
     const handleSwitch = async (user: DevUser) => {
         const { email, role, companySlug } = user;

@@ -2,6 +2,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { IS_PRODUCTION } from './constants/enviroment';
 
 // Casting the global object to a custom type that includes an optional prisma instance
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -81,11 +82,8 @@ const newPrisma = new PrismaClient(prismaConfig);
  */
 export const prisma = existingPrisma || newPrisma;
 
-// Retrieve the current NODE_ENV
-const currentEnv = process.env.NODE_ENV;
-
 // Check if the environment is not production
-const isNotProduction = currentEnv !== 'production';
+const isNotProduction = !IS_PRODUCTION;
 
 // Apply global assignment logic for development
 if (isNotProduction) {

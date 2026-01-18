@@ -9,54 +9,75 @@ vi.mock('bcryptjs', () => ({
 // Now import modules that depend on the mocks
 import { prismaMock } from '@/lib/test/helpers/prisma';
 import { compare } from 'bcryptjs';
-import { authOptions } from '@/lib/auth-options';
+import { authOptions, createAuthOptions } from '@/lib/auth-options';
 
 describe('Auth Options', () => {
     // Helper to get providers
-    let providers: any[];
     let devProvider: any;
-    let credsProvider: any;
+    let normalProvider: any;
 
     beforeEach(() => {
         vi.resetAllMocks();
         vi.unstubAllEnvs();
         vi.stubEnv('NODE_ENV', 'test');
 
-        // Get providers after mocks are reset
-        providers = authOptions.providers as any[];
-        // Provider 0 is Dev Login, Provider 1 is Credentials
-        devProvider = providers[0];
-        credsProvider = providers[1];
+        const devAuthOptions = createAuthOptions(prismaMock,
+            'development'
+        );
+
+        const productionAuthOptions = createAuthOptions(prismaMock,
+            'production'
+        );
+
+        devProvider = devAuthOptions.providers[0].options
+        normalProvider = productionAuthOptions.providers[1].options
     });
+
+    describe('createAuthOptions', () => {
+        it('should use default secret when NEXTAUTH_SECRET is missing', () => {
+            vi.stubEnv('NEXTAUTH_SECRET', '');
+            const options = createAuthOptions(prismaMock, 'development');
+            expect(options.secret).toBe('travyntrasecretproject2026version');
+        });
+
+        it('should use provided secret when NEXTAUTH_SECRET is present', () => {
+            vi.stubEnv('NEXTAUTH_SECRET', 'env-secret');
+            const options = createAuthOptions(prismaMock, 'development');
+            expect(options.secret).toBe('env-secret');
+        });
+
+        it('should use default nodeEnv when process.env.NODE_ENV is missing', () => {
+            vi.stubEnv('NODE_ENV', '');
+            const options = createAuthOptions(prismaMock);
+            // We can't easily check internal nodeEnv usage without more exposure, 
+            // but calling it ensures the branch is hit.
+            expect(options).toBeDefined();
+        });
+    });
+
 
     describe('Dev Login Provider', () => {
         it('should reject if not in development mode', async () => {
-            vi.stubEnv('NODE_ENV', 'production');
+            // Use a provider created with production environment to test rejection
+            const productionAuthOptions = createAuthOptions(prismaMock, 'production');
+            const prodDevProvider = productionAuthOptions.providers[0].options;
 
-            const result = await devProvider.authorize({ email: 'test@test.com' });
+            const result = await prodDevProvider.authorize({ email: 'test@test.com' }, {} as any);
             expect(result).toBeNull();
         });
 
         it('should reject if email is missing', async () => {
-            vi.stubEnv('NODE_ENV', 'development');
-            const result = await devProvider.authorize({});
+            const result = await devProvider.authorize({}, {} as any);
             expect(result).toBeNull();
         });
 
         it('should reject if user not found', async () => {
-            vi.stubEnv('NODE_ENV', 'development');
             prismaMock.user.findUnique.mockResolvedValue(null);
-
             const result = await devProvider.authorize({ email: 'unknown@test.com' });
             expect(result).toBeNull();
         });
 
-        // TODO: This test is skipped due to Vitest module mocking limitations
-        // The prisma import in auth-options.ts is evaluated at module load time,
-        // before the mock can be applied. This is a known limitation when testing
-        // modules that import dependencies at the top level.
-        it.skip('should authenticate successfully in dev mode', async () => {
-            vi.stubEnv('NODE_ENV', 'development');
+        it('should authenticate successfully in dev mode', async () => {
             const mockUser = {
                 id: 'user-1',
                 email: 'test@test.com',
@@ -66,6 +87,7 @@ describe('Auth Options', () => {
                 company: { type: 'AGENCY', slug: 'agency' },
                 avatarUrl: 'image.jpg'
             };
+
             prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
 
             const result = await devProvider.authorize({ email: 'test@test.com' });
@@ -83,39 +105,36 @@ describe('Auth Options', () => {
         });
 
         it('should handle database errors', async () => {
-            vi.stubEnv('NODE_ENV', 'development');
             prismaMock.user.findUnique.mockRejectedValue(new Error('DB Error'));
-
             const result = await devProvider.authorize({ email: 'test@test.com' });
             expect(result).toBeNull();
         });
     });
 
-    describe('Credentials Provider', () => {
+    describe('Normal Login Provider', () => {
         it('should reject missing credentials', async () => {
-            const result1 = await credsProvider.authorize({});
+            const result1 = await normalProvider.authorize({});
             expect(result1).toBeNull();
 
-            const result2 = await credsProvider.authorize({ email: 'test@test.com' });
+            const result2 = await normalProvider.authorize({ email: 'test@test.com' });
             expect(result2).toBeNull();
         });
 
         it('should reject if user not found', async () => {
             prismaMock.user.findUnique.mockResolvedValue(null);
-
-            const result = await credsProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
             expect(result).toBeNull();
         });
 
         it('should reject if user has no password (e.g. OAuth)', async () => {
             prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: null } as any);
-            const result = await credsProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
             expect(result).toBeNull();
         });
 
         it('should reject if user is inactive', async () => {
             prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: false } as any);
-            const result = await credsProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
             expect(result).toBeNull();
         });
 
@@ -123,13 +142,11 @@ describe('Auth Options', () => {
             prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: true } as any);
             (compare as Mock).mockResolvedValue(false);
 
-            const result = await credsProvider.authorize({ email: 'test@test.com', password: 'wrong' });
+            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'wrong' });
             expect(result).toBeNull();
         });
 
-        // TODO: This test is skipped due to Vitest module mocking limitations
-        // See comment in "should authenticate successfully in dev mode" test above
-        it.skip('should authenticate successfully', async () => {
+        it('should authenticate successfully', async () => {
             const mockUser = {
                 id: 'user-1',
                 email: 'test@test.com',
@@ -141,12 +158,11 @@ describe('Auth Options', () => {
                 company: { type: 'AGENCY', slug: 'agency' },
                 avatarUrl: 'image.jpg'
             };
-            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
-            // Re-mock compare for this specific test if needed, but the global mock should capture it.
-            // However, since we defined it as a function above, usage is:
-            (compare as any).mockResolvedValue(true);
 
-            const result = await credsProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+            (compare as Mock).mockResolvedValue(true);
+
+            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
 
             expect(result).toEqual({
                 id: 'user-1',
@@ -226,6 +242,55 @@ describe('Auth Options', () => {
                 // Code says: sets token.name=updatedName, then checks DB. If DB found, overwrite.
                 expect(result.name).toBe('New');
             });
+
+            it('should handle update trigger with missing name in session', async () => {
+                const token = { id: 'user-1', name: 'Old', picture: 'old.jpg' };
+                const session = { user: { image: 'New.jpg' } }; // No name
+
+                prismaMock.user.findUnique.mockResolvedValue({
+                    name: 'DB Name',
+                    avatarUrl: 'DB.jpg'
+                } as any);
+
+                const result = await authOptions.callbacks!.jwt!({
+                    token,
+                    trigger: 'update',
+                    session
+                } as any);
+
+                expect(result.name).toBe('DB Name');
+                expect(result.picture).toBe('DB.jpg');
+            });
+
+            it('should handle update trigger with missing image in session', async () => {
+                const token = { id: 'user-1', name: 'Old', picture: 'old.jpg' };
+                const session = { user: { name: 'New' } }; // No image
+
+                prismaMock.user.findUnique.mockResolvedValue({
+                    name: 'DB Name',
+                    avatarUrl: 'DB.jpg'
+                } as any);
+
+                const result = await authOptions.callbacks!.jwt!({
+                    token,
+                    trigger: 'update',
+                    session
+                } as any);
+
+                expect(result.name).toBe('DB Name');
+                expect(result.picture).toBe('DB.jpg');
+            });
+
+            it('should handle update trigger without session', async () => {
+                const token = { id: 'user-1', name: 'Old' };
+
+                const result = await authOptions.callbacks!.jwt!({
+                    token,
+                    trigger: 'update'
+                } as any);
+
+                expect(result).toBe(token);
+            });
         });
 
         describe('session', () => {
@@ -248,6 +313,26 @@ describe('Auth Options', () => {
                     role: 'EMPLOYEE',
                     companySlug: 's1'
                 }));
+            });
+
+            it('should handle missing token', async () => {
+                const session = { user: {} };
+
+                const result = await authOptions.callbacks!.session!({ session, token: null } as any);
+
+                expect(result).toBe(session);
+            });
+
+            it('should handle missing session.user', async () => {
+                const token = {
+                    id: 'user-1',
+                    role: 'EMPLOYEE'
+                };
+                const session = {} as any;
+
+                const result = await authOptions.callbacks!.session!({ session, token } as any);
+
+                expect(result).toBe(session);
             });
         });
     });

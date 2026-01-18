@@ -1,6 +1,7 @@
 
 "use server";
 
+import { IS_DEVELOPMENT } from "@/lib/constants/enviroment";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -28,11 +29,8 @@ export interface DevUser {
  * @returns {Promise<DevUser[]>} A list of users available for selection.
  */
 export async function getDevUsers(): Promise<DevUser[]> {
-    // Retrieve the active node environment
-    const currentEnvironment = process.env.NODE_ENV;
-
     // Check if the current environment is strictly development
-    const isNotDevelopmentEnv = currentEnvironment !== 'development';
+    const isNotDevelopmentEnv = !IS_DEVELOPMENT
 
     // Block the action if not in development mode
     if (isNotDevelopmentEnv) {

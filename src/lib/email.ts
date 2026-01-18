@@ -1,5 +1,6 @@
 
 import { prisma } from "@/lib/prisma";
+import { IS_DEVELOPMENT } from "./constants/enviroment";
 
 /**
  * Type definition for the email delivery payload.
@@ -13,12 +14,6 @@ type EmailPayload = {
     html: string;
 };
 
-// Retrieve the current node environment
-const nodeEnvironment = process.env.NODE_ENV;
-
-// Determine if the system is running in development mode
-const IS_DEV = nodeEnvironment === "development";
-
 /**
  * Sends an email using the configured provider.
  * In development, this logs the email to the console.
@@ -31,7 +26,7 @@ export async function sendEmail(payload: EmailPayload) {
     const { to, subject, html } = payload;
 
     // Check if the system is in development mode
-    if (IS_DEV) {
+    if (IS_DEVELOPMENT) {
         // Construct a console log message for the mock email
         const logHeader = "📧 [MOCK EMAIL]";
         const logTo = `To: ${to}`;

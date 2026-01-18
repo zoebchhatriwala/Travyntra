@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { getDigestEmailTemplate } from "@/lib/email-templates";
 import { ApprovalStatus } from "@prisma/client";
+import { IS_DEVELOPMENT } from "@/lib/constants/enviroment";
 
 /**
  * Ensures the route is always executed dynamically and prevents static caching.
@@ -34,11 +35,11 @@ export async function GET(request: Request): Promise<NextResponse> {
     const expectedAuthToken = `Bearer ${environmentCronSecret}`;
 
     // identify the current process node environment
-    const currentProcessEnv = process.env.NODE_ENV;
-    const isDevelopmentMode = currentProcessEnv === 'development';
+    const isDevelopmentMode = IS_DEVELOPMENT;
 
     // Verify if the auth header matches the expected token
     const isSecretValid = authHeaderValue === expectedAuthToken;
+
     // determine authorization status (valid secret or development environment)
     const isAuthorizedRequest = isSecretValid || isDevelopmentMode;
 
