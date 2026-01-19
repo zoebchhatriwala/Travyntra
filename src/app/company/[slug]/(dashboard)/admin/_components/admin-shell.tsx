@@ -1,62 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { CompanyNav } from "./company-nav";
-import { SidebarLayout, SidebarBrand, useSidebar } from "@/components/layout/sidebar-layout";
+import { SidebarLayout, SidebarBrand } from "@/components/layout/sidebar-layout";
 import { Logo } from "@/components/ui/logo";
+
+import { SupportPlanCard } from "@/components/layout/support-plan-card";
+import { SubscriptionPlan } from "@prisma/client";
 
 interface AdminShellProps {
     children: React.ReactNode;
     slug: string;
-    companyPlan?: string | null;
-}
-
-function SupportPlanCard({
-    slug,
-    companyPlan
-}: {
-    slug: string;
-    companyPlan?: string | null;
-}) {
-    const { isCollapsed } = useSidebar();
-
-    if (isCollapsed) {
-        return (
-            <div className="flex justify-center py-2">
-                <div className="w-10 h-10 bg-indigo-100 rounded-corner-md flex items-center justify-center text-indigo-600" title="Values Plan">
-                    <span className="text-xs font-bold">
-                        {companyPlan === 'FREE' ? 'F' : companyPlan === 'STARTER' ? 'S' : 'E'}
-                    </span>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="bg-indigo-600 rounded-corner-lg p-4 text-white shadow-lg shadow-indigo-100 relative overflow-hidden w-full">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl" />
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">Support Plan</p>
-            <p className="text-sm font-bold mb-3">
-                {companyPlan === 'FREE' ? 'Free Tier' :
-                    companyPlan === 'STARTER' ? 'Business Starter' :
-                        companyPlan === 'ENTERPRISE' ? 'Enterprise Gold' : 'Corporate Plan'}
-            </p>
-            {companyPlan === 'FREE' ? (
-                <Link
-                    href="mailto:sales@travyntra.com"
-                    className="block w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase text-center hover:bg-gray-50 transition-colors"
-                >
-                    Upgrade Tier
-                </Link>
-            ) : (
-                <Link href={`/company/${slug}/admin/settings/plan`} className="block w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase text-center hover:bg-gray-50 transition-colors">
-                    View Plan
-                </Link>
-            )}
-        </div>
-    );
+    companyPlan?: SubscriptionPlan | string | null;
 }
 
 export function AdminShell({ children, slug, companyPlan }: AdminShellProps) {
@@ -66,6 +22,7 @@ export function AdminShell({ children, slug, companyPlan }: AdminShellProps) {
             sidebarFooter={<SupportPlanCard
                 slug={slug}
                 companyPlan={companyPlan}
+                type="COMPANY"
             />}
             brandContent={
                 <SidebarBrand

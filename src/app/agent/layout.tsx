@@ -10,6 +10,9 @@ import { SidebarLayout, SidebarBrand } from "@/components/layout/sidebar-layout"
 import { Logo } from "@/components/ui/logo";
 import { redirect } from "next/navigation";
 
+import { prisma } from "@/lib/prisma";
+import { SupportPlanCard } from "@/components/layout/support-plan-card";
+
 export default async function AgentLayout({
     children,
 }: {
@@ -26,9 +29,21 @@ export default async function AgentLayout({
         redirect("/");
     }
 
+    const company = await prisma.company.findUnique({
+        where: { id: session.user.companyId! },
+        select: { plan: true, slug: true }
+    });
+
     return (
         <SidebarLayout
             sidebarContent={<AgencyNav />}
+            sidebarFooter={
+                <SupportPlanCard
+                    slug={company?.slug}
+                    companyPlan={company?.plan}
+                    type="AGENCY"
+                />
+            }
             brandContent={
                 <SidebarBrand
                     href="/agent/dashboard"
@@ -44,7 +59,7 @@ export default async function AgentLayout({
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:inline">Workspace</span>
                     <div className="h-1 w-1 rounded-full bg-gray-300 hidden sm:block" />
                     <span className="text-xs font-black text-gray-900 uppercase tracking-widest">
-                        {session.user.companySlug || "Agency"}
+                        {company?.slug || "Agency"}
                     </span>
                 </>
             )}
