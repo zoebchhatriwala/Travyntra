@@ -139,6 +139,7 @@ export function BidForm({
         }
     };
 
+
     const handleSubmit = async () => {
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount) || numAmount <= 0) {
@@ -166,6 +167,7 @@ export function BidForm({
     };
 
     const isClosed = ([
+        RequestStatus.IN_PROGRESS,
         RequestStatus.BOOKED,
         RequestStatus.COMPLETED,
         RequestStatus.REJECTED,
@@ -355,24 +357,26 @@ export function BidForm({
                     </div>
                 </div>
 
-                <Button
-                    className="w-full h-14 text-base font-black uppercase tracking-widest rounded-corner-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.01] transition-all group"
-                    disabled={isSubmitting || !amount || parseFloat(amount) <= 0}
-                    onClick={handleSubmit}
-                >
-                    {isSubmitting ? (
-                        <>
-                            <RefreshCw size={20} className="mr-2 animate-spin" />
-                            PROCESSING...
-                        </>
-                    ) : (
-                        <>
-                            {existingBid ? 'UPDATE PROPOSAL' : 'SEND QUOTATION'}
-                            {existingBid ? <Edit2 size={20} className="ml-2 group-hover:rotate-12 transition-transform" /> : <Zap size={20} className="ml-2 group-hover:scale-125 transition-transform" />}
-                        </>
-                    )}
-                </Button>
+                <div className="w-full flex flex-col gap-3">
+                    <Button
+                        className="w-full h-14 text-base font-black uppercase tracking-widest rounded-corner-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.01] transition-all group"
+                        disabled={isSubmitting || !amount || parseFloat(amount) <= 0}
+                        onClick={handleSubmit}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <RefreshCw size={20} className="mr-2 animate-spin" />
+                                PROCESSING...
+                            </>
+                        ) : (
+                            <>
+                                {existingBid ? 'UPDATE PROPOSAL' : 'SEND QUOTATION'}
+                                {existingBid ? <Edit2 size={20} className="ml-2 group-hover:rotate-12 transition-transform" /> : <Zap size={20} className="ml-2 group-hover:scale-125 transition-transform" />}
+                            </>
+                        )}
+                    </Button>
+                </div>
             </CardFooter>
-        </Card>
+        </Card >
     );
 }

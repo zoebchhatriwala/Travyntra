@@ -6,17 +6,19 @@ import {
     approveBid,
     unapproveBid,
     removeBid,
+    withdrawBid,
     getConversionPreview,
     type BidTax
 } from '@/app/agent/bids/[requestId]/actions';
 import { prismaMock } from '@/lib/test/helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { BidStatus, CompanyType, RequestStatus, SubscriptionPlan } from '@prisma/client';
+import { BidStatus, CompanyType, RequestStatus, SubscriptionPlan, UserRole, NotificationType, Prisma } from '@prisma/client';
 import { AutoApprovalRuleType } from '@/types/workflow/auto-approval-policy';
 import { AutoApprovalEngine } from '@/lib/auto-approval-engine';
 import { WorkflowEngine } from '@/lib/workflow-engine';
 import { createNotification } from '@/lib/notifications';
 import { convertMoney } from '@/lib/services/currency';
+import { ActivityLogAction } from '@/types/common/enums';
 
 // Mocks
 vi.mock('next-auth');
@@ -1613,5 +1615,150 @@ describe('Bidding Actions', () => {
         // Should not crash, and not call createNotification
         const { createNotification } = await import('@/lib/notifications');
         expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    describe('withdrawBid', () => {
+        beforeEach(() => {
+            (getServerSession as Mock).mockResolvedValue(mockAgentSession);
+        });
+
+        it('should return error if unauthorized (no session)', async () => {
+            (getServerSession as Mock).mockResolvedValue(null);
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toBe("Unauthorized");
+        });
+
+        it('should return error if wrong role', async () => {
+            (getServerSession as Mock).mockResolvedValue({ user: { role: UserRole.EMPLOYEE } });
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toBe("Unauthorized");
+        });
+
+        it('should return error if bid not found', async () => {
+            prismaMock.agentBid.findUnique.mockResolvedValue(null);
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toBe("Bid not found");
+        });
+
+        it('should return error if not bid owner', async () => {
+            prismaMock.agentBid.findUnique.mockResolvedValue({ agencyId: 'other-agency' } as any);
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toBe("You can only withdraw your own agency's bids");
+        });
+
+        it('should return error if trip completed or cancelled', async () => {
+            prismaMock.agentBid.findUnique.mockResolvedValue({
+                agencyId: 'agency-1',
+                request: { status: RequestStatus.COMPLETED }
+            } as any);
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toContain("completed");
+
+            prismaMock.agentBid.findUnique.mockResolvedValue({
+                agencyId: 'agency-1',
+                request: { status: RequestStatus.CANCELLED }
+            } as any);
+            const result2 = await withdrawBid('bid-1', 'req-1');
+            expect(result2.error).toContain("cancelled");
+        });
+
+        it('should withdraw accepted bid and reset request', async () => {
+            const mockBid = {
+                id: 'bid-1',
+                agencyId: 'agency-1',
+                status: BidStatus.ACCEPTED,
+                request: {
+                    id: 'req-1',
+                    title: 'Trip',
+                    companyId: 'co-1',
+                    company: { slug: 'co' },
+                    userId: 'u1',
+                    user: { id: 'u1' } // Added to trigger notification branch
+                }
+            };
+            prismaMock.agentBid.findUnique.mockResolvedValue(mockBid as any);
+            prismaMock.user.findMany.mockResolvedValue([{ id: 'admin-1' }] as any); // company admins
+            prismaMock.tripRequest.update.mockResolvedValue({} as any);
+            prismaMock.agentBid.update.mockResolvedValue({} as any);
+            prismaMock.message.create.mockResolvedValue({} as any);
+            prismaMock.activityLog.create.mockResolvedValue({} as any);
+
+            const result = await withdrawBid('bid-1', 'req-1');
+
+            expect(result.success).toBe(true);
+            expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'req-1' },
+                data: expect.objectContaining({
+                    status: RequestStatus.APPROVED,
+                    agencyId: null,
+                    cost: Prisma.JsonNull
+                })
+            }));
+            expect(prismaMock.agentBid.update).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'bid-1' },
+                data: { status: BidStatus.PENDING }
+            }));
+            expect(createNotification).toHaveBeenCalledTimes(2); // Admin + Creator
+            expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                type: NotificationType.WARNING
+            }));
+            expect(prismaMock.activityLog.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({ action: ActivityLogAction.BID_REMOVED })
+            }));
+        });
+
+        it('should skip creator notification if creator is an admin', async () => {
+            const mockBid = {
+                id: 'bid-1',
+                agencyId: 'agency-1',
+                status: BidStatus.ACCEPTED,
+                request: {
+                    id: 'req-1',
+                    title: 'Trip',
+                    companyId: 'co-1',
+                    company: { slug: 'co' },
+                    userId: 'admin-1',
+                    user: { id: 'admin-1' }
+                }
+            };
+            prismaMock.agentBid.findUnique.mockResolvedValue(mockBid as any);
+            prismaMock.user.findMany.mockResolvedValue([{ id: 'admin-1' }] as any);
+            prismaMock.tripRequest.update.mockResolvedValue({} as any);
+            prismaMock.agentBid.update.mockResolvedValue({} as any);
+            prismaMock.message.create.mockResolvedValue({} as any);
+            prismaMock.activityLog.create.mockResolvedValue({} as any);
+
+            await withdrawBid('bid-1', 'req-1');
+
+            expect(createNotification).toHaveBeenCalledTimes(1); // Only Admin
+        });
+
+        it('should withdraw pending bid without resetting request', async () => {
+            const mockBid = {
+                id: 'bid-1',
+                agencyId: 'agency-1',
+                status: BidStatus.PENDING,
+                request: {
+                    id: 'req-1',
+                    company: { slug: 'co' }
+                }
+            };
+            prismaMock.agentBid.findUnique.mockResolvedValue(mockBid as any);
+
+            const result = await withdrawBid('bid-1', 'req-1');
+
+            expect(result.success).toBe(true);
+            expect(prismaMock.tripRequest.update).not.toHaveBeenCalled();
+            expect(prismaMock.agentBid.update).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'bid-1' },
+                data: { status: BidStatus.PENDING }
+            }));
+        });
+
+        it('should handle catch block error', async () => {
+            prismaMock.agentBid.findUnique.mockRejectedValue(new Error('Catch Error'));
+            const result = await withdrawBid('bid-1', 'req-1');
+            expect(result.error).toBe("Failed to withdraw bid");
+        });
     });
 });

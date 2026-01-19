@@ -78,7 +78,7 @@ export function RequestHeader({ request, currentUser, slug }: RequestHeaderProps
                 <div className="min-w-0 flex-1">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <h1 className="text-2xl font-black text-gray-900 tracking-tight truncate">{request.title}</h1>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight wrap-all">{request.title}</h1>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{request.title}</p>

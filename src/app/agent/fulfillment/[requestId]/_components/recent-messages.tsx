@@ -89,7 +89,7 @@ export function RecentMessages({ messages, requestId }: RecentMessagesProps) {
                 )}
 
                 <Link
-                    href={`/agent/bids/${requestId}`}
+                    href={`/agent/fulfillment/${requestId}/discussion`}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
                     View Full Discussion

@@ -8,6 +8,8 @@ import { generateInvoice, updateInvoiceStatus, uploadInvoiceAttachment } from ".
 import { Loader2, CheckCircle, Plane, FileText, CheckCircle2, Ban, RefreshCw, Upload, X } from "lucide-react";
 import { useConfirm } from "@/lib/hooks/use-confirm";
 import { InvoiceStatus, RequestStatus, UserRole } from "@prisma/client";
+import { withdrawBid } from "../../../bids/[requestId]/actions";
+import { useRouter } from "next/navigation";
 import {
     Dialog,
     DialogContent,
@@ -30,9 +32,11 @@ interface StatusActionsProps {
     } | null;
     canRegenerate?: boolean;
     userRole?: UserRole;
+    bidId?: string;
 }
 
-export function StatusActions({ requestId, currentStatus, allItemsCompleted, hasItems, invoice, canRegenerate, userRole }: StatusActionsProps) {
+export function StatusActions({ requestId, currentStatus, allItemsCompleted, hasItems, invoice, canRegenerate, userRole, bidId }: StatusActionsProps) {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { confirm, ConfirmDialog } = useConfirm();
 
@@ -174,6 +178,33 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
             }
         } catch {
             toast.error("Failed to void invoice");
+        } finally {
+            setIsLoading(null);
+        }
+    }
+    async function handleWithdraw() {
+        if (!bidId) return;
+
+        const ok = await confirm({
+            title: "Withdraw/Reverse Bid",
+            description: "Are you sure you want to withdraw or reverse this bid? This will unassign you from this trip and reopen it for other agents. This action cannot be undone.",
+            confirmText: "Withdraw Bid",
+            variant: "destructive"
+        });
+
+        if (!ok) return;
+
+        setIsLoading('withdraw');
+        try {
+            const result = await withdrawBid(bidId, requestId);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Bid withdrawn and trip unassigned.");
+                router.push('/agent/fulfillment');
+            }
+        } catch {
+            toast.error("Failed to withdraw bid");
         } finally {
             setIsLoading(null);
         }
@@ -366,19 +397,35 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
         <>
             <div className="flex items-center gap-3">
                 {currentStatus === RequestStatus.IN_PROGRESS && (
-                    <Button
-                        onClick={handleMarkBooked}
-                        disabled={isLoading !== null}
-                        variant="outline"
-                        className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl font-semibold"
-                    >
-                        {isLoading === 'booked' ? (
-                            <Loader2 size={16} className="animate-spin mr-2" />
-                        ) : (
-                            <Plane size={16} className="mr-2" />
-                        )}
-                        Mark as Booked
-                    </Button>
+                    <>
+                        <Button
+                            onClick={handleMarkBooked}
+                            disabled={isLoading !== null}
+                            variant="outline"
+                            className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl font-semibold"
+                        >
+                            {isLoading === 'booked' ? (
+                                <Loader2 size={16} className="animate-spin mr-2" />
+                            ) : (
+                                <Plane size={16} className="mr-2" />
+                            )}
+                            Mark as Booked
+                        </Button>
+
+                        <Button
+                            onClick={handleWithdraw}
+                            disabled={isLoading !== null}
+                            variant="outline"
+                            className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl font-semibold"
+                        >
+                            {isLoading === 'withdraw' ? (
+                                <Loader2 size={16} className="animate-spin mr-2" />
+                            ) : (
+                                <Ban size={16} className="mr-2" />
+                            )}
+                            Withdraw Bid
+                        </Button>
+                    </>
                 )}
 
                 <Button

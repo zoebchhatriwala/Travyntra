@@ -12,7 +12,7 @@ import { createNotification } from "@/lib/notifications";
 /**
  * Get a request assigned to the current agency for fulfillment
  */
-export async function getFulfillmentRequest(requestId: string) {
+export async function getFulfillmentRequest(requestId: string, limitMessages: boolean = true) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return null;
 
@@ -32,10 +32,10 @@ export async function getFulfillmentRequest(requestId: string) {
                     slug: true
                 }
             },
-            user: { select: { name: true, email: true } },
+            user: { select: { id: true, name: true, email: true } },
             bids: {
                 where: { agencyId: agencyId, status: "ACCEPTED" },
-                select: { amount: true, updatedAt: true }
+                select: { id: true, amount: true, updatedAt: true }
             },
             fulfillmentItems: {
                 orderBy: { order: 'asc' },
@@ -53,13 +53,21 @@ export async function getFulfillmentRequest(requestId: string) {
                 }
             },
             messages: {
-                take: 5,
-                orderBy: { createdAt: 'desc' },
+                ...(limitMessages ? { take: 5 } : {}),
+                orderBy: { createdAt: limitMessages ? 'desc' : 'asc' },
                 select: {
                     id: true,
                     content: true,
                     createdAt: true,
-                    sender: { select: { name: true } }
+                    senderId: true,
+                    sender: {
+                        select: {
+                            name: true,
+                            avatarUrl: true,
+                            role: true,
+                            company: { select: { name: true } }
+                        }
+                    }
                 }
             },
             invoice: {
@@ -81,7 +89,7 @@ export async function getFulfillmentRequest(requestId: string) {
 
     return {
         ...request,
-        bids: request.bids as unknown as { amount: Prisma.JsonValue; updatedAt: Date }[],
+        bids: request.bids as unknown as { id: string; amount: Prisma.JsonValue; updatedAt: Date }[],
         invoice: (request.invoice && showInvoice)
             ? {
                 ...request.invoice,

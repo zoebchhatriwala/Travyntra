@@ -194,7 +194,7 @@ class AgentBidActions {
                 // If not already accepted, check if this bid qualifies for auto-acceptance
                 if (isWithinThreshold) {
                     // Auto-approve this bid
-                    await AgentBidActions.approveBidInternal(newBid.id, requestId, session.user.id);
+                    await AgentBidActions.approveBidInternal(newBid.id, requestId, session.user.id, true);
                     autoApprovalApplied = true;
                 }
             }
@@ -215,7 +215,7 @@ class AgentBidActions {
                 data: {
                     requestId,
                     senderId: session.user.id,
-                    content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Proposal Details**:\n${message}`
+                    content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Proposal Details**:\n${message ?? 'N/A'}`
                 }
             });
 
@@ -254,7 +254,7 @@ class AgentBidActions {
      * Internal helper to approve a bid using existing mechanics.
      * Extracted from approveBid to be used for auto-approvals.
      */
-    static async approveBidInternal(bidId: string, requestId: string, actorId: string) {
+    static async approveBidInternal(bidId: string, requestId: string, actorId: string, isAutoApproved: boolean = false) {
         const bid = await prisma.agentBid.findUnique({
             where: { id: bidId },
             include: {
@@ -337,8 +337,10 @@ class AgentBidActions {
                 companyId: bid.request.companyId,
                 actorId: actorId,
                 action: ActivityLogAction.BID_APPROVED,
-                description: `Auto-approved bid of ${formattedTotal} based on auto-approval policy.`,
-                metadata: { requestId, bidId, autoApproved: true }
+                description: isAutoApproved
+                    ? `Auto-approved bid of ${formattedTotal} based on auto-approval policy.`
+                    : `Manually approved bid of ${formattedTotal}.`,
+                metadata: { requestId, bidId, autoApproved: isAutoApproved }
             }
         });
 
@@ -347,7 +349,9 @@ class AgentBidActions {
             data: {
                 requestId,
                 senderId: actorId,
-                content: `✅ **Bid Auto-Accepted**: ${formattedTotal}. This request was auto-approved and the first matching bid has been accepted automatically.`
+                content: isAutoApproved
+                    ? `✅ **Bid Auto-Accepted**: ${formattedTotal}. This request was auto-approved and the first matching bid has been accepted automatically.`
+                    : `✅ **Bid Accepted**: ${formattedTotal}. The bid has been manually approved and assigned for fulfillment.`
             }
         });
 
@@ -356,8 +360,10 @@ class AgentBidActions {
         await Promise.all(agentUsers.map(userId =>
             createNotification({
                 userId,
-                title: "Bid Auto-Approved!",
-                message: `Your bid for "${bid.request.title}" was auto-accepted based on the company's policy.`,
+                title: isAutoApproved ? "Bid Auto-Approved!" : "Bid Accepted!",
+                message: isAutoApproved
+                    ? `Your bid for "${bid.request.title}" was auto-accepted based on the company's policy.`
+                    : `Good news! Your bid for "${bid.request.title}" has been manually accepted and assigned to you.`,
                 type: NotificationType.SUCCESS,
                 link: `/agent/fulfillment/${requestId}`,
                 sendEmail: true
@@ -483,7 +489,7 @@ class AgentBidActions {
                 const alreadyAccepted = request.bids.some(b => b.status === BidStatus.ACCEPTED);
                 // We don't auto-reject updates here, we just check if we can auto-accept this update
                 if (!alreadyAccepted && isWithinThreshold) {
-                    await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id);
+                    await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id, true);
                     autoApprovalApplied = true;
                 }
             }
@@ -555,8 +561,8 @@ class AgentBidActions {
         }
 
         try {
-            // Call internal approveBidInternal function
-            await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id);
+            // Call internal approveBidInternal function (isAutoApproved = false)
+            await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id, false);
 
             // Revalidate paths
             revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
@@ -721,6 +727,142 @@ class AgentBidActions {
         }
     }
 
+    /**
+     * Allows an agent to withdraw or "reverse" their own bid.
+     * If the bid was already accepted, it resets the request to an open/approved state.
+     * 
+     * @param {string} bidId - The ID of the bid to withdraw.
+     * @param {string} requestId - The ID of the trip request.
+     * @returns {Promise<{ success?: boolean; error?: string }>} Result of the operation.
+     */
+    static async withdrawBid(bidId: string, requestId: string) {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
+            return { error: "Unauthorized" };
+        }
+
+        try {
+            const bid = await prisma.agentBid.findUnique({
+                where: { id: bidId },
+                include: {
+                    request: {
+                        include: {
+                            company: true,
+                            user: true // Trip creator
+                        }
+                    }
+                }
+            });
+
+            if (!bid) return { error: "Bid not found" };
+            if (bid.agencyId !== session.user.companyId) return { error: "You can only withdraw your own agency's bids" };
+
+            // Guard: Cannot withdraw if trip is completed or cancelled
+            if (bid.request.status === RequestStatus.COMPLETED || bid.request.status === RequestStatus.CANCELLED) {
+                return { error: `Cannot withdraw bid for a ${bid.request.status.toLowerCase()} trip.` };
+            }
+
+            const wasAccepted = bid.status === BidStatus.ACCEPTED;
+
+            if (wasAccepted) {
+                // 1. Reset Request assignment
+                await prisma.tripRequest.update({
+                    where: { id: requestId },
+                    data: {
+                        agencyId: null,
+                        status: RequestStatus.APPROVED, // Back to approved to allow re-bidding/re-assignment
+                        cost: Prisma.JsonNull
+                    }
+                });
+
+                // 2. Set Bid status back to PENDING (or they could update/delete it)
+                await prisma.agentBid.update({
+                    where: { id: bidId },
+                    data: { status: BidStatus.PENDING }
+                });
+
+                // 3. System Message
+                await prisma.message.create({
+                    data: {
+                        requestId,
+                        senderId: session.user.id,
+                        content: `**Bid Withdrawn/Reversed**: The agent has withdrawn their accepted bid. The request is now open for bidding again.`
+                    }
+                });
+
+                // 4. Activity Log
+                await prisma.activityLog.create({
+                    data: {
+                        companyId: bid.request.companyId,
+                        actorId: session.user.id,
+                        action: ActivityLogAction.BID_REMOVED,
+                        description: `Agent withdrew their accepted bid for "${bid.request.title}".`,
+                        metadata: { requestId, bidId }
+                    }
+                });
+
+                // 5. Notifications
+                // Notify Company Admins
+                const companyAdmins = await prisma.user.findMany({
+                    where: {
+                        companyId: bid.request.companyId,
+                        role: UserRole.COMPANY_ADMIN,
+                        isActive: true
+                    }
+                });
+
+                const notificationPromises = companyAdmins.map(admin =>
+                    createNotification({
+                        userId: admin.id,
+                        title: "Accepted Bid Withdrawn",
+                        message: `The agent has withdrawn their accepted bid for "${bid.request.title}". The request is now unassigned.`,
+                        type: NotificationType.WARNING,
+                        link: `/company/${bid.request.company.slug}/dashboard/requests/${requestId}`,
+                        sendEmail: true
+                    })
+                );
+
+                // Notify Ticket Creator (if not an admin already)
+                if (bid.request.user && !companyAdmins.some(a => a.id === bid.request.userId)) {
+                    notificationPromises.push(
+                        createNotification({
+                            userId: bid.request.userId,
+                            title: "Trip Update: Bid Withdrawn",
+                            message: `The agent has withdrawn their bid for your trip "${bid.request.title}". We are looking for a new options.`,
+                            type: NotificationType.WARNING,
+                            link: `/dashboard/requests/${requestId}`,
+                            sendEmail: true
+                        })
+                    );
+                }
+
+                await Promise.all(notificationPromises);
+            } else {
+                // If the bid wasn't accepted, we can just archive it or set to pending
+                // Usually "reverse" for a pending bid might mean deleting or archiving.
+                // But the user said "allow agent to reverse a bid, if price is changed etc".
+                // If it's already pending, they can just update it.
+                // So let's assume "reverse" on a pending bid means "setting it aside" or just allowing them to handle the accepted case.
+                // For a non-accepted bid, we'll just set it to PENDING (no-op if already pending) or maybe ARCHIVED?
+                // Let's just focus on the accepted case primarily, but allow withdrawing PENDING bids too.
+
+                await prisma.agentBid.update({
+                    where: { id: bidId },
+                    data: { status: BidStatus.PENDING } // Or delete? Let's just keep it pending for simplicity.
+                });
+            }
+
+            revalidatePath(`/agent/bids/${requestId}`);
+            revalidatePath(`/agent/bids`);
+            revalidatePath(`/company/${bid.request.company.slug}/dashboard/requests/${requestId}`);
+
+            return { success: true };
+        } catch (e) {
+            console.error("Failed to withdraw bid:", e);
+            return { error: "Failed to withdraw bid" };
+        }
+    }
+
 }
 
 // Export actions
@@ -729,6 +871,7 @@ export const removeBid = AgentBidActions.removeBid
 export const approveBid = AgentBidActions.approveBid
 export const unapproveBid = AgentBidActions.unapproveBid
 export const updateBid = AgentBidActions.updateBid
+export const withdrawBid = AgentBidActions.withdrawBid
 
 
 

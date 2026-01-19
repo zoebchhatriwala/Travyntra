@@ -110,6 +110,28 @@ describe('Fulfillment Actions', () => {
             const result = await getFulfillmentRequest('req-1');
             expect(result?.invoice?.subtotal).toBe(0);
         });
+
+        it('should fetch all messages when limitMessages is false', async () => {
+            prismaMock.tripRequest.findFirst.mockResolvedValue({
+                id: 'req-1',
+                agencyId: 'agency-1',
+                bids: [],
+                messages: []
+            } as any);
+
+            await getFulfillmentRequest('req-1', false);
+
+            expect(prismaMock.tripRequest.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+                include: expect.objectContaining({
+                    messages: expect.objectContaining({
+                        orderBy: { createdAt: 'asc' }
+                    })
+                })
+            }));
+            // Verify 'take' is NOT present in the messages include when limitMessages is false
+            const callArgs = prismaMock.tripRequest.findFirst.mock.calls[0][0] as any;
+            expect(callArgs?.include?.messages?.take).toBeUndefined();
+        });
     });
 
     describe('addFulfillmentItem', () => {
