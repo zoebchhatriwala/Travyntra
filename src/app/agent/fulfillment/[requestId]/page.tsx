@@ -36,7 +36,7 @@ export default async function FulfillmentDetailPage({
     const allCompleted = totalItems > 0 && completedItems === totalItems;
 
     // Check if invoice needs regeneration (bid updated after invoice generated)
-    const canRegenerate = !!(request.invoice && myBid && new Date(myBid.updatedAt) > new Date(request.invoice.updatedAt));
+    const canRegenerate = !!(request.invoice && myBid);
 
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">

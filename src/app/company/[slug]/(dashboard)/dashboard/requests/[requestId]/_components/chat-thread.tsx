@@ -31,7 +31,7 @@ interface ChatThreadProps {
     requestId: string;
     initialMessages: Message[];
     currentUserId: string;
-    availableUsers: Array<{ id: string; name: string | null; role: string; avatarUrl: string | null }>;
+    availableUsers: Array<{ id: string; name: string | null; role: string; avatarUrl: string | null; company?: { name: string } | null }>;
 }
 
 export function ChatThread({ requestId, initialMessages, currentUserId, availableUsers }: ChatThreadProps) {
@@ -393,9 +393,17 @@ export function ChatThread({ requestId, initialMessages, currentUserId, availabl
                                         user.name?.[0]
                                     )}
                                 </div>
-                                <div className="flex-1">
-                                    <div className="font-semibold text-gray-900">{user.name}</div>
-                                    <div className="text-xs text-gray-500 capitalize">{user.role.toLowerCase()}</div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <div className="font-semibold text-gray-900 truncate">{user.name}</div>
+                                    <div className="text-[10px] text-gray-500 flex items-center gap-1.5">
+                                        <span className="capitalize px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">{user.role.toLowerCase().replace('_', ' ')}</span>
+                                        {user.company?.name && (
+                                            <>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="truncate text-indigo-600 font-medium">{user.company.name}</span>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </button>
                         ))}

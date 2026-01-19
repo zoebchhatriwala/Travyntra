@@ -21,7 +21,7 @@ export default async function RequestDiscussionPage({
     if (!request) return notFound();
 
     // Fetch available users from the company for mentions
-    const availableUsers = await prisma.user.findMany({
+    const companyUsers = await prisma.user.findMany({
         where: {
             companyId: request.companyId,
             isActive: true,
@@ -31,9 +31,33 @@ export default async function RequestDiscussionPage({
             name: true,
             role: true,
             avatarUrl: true,
+            company: { select: { name: true } },
         },
-        take: 50, // Limit to prevent performance issues
+        take: 50,
     });
+
+    let agencyUsers: any[] = [];
+    if (request.agencyId) {
+        agencyUsers = await prisma.user.findMany({
+            where: {
+                companyId: request.agencyId,
+                isActive: true,
+            },
+            select: {
+                id: true,
+                name: true,
+                role: true,
+                avatarUrl: true,
+                company: { select: { name: true } },
+            },
+            take: 20,
+        });
+    }
+
+    const availableUsers = [...companyUsers, ...agencyUsers].map(u => ({
+        ...u,
+        company: u.company ? { name: u.company.name } : null
+    }));
 
     return (
         <div className="max-w-8xl mx-auto animate-in slide-in-from-bottom-2 duration-500">

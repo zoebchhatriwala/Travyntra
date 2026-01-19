@@ -396,11 +396,11 @@ export function StatusActions({ requestId, currentStatus, allItemsCompleted, has
     return (
         <>
             <div className="flex items-center gap-3">
-                {currentStatus === RequestStatus.IN_PROGRESS && (
+                {currentStatus !== RequestStatus.COMPLETED && (
                     <>
                         <Button
                             onClick={handleMarkBooked}
-                            disabled={isLoading !== null}
+                            disabled={isLoading !== null || currentStatus === RequestStatus.BOOKED}
                             variant="outline"
                             className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl font-semibold"
                         >

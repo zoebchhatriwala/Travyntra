@@ -355,7 +355,7 @@ async function createTripRequestInternal(data: {
     startDate: Date;
     endDate: Date;
     purpose?: string;
-    budget?: Money;
+    budget?: Money | null;
     preferences?: TripPreferences;
     isGroup?: boolean;
     parentTripId?: string;
@@ -385,7 +385,7 @@ async function createTripRequestInternal(data: {
                 startDate: data.startDate,
                 endDate: data.endDate,
                 purpose: data.purpose,
-                budget: data.budget ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
+                budget: data.budget !== undefined ? (data.budget as unknown as Prisma.InputJsonValue) : undefined,
                 preferences: (data.preferences ?? {}) as unknown as Prisma.InputJsonValue,
                 isGroup: data.isGroup || false,
                 parentTripId: data.parentTripId || null,
@@ -605,7 +605,12 @@ export async function postTripMessage(requestId: string, content: string) {
     // Fetch request details primarily to know the creator and context
     const request = await prisma.tripRequest.findUnique({
         where: { id: requestId },
-        include: {
+        select: {
+            id: true,
+            title: true,
+            userId: true,
+            companyId: true,
+            agencyId: true,
             collaborators: { select: { id: true } },
             company: { select: { slug: true } }
         }
@@ -627,14 +632,17 @@ export async function postTripMessage(requestId: string, content: string) {
         const notifiedUserIds = new Set<string>();
 
         // Parse @mentions from the message - find users whose names appear after an @
-        // First, get all active users in the company to check against
+        // First, get all active users in the company and agency to check against
+        const relevantCompanyIds = [request.companyId];
+        if (request.agencyId) relevantCompanyIds.push(request.agencyId);
+
         const companyUsers = await prisma.user.findMany({
             where: {
-                companyId: session.user.companyId,
+                companyId: { in: relevantCompanyIds },
                 isActive: true,
                 id: { not: session.user.id } // Don't mention yourself
             },
-            select: { id: true, name: true }
+            select: { id: true, name: true, companyId: true }
         });
 
         const sortedUsers = [...companyUsers].sort((a, b) => (b.name?.length || 0) - (a.name?.length || 0));
@@ -675,12 +683,19 @@ export async function postTripMessage(requestId: string, content: string) {
             await Promise.all(
                 mentionedUsers.map(async (user) => {
                     notifiedUserIds.add(user.id);
+
+                    // Determine link based on user's company
+                    const isAgent = user.companyId === request.agencyId;
+                    const link = isAgent
+                        ? `/agent/fulfillment/${requestId}/discussion`
+                        : `/company/${request.company.slug}/dashboard/requests/${requestId}/discussion`;
+
                     return createNotification({
                         userId: user.id,
                         title: "You were mentioned",
                         message: `${session.user.name} mentioned you in "${request.title}"`,
                         type: "INFO",
-                        link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+                        link
                     });
                 })
             );
@@ -693,7 +708,7 @@ export async function postTripMessage(requestId: string, content: string) {
                 title: "New message on your request",
                 message: `${session.user.name} commented on "${request.title}"`,
                 type: "INFO",
-                link: `/company/${request.company.slug}/dashboard/requests/${requestId}`
+                link: `/company/${request.company.slug}/dashboard/requests/${requestId}/discussion`
             });
         }
 
@@ -827,7 +842,7 @@ export async function updateTripRequest(requestId: string, data: {
     startDate?: Date;
     endDate?: Date;
     purpose?: string;
-    budget?: Money;
+    budget?: Money | null;
     preferences?: TripPreferences;
     isGroup?: boolean;
     parentTripId?: string;

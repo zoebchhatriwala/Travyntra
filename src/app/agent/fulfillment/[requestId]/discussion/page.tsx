@@ -6,6 +6,7 @@ import { getFulfillmentRequest } from "../../actions";
 import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export default async function FulfillmentDiscussionPage({
     params,
@@ -18,14 +19,33 @@ export default async function FulfillmentDiscussionPage({
 
     if (!request) return notFound();
 
-    // Available users for mentions (Request Creator + Agent)
+    // Available users for mentions (Request Creator + Agency Employees)
+    const agencyEmployees = await prisma.user.findMany({
+        where: {
+            companyId: request.agencyId || "",
+            isActive: true,
+        },
+        select: {
+            id: true,
+            name: true,
+            role: true,
+            avatarUrl: true,
+            company: { select: { name: true } },
+        },
+    });
+
     const availableUsers = [
         {
             id: request.user.id,
             name: request.user.name,
             role: "EMPLOYEE", // The traveler
-            avatarUrl: null
-        }
+            avatarUrl: null,
+            company: { name: request.company.name }
+        },
+        ...agencyEmployees.map(u => ({
+            ...u,
+            company: u.company ? { name: u.company.name } : null
+        }))
     ];
 
     return (

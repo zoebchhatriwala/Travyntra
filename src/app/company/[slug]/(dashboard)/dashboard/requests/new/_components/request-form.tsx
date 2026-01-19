@@ -31,7 +31,12 @@ const requestSchema = z.object({
     startDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
     endDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid end date"),
     purpose: z.string().min(10, "Please provide more context about the purpose of this trip."),
-    budget: z.string().optional(),
+    budget: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined || val === 0 ? null : Number(val)),
+        z.number()
+            .min(0, "Budget must be greater than 0")
+            .nullable()
+    ),
     flightPreferences: z.string().optional(),
     flightFrom: z.string().optional(),
     flightTo: z.string().optional(),
@@ -159,13 +164,19 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
             destination: initialData?.destination || "",
             purpose: initialData?.purpose || "",
             budget: (() => {
-                if (!initialData?.budget) return "";
+                // If it's null or undefined
+                if (initialData?.budget === null || initialData?.budget === undefined) return undefined;
+
                 // If it's already a Money object
                 if (typeof initialData.budget === 'object' && 'amount' in initialData.budget) {
-                    return moneyToDecimal(initialData.budget as Money).toString();
+                    return moneyToDecimal(initialData.budget as Money)
                 }
+
                 // If it's a number or string
-                return initialData.budget.toString();
+                const num = Number(initialData.budget);
+
+                // Return the number if it's not NaN
+                return isNaN(num) ? undefined : num;
             })(),
 
             // Flight
@@ -230,7 +241,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
-                    budget: (data.budget && data.budget !== "") ? createMoney(Number(data.budget), currency) : undefined,
+                    budget: (data.budget !== null && data.budget !== undefined) ? createMoney(data.budget as number, currency) : null,
                     preferences,
                     isGroup: data.isGroup,
                     parentTripId: data.parentTripId,
@@ -251,7 +262,7 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                     startDate: new Date(data.startDate),
                     endDate: new Date(data.endDate),
                     purpose: data.purpose,
-                    budget: data.budget ? createMoney(Number(data.budget), currency) : undefined,
+                    budget: (data.budget !== null && data.budget !== undefined) ? createMoney(data.budget as number, currency) : null,
                     preferences,
                     isGroup: data.isGroup,
                     parentTripId: data.parentTripId === "none" ? undefined : data.parentTripId,
@@ -354,7 +365,17 @@ export function RequestForm({ slug, currency, initialData, requestId, groupTrips
                                                 <div className="relative">
                                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currency}</span>
                                                     <FormControl>
-                                                        <Input type="number" placeholder="0.00" className="pl-12" {...field} />
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="0.00"
+                                                            className="pl-12"
+                                                            {...field}
+                                                            value={field.value ?? ""}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                field.onChange(val === "" ? null : Number(val));
+                                                            }}
+                                                        />
                                                     </FormControl>
                                                 </div>
                                                 <FormMessage />

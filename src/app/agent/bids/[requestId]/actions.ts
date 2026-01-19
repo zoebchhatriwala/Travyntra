@@ -215,7 +215,7 @@ class AgentBidActions {
                 data: {
                     requestId,
                     senderId: session.user.id,
-                    content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Proposal Details**:\n${message ?? 'N/A'}`
+                    content: `**New Bid Submitted**: Proposed base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Proposal Details**:\n${message || 'N/A'}`
                 }
             });
 
@@ -510,7 +510,7 @@ class AgentBidActions {
                 data: {
                     requestId,
                     senderId: session.user.id,
-                    content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Updated Proposal**:\n${message}`
+                    content: `**Bid Updated**: New base amount ${formatMoney(bidAmount)}. Total Amount: ${formatMoney(totalMoney)}${conversionText}.\n\n${taxDetails}\n\n**Updated Proposal**:\n${message || 'N/A'}`
                 }
             });
 

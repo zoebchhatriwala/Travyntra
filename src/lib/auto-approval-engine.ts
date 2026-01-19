@@ -128,7 +128,7 @@ export class AutoApprovalEngine {
         rule: AutoApprovalRule
     ): AutoApprovalEvaluation {
         // Check if request has a budget
-        if (!request.budget) {
+        if (!request?.budget) {
             return {
                 shouldAutoApprove: false,
                 reason: "Request has no budget specified",
@@ -138,6 +138,14 @@ export class AutoApprovalEngine {
         // Parse the budget as Money object
         const budget = request.budget as Money;
         const budgetAmount = moneyToDecimal(budget);
+
+        // If the budget is less than or equal to 1, return false
+        if (budgetAmount <= 1) {
+            return {
+                shouldAutoApprove: false,
+                reason: "Budget is less than or equal to 1",
+            };
+        }
 
         // Get the threshold from rule config
         const config = rule.config as { maxAmount: number; currencyCode: string };
