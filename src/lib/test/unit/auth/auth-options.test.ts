@@ -110,6 +110,34 @@ describe('Auth Options', () => {
             });
         });
 
+        it('should handle expired plan in dev mode', async () => {
+            const mockUser = {
+                id: 'user-1',
+                company: {
+                    type: 'AGENCY',
+                    slug: 'agency',
+                    subscriptionExpiresAt: new Date(Date.now() - 1000) // Past
+                }
+            };
+            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+            const result = await devProvider.authorize({ email: 'test@test.com' });
+            expect(result.isPlanExpired).toBe(true);
+        });
+
+        it('should handle null subscription date in dev mode', async () => {
+            const mockUser = {
+                id: 'user-1',
+                company: {
+                    type: 'AGENCY',
+                    slug: 'agency',
+                    subscriptionExpiresAt: null
+                }
+            };
+            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+            const result = await devProvider.authorize({ email: 'test@test.com' });
+            expect(result.isPlanExpired).toBe(false);
+        });
+
         it('should handle database errors', async () => {
             prismaMock.user.findUnique.mockRejectedValue(new Error('DB Error'));
             const result = await devProvider.authorize({ email: 'test@test.com' });
@@ -181,6 +209,32 @@ describe('Auth Options', () => {
                 image: 'image.jpg',
                 isPlanExpired: false
             });
+        });
+
+        it('should handle expired plan in normal login', async () => {
+            const mockUser = {
+                id: 'u1',
+                password: 'hash',
+                isActive: true,
+                company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: new Date(Date.now() - 1000) }
+            };
+            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+            (compare as Mock).mockResolvedValue(true);
+            const result = await normalProvider.authorize({ email: 't@t.com', password: 'p' });
+            expect(result.isPlanExpired).toBe(true);
+        });
+
+        it('should handle null subscription date in normal login', async () => {
+            const mockUser = {
+                id: 'u1',
+                password: 'hash',
+                isActive: true,
+                company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: null }
+            };
+            prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+            (compare as Mock).mockResolvedValue(true);
+            const result = await normalProvider.authorize({ email: 't@t.com', password: 'p' });
+            expect(result.isPlanExpired).toBe(false);
         });
     });
 

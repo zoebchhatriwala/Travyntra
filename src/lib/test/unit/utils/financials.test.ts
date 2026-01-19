@@ -17,6 +17,15 @@ describe('Financial Utils', () => {
             });
         });
 
+        it('should use default values for currencyCode and multiplier', () => {
+            const money = createMoney(10.5);
+            expect(money).toEqual({
+                amount: 1050,
+                currencyCode: 'USD',
+                multiplier: 100
+            });
+        });
+
         it('should round to the nearest integer', () => {
             const money = createMoney(10.555, 'USD', 100);
             expect(money.amount).toBe(1056);

@@ -93,10 +93,16 @@ describe('Bidding Actions', () => {
             (convertMoney as Mock).mockImplementation((money) => Promise.resolve(money));
         });
 
-        it('should return error if unauthorized', async () => {
+        it('should return error if unauthenticated', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await submitBid('req-1', 100, 'Msg');
             expect(result.error).toBe("Unauthenticated or not associated with a company.");
+        });
+
+        it('should return error if role is not TRAVEL_AGENT', async () => {
+            (getServerSession as Mock).mockResolvedValue({ user: { companyId: 'agency-1', role: 'EMPLOYEE' } });
+            const result = await submitBid('req-1', 100, 'Msg');
+            expect(result.error).toBe("Unauthorized");
         });
 
         it('should submit bid successfully', async () => {
