@@ -50,6 +50,25 @@ export default async function SettingsPage({
                             Configure rules to automatically approve requests based on budget or destination
                         </p>
                     </Link>
+
+                    <Link
+                        href={`/company/${slug}/admin/settings/plan`}
+                        className="group bg-white border border-gray-100 rounded-corner-lg p-6 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 hover:scale-[1.02]"
+                    >
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="p-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-corner-md group-hover:from-emerald-100 group-hover:to-teal-100 transition-colors">
+                                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 className="text-lg font-black text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                            Plan & Billing
+                        </h3>
+                        <p className="text-sm text-gray-500 font-medium">
+                            View subscription details, feature limits, and current usage statistics
+                        </p>
+                    </Link>
                 </div>
 
                 <SettingsForm company={company} />

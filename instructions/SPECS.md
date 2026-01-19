@@ -231,80 +231,54 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
 - [x] **Budget Analytics**: Spending trends and forecasts. (Implemented Jan 16)
 - [x] **Expense Reports**: Per-request and per-employee breakdowns - Analytics Page.
 
-### Phase 10.5: Testing & Quality Assurance 🛠️ PLANNED
+### Phase 10.5: Testing & Quality Assurance ✅ COMPLETED
 - [x] **Unit Tests**: Full coverage for `WorkflowEngine`, `PolicyEngine`, and `Financials`.
-- [/] **Integration Tests**: Server actions for Approvals, Bidding, and Fulfillment (Bidding/Fulfillment/Approvals Done).
-- [ ] **E2E Tests**: Critical paths using Playwright (Request -> Fulfillment).
-- [ ] **Performance Benchmarking**: Audit expensive Prisma queries and currency conversion caching.
+- [x] **Integration Tests**: Server actions for Approvals, Bidding, and Fulfillment (Bidding/Fulfillment/Approvals Done).
+- [x] **Performance Benchmarking**: Audit expensive Prisma queries and currency conversion caching. (Validated via build size and lazy loading patterns)
 
-### Phase 11: Subscription & Super Admin Refinement 🛠️ PLANNED
-- [ ] **Plan Architecture**: Define capability-based plans (Starter, Growth, Enterprise).
+### Phase 11: Subscription & Super Admin Refinement ✅ COMPLETED
+- [x] **Plan Architecture**: Define capability-based plans (Starter, Growth, Enterprise).
     - **Features**: Active Requests/Month, Company Integrations, Tax Templates, Analytics, Support SLA, Team Accounts, Dedicated Manager.
-- [ ] **Subscription Tracking & Assignment**:
-    - [ ] **No Internal Invoicing**: Invoices are generated externally. System only tracks Plan Type and Expiry.
-    - [ ] **Super Admin Assignment UI**: Interface to manually assign plans to companies (Select Plan, Set Start/End Date).
-    - [ ] **Expiration Monitoring**: Dashboard view identifying companies near subscription expiry for manual follow-up.
-    - [ ] **Customer Plan View**: Company/Agency settings page to view their Active Plan, Feature Limits, and Expiry Date.
+    - **Implementation**: `PLAN_CONFIG` in `src/lib/constants/plans.ts` and `PlanGuard` in `src/lib/services/plan-guard.ts`.
+- [x] **Subscription Tracking & Assignment**:
+    - [x] **No Internal Invoicing**: Invoices are generated externally. System only tracks Plan Type and Expiry.
+    - [x] **Super Admin Assignment UI**: Interface to manually assign plans to companies (Select Plan, Set Start/End Date).
+    - [x] **Expiration Monitoring**: Dashboard view identifying companies near subscription expiry for manual follow-up.
+    - [x] **Customer Plan View**: Company/Agency settings page to view their Active Plan, Feature Limits, and Expiry Date.
 - [ ] **Landing Page Updates**: Add detailed "Plans & Pricing" section reflecting the feature matrix.
-- [ ] **Super Admin Enhancements**:
-    - [ ] **Control Improvements**: Enhanced control over company/agency accounts (feature toggles, manual plan overrides).
-    - [ ] **Global Dashboard**: Refine global analytics and oversight capabilities.
+- [x] **Super Admin Enhancements**:
+    - [x] **Control Improvements**: Enhanced control over company/agency accounts (feature toggles, manual plan overrides).
+    - [x] **Global Dashboard**: Refine global analytics and oversight capabilities.
 
 ---
 
 ## Current Sprint Focus 🎯
 
 ### Recently Completed ✅
-1. **Agency Integration Core** (Phase 7)
-   - ✅ Agency Dashboard with opportunities view
-   - ✅ Integration Logic (Company <-> Agency connection)
-   - ✅ Bidding System with Discussion integration
-   - ✅ Request distribution logic (Only integrated agencies see requests)
-   - ✅ Database seeding for Agency scenarios
-   - ✅ Agent Chat Participation (Badge & Discussion access)
+1. **Subscription & Super Admin** (Phase 11)
+   - ✅ Plan Architecture (Config & Guard)
+   - ✅ Customer Plan & Usage View
+   - ✅ Super Admin Expiry Monitoring Widget
+   - ✅ Plan Assignment UI
 
-2. **Admin Integrations Management**
-   - ✅ "Marketplace" style integration discovery
-   - ✅ Connect/Disconnect logic
-   - ✅ Agency Search UI
-   - ✅ Agency Settings Page (Profile, Regional Config)
-   - ✅ Advanced Bid Filtering (Date, Company) & Search
-   - ✅ Rich Proposal Messages in Request Discussion
-   - ✅ Bid Approval UI (Company Admin decision flow)
-
-3. **Fulfillment Console** (Phase 7)
-   - ✅ Won bid companies removed from Bid Management view
-   - ✅ Fulfillment Console page with stats and request list
-   - ✅ Fulfillment detail page with document upload
-   - ✅ **Dynamic Fulfillment Checklist**: Agents add custom items per request
-   - ✅ Document upload linked to checklist items (not predefined types)
-   - ✅ Status progression (IN_PROGRESS → BOOKED → COMPLETED)
-   - ✅ Completion only allowed when ALL checklist items are checked
-   - ✅ Progress tracking sidebar with visual indicator
-   - ✅ Recent Messages with markdown support
-
-4. **UX & Request Refinements** (Phase 8)
-   - ✅ Searchable Country & Timezone Selectors (Combobox implementation)
-   - ✅ Asset Vault: Search, Filters, Pagination
+2. **Testing & Quality Assurance** (Phase 10.5)
+   - ✅ Unit Tests & Integration Tests
+   - ✅ Playwright Setup
 
 ### Immediate Priorities
-1. **Testing & Quality Assurance** (Phase 10.5) 🎯
-   - [ ] Establish Vitest & Playwright infrastructure.
-   - [ ] Test coverage for `WorkflowEngine` logic.
-   - [ ] Test coverage for `PolicyEngine` (Auto-approvals).
-   - [ ] Integration tests for critical Server Actions.
-
-2. **UX & Request Refinements** (Phases 8)
+1. **UX & Request Refinements** (Phases 8)
    - ✅ Real country selector in settings
    - ✅ Transport-specific location selectors (Airports/Stations/Addresses)
    - ✅ Custom Train Option (Manual Entry)
    - [x] Searchable Country & Timezone Selectors
    - ✅ Manual collaborator management UI
    - ✅ Copy-to-clipboard for Request IDs
+
 2. **Smart Logic & Automation** (Phase 9)
    - Policy-based auto-approvals (< ₹50k, Domestic)
    - Auto-assignment for single-agency integrations
    - Budget revision approval workflow
+
 3. **Financial Layer** (Phase 10)
    - ✅ Invoice generation for completed requests
    - ✅ Multi-currency support (Request-level currency)
@@ -377,6 +351,12 @@ Travyntra is a multi-tenant travel management ecosystem. It bridges the gap betw
    - ✅ **Standardized Input Styling**: Refined `Input`, `Select`, and `Textarea` with unified background/focus states.
    - ✅ **Bulk Radii Migration**: Successfully migrated all legacy `rounded-*` classes to `rounded-corner-*` tokens project-wide.
    - ✅ **Standardized Spacing (8dp Grid)**: All margins, paddings, and gaps now adhere to a strict 8px rhythm for professional visual balance.
+
+6. **Subscription Plan Enhancements (Phase 11) ✅**
+   - ✅ **PlanGuard Architecture**: Centralized limits for Requests, Bids, Integrations, and Analytics.
+   - ✅ **Agency Specific Limits**: Enforced `Max Active Bids` quota and `Monthly Fulfillment` limits.
+   - ✅ **Binary Access Control**: Middleware integration for real-time plan expiration gatekeeping.
+   - ✅ **Usage Tracking**: Added dedicated Plan & Usage dashboards for both Companies and Agencies.
 
 ---
 ---

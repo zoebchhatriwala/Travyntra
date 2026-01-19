@@ -31,6 +31,23 @@ vi.mock('@/lib/schemas/trip-preferences', () => ({
     }
 }));
 
+vi.mock('@/lib/services/plan-guard', () => ({
+    PlanFeature: {
+        CREATE_REQUEST: 'CREATE_REQUEST',
+        ADD_INTEGRATION: 'ADD_INTEGRATION',
+        ADD_TAX_TEMPLATE: 'ADD_TAX_TEMPLATE',
+        MAX_ACTIVE_BIDS: 'MAX_ACTIVE_BIDS',
+        ACCESS_ANALYTICS: 'ACCESS_ANALYTICS',
+        FULFILLMENTS_PER_MONTH: 'FULFILLMENTS_PER_MONTH'
+    },
+    PlanGuardService: {
+        checkUsage: vi.fn().mockResolvedValue({ allowed: true, limit: 10, usage: 0, planName: 'Free' }),
+        enforce: vi.fn().mockResolvedValue(undefined)
+    },
+    withPlanGuard: vi.fn((_feature, action) => action),
+    PlanGuard: vi.fn(() => (_target: any, _key: string, descriptor: PropertyDescriptor) => descriptor)
+}));
+
 describe('Dashboard Actions Coverage', () => {
     const mockSession = {
         user: {
@@ -50,31 +67,31 @@ describe('Dashboard Actions Coverage', () => {
 
     describe('createTripRequest', () => {
         it('should handle invalid preferences gracefully', async () => {
-             // Mock schema validation failure
-             (TripPreferencesSchema.safeParse as Mock).mockReturnValue({
-                 success: false,
-                 error: { message: 'Invalid format' }
-             });
+            // Mock schema validation failure
+            (TripPreferencesSchema.safeParse as Mock).mockReturnValue({
+                success: false,
+                error: { message: 'Invalid format' }
+            });
 
-             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
-             prismaMock.tripRequest.create.mockResolvedValue({
-                 id: 'req-1',
-                 company: { slug: 'co' }
-             } as any);
-             prismaMock.message.create.mockResolvedValue({} as any);
+            prismaMock.tripRequest.create.mockResolvedValue({
+                id: 'req-1',
+                company: { slug: 'co' }
+            } as any);
+            prismaMock.message.create.mockResolvedValue({} as any);
 
-             const result = await createTripRequest({
-                 title: 'Trip',
-                 destination: { formatted: 'Paris' },
-                 startDate: new Date(),
-                 endDate: new Date(),
-                 preferences: { hotel: 'invalid' } as any 
-             } as any);
+            const result = await createTripRequest({
+                title: 'Trip',
+                destination: { formatted: 'Paris' },
+                startDate: new Date(),
+                endDate: new Date(),
+                preferences: { hotel: 'invalid' } as any
+            } as any);
 
-             expect(result.success).toBe(true);
-             expect(consoleSpy).toHaveBeenCalledWith("Invalid preferences format:", expect.anything());
-             consoleSpy.mockRestore();
+            expect(result.success).toBe(true);
+            expect(consoleSpy).toHaveBeenCalledWith("Invalid preferences format:", expect.anything());
+            consoleSpy.mockRestore();
         });
 
         it('should return error if session is missing companyId', async () => {
@@ -113,25 +130,25 @@ describe('Dashboard Actions Coverage', () => {
                 approvalSteps: [{ approvals: [] }],
                 company: { currency: 'USD' }
             } as any);
-            
+
             const result = await getTripRequest('req-1');
             expect(result).toBeNull();
         });
-        
+
         it('should return request for approver even if not owner', async () => {
-             prismaMock.tripRequest.findUnique.mockResolvedValue({
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
                 id: 'req-1',
                 companyId: 'company-1',
                 userId: 'other-user',
                 collaborators: [],
-                approvalSteps: [{ 
+                approvalSteps: [{
                     approvals: [{ userId: 'user-1' }] // Current user is approver
                 }],
                 company: { currency: 'USD' },
                 bids: [],
-                messages:[],
-                documents:[],
-                childTrips:[],
+                messages: [],
+                documents: [],
+                childTrips: [],
                 // destination must be compatible
                 destination: { formatted: 'Place' }
             } as any);
@@ -141,12 +158,12 @@ describe('Dashboard Actions Coverage', () => {
             expect(result?.id).toBe('req-1');
         });
 
-         it('should return request for ADMIN even if not owner', async () => {
+        it('should return request for ADMIN even if not owner', async () => {
             (getServerSession as Mock).mockResolvedValue({
                 user: { ...mockSession.user, role: 'COMPANY_ADMIN' }
             });
 
-             prismaMock.tripRequest.findUnique.mockResolvedValue({
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
                 id: 'req-1',
                 companyId: 'company-1',
                 userId: 'other-user',
@@ -154,19 +171,19 @@ describe('Dashboard Actions Coverage', () => {
                 approvalSteps: [],
                 company: { currency: 'USD' },
                 bids: [],
-                messages:[],
-                documents:[],
-                childTrips:[],
+                messages: [],
+                documents: [],
+                childTrips: [],
                 destination: { formatted: 'Place' }
             } as any);
 
             const result = await getTripRequest('req-1');
             expect(result).not.toBeNull();
         });
-        
+
         it('should handle bids with taxes and currency conversion', async () => {
             // Mock complex bids
-             prismaMock.tripRequest.findUnique.mockResolvedValue({
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
                 id: 'req-1',
                 companyId: 'company-1',
                 userId: 'user-1',
@@ -183,13 +200,13 @@ describe('Dashboard Actions Coverage', () => {
                         ]
                     }
                 ],
-                messages:[],
-                documents:[],
-                childTrips:[],
+                messages: [],
+                documents: [],
+                childTrips: [],
                 destination: { formatted: 'Place' }
             } as any);
-            
-             global.fetch = vi.fn().mockResolvedValue({
+
+            global.fetch = vi.fn().mockResolvedValue({
                 json: async () => ({ success: true, rates: { 'USD': 1, 'EUR': 0.9 } })
             });
 
@@ -201,7 +218,7 @@ describe('Dashboard Actions Coverage', () => {
 
         it('should handle fetch errors gracefully', async () => {
             prismaMock.tripRequest.findUnique.mockRejectedValue(new Error('DB Error'));
-            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
             const result = await getTripRequest('req-1');
             expect(result).toBeNull();
             expect(consoleSpy).toHaveBeenCalledWith("Error fetching request:", expect.anything());
@@ -211,16 +228,16 @@ describe('Dashboard Actions Coverage', () => {
 
     describe('postTripMessage', () => {
         it('should return error if message is empty', async () => {
-             const result = await postTripMessage('req-1', '   ');
-             expect(result.error).toBe("Message cannot be empty");
+            const result = await postTripMessage('req-1', '   ');
+            expect(result.error).toBe("Message cannot be empty");
         });
 
         it('should return error if request not found', async () => {
-             prismaMock.tripRequest.findUnique.mockResolvedValue(null);
-             const result = await postTripMessage('req-1', 'msg');
-             expect(result.error).toBe("Request not found");
+            prismaMock.tripRequest.findUnique.mockResolvedValue(null);
+            const result = await postTripMessage('req-1', 'msg');
+            expect(result.error).toBe("Request not found");
         });
-        
+
         it('should handle mentions and add collaborators', async () => {
             const mockReq = {
                 id: 'req-1',
@@ -231,66 +248,66 @@ describe('Dashboard Actions Coverage', () => {
             };
             prismaMock.tripRequest.findUnique.mockResolvedValue(mockReq as any);
             prismaMock.message.create.mockResolvedValue({} as any);
-            
+
             prismaMock.user.findMany.mockResolvedValue([
                 { id: 'user-2', name: 'Alice' },
                 { id: 'user-3', name: 'Bob' }
             ] as any);
 
             const result = await postTripMessage('req-1', 'Hi @Alice and @Bob');
-            
+
             expect(result.success).toBe(true);
-            
+
             // Should add user-2 and user-3 as collaborators
-             expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
+            expect(prismaMock.tripRequest.update).toHaveBeenCalledWith(expect.objectContaining({
                 data: {
                     collaborators: {
                         connect: expect.arrayContaining([{ id: 'user-2' }, { id: 'user-3' }])
                     }
                 }
-             }));
+            }));
         });
-        
-         it('should not notify creator if they are the sender', async () => {
-             // Session user is 'user-1'
-             // Request owner is 'user-1'
-             prismaMock.tripRequest.findUnique.mockResolvedValue({
+
+        it('should not notify creator if they are the sender', async () => {
+            // Session user is 'user-1'
+            // Request owner is 'user-1'
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
                 id: 'req-1',
                 title: 'Trip',
                 userId: 'user-1',
                 collaborators: [],
                 company: { slug: 'co' }
             } as any);
-             prismaMock.message.create.mockResolvedValue({} as any);
-             prismaMock.user.findMany.mockResolvedValue([]); // No mentionable users
+            prismaMock.message.create.mockResolvedValue({} as any);
+            prismaMock.user.findMany.mockResolvedValue([]); // No mentionable users
 
-             await postTripMessage('req-1', 'Self comment');
-             
-             // notifications should NOT be called for owner
-             const { createNotification } = await import('@/lib/notifications');
-             expect(createNotification).not.toHaveBeenCalled();
+            await postTripMessage('req-1', 'Self comment');
+
+            // notifications should NOT be called for owner
+            const { createNotification } = await import('@/lib/notifications');
+            expect(createNotification).not.toHaveBeenCalled();
         });
 
         it('should notify creator if they are NOT the sender', async () => {
-             // Session user is 'user-1'
-             // Request owner is 'owner'
-             prismaMock.tripRequest.findUnique.mockResolvedValue({
+            // Session user is 'user-1'
+            // Request owner is 'owner'
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
                 id: 'req-1',
                 title: 'Trip',
                 userId: 'owner',
                 collaborators: [],
                 company: { slug: 'co' }
             } as any);
-             prismaMock.message.create.mockResolvedValue({} as any);
-             prismaMock.user.findMany.mockResolvedValue([]);
+            prismaMock.message.create.mockResolvedValue({} as any);
+            prismaMock.user.findMany.mockResolvedValue([]);
 
-             await postTripMessage('req-1', 'Comment');
-             
-             const { createNotification } = await import('@/lib/notifications');
-             expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
-                 userId: 'owner',
-                 title: 'New message on your request'
-             }));
+            await postTripMessage('req-1', 'Comment');
+
+            const { createNotification } = await import('@/lib/notifications');
+            expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                userId: 'owner',
+                title: 'New message on your request'
+            }));
         });
     });
 
@@ -303,10 +320,10 @@ describe('Dashboard Actions Coverage', () => {
         });
 
         it('should handle db error', async () => {
-             const formData = new FormData();
-             formData.append('name', 'Valid');
-             prismaMock.user.update.mockRejectedValue(new Error('DB Error'));
-             
+            const formData = new FormData();
+            formData.append('name', 'Valid');
+            prismaMock.user.update.mockRejectedValue(new Error('DB Error'));
+
             const result = await updateEmployeeProfile(formData);
             expect(result.error).toBe("Failed to update profile.");
         });

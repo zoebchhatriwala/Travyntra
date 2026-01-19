@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { UserRole, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { PlanFeature, withPlanGuard } from "@/lib/services/plan-guard";
 
 interface TaxItem {
     label: string;
@@ -37,17 +38,22 @@ export async function getTaxTemplates() {
     }
 }
 
-export async function createTaxTemplate(data: {
+const createTaxTemplateInternal = async (data: {
     name: string;
     description?: string;
     taxes: TaxItem[];
     isDefault?: boolean;
-}) {
+}) => {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.companyId || session.user.role !== UserRole.TRAVEL_AGENT) {
             return { success: false, error: "Unauthorized" };
         }
+
+        // Check if plan allows tax templates
+        // This is now redundant with withPlanGuard but kept for role validation completeness if needed,
+        // though withPlanGuard checks company type which implies role usually.
+        // However, withPlanGuard doesn't check UserRole specifically, just company.type.
 
         // If this is set as default, unset other defaults
         if (data.isDefault) {
@@ -74,9 +80,11 @@ export async function createTaxTemplate(data: {
         return { success: true };
     } catch (error) {
         console.error("Failed to create tax template:", error);
-        return { success: false, error: "Failed to create tax template" };
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create tax template" };
     }
 }
+
+export const createTaxTemplate = withPlanGuard(PlanFeature.ADD_TAX_TEMPLATE, createTaxTemplateInternal);
 
 export async function updateTaxTemplate(id: string, data: {
     name: string;

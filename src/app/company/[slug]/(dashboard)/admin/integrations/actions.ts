@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
 import { CompanyType, CompanyStatus, IntegrationStatus } from "@prisma/client";
+import { PlanFeature, withPlanGuard } from "@/lib/services/plan-guard";
 
 export async function searchAgencies(query: string) {
     const session = await getServerSession(authOptions);
@@ -45,7 +46,7 @@ export async function searchAgencies(query: string) {
     }));
 }
 
-export async function toggleIntegration(agencyId: string) {
+async function toggleIntegrationInternal(agencyId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId) return { error: "Unauthorized" };
 
@@ -88,6 +89,12 @@ export async function toggleIntegration(agencyId: string) {
         return { error: "Failed to update integration" };
     }
 }
+
+/**
+ * Toggles an agency integration.
+ * Wrapped with PlanGuard to enforce integration limits.
+ */
+export const toggleIntegration = withPlanGuard(PlanFeature.ADD_INTEGRATION, toggleIntegrationInternal);
 
 export async function getIntegratedAgencies() {
     const session = await getServerSession(authOptions);

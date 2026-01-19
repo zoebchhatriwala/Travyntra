@@ -116,13 +116,13 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized (no companyId)', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'TRAVEL_AGENT' } });
             const result = await addFulfillmentItem('req-1', 'Item');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if unauthorized (wrong role)', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { companyId: 'agency-1', role: 'EMPLOYEE' } });
             const result = await addFulfillmentItem('req-1', 'Item');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should add item successfully', async () => {
@@ -186,7 +186,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await updateFulfillmentItem('item-1', 'req-1', { title: 'New' });
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if item not found', async () => {
@@ -229,7 +229,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await deleteFulfillmentItem('item-1', 'req-1');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if item not found', async () => {
@@ -265,7 +265,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await toggleFulfillmentItem('item-1', 'req-1', true);
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if item not found', async () => {
@@ -345,7 +345,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await uploadFulfillmentDocument(new FormData());
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if no files', async () => {
@@ -424,7 +424,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await deleteDocument('doc-1', 'req-1');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if document not found', async () => {
@@ -473,7 +473,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await markAsBooked('req-1');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should return error if request not found or wrong status', async () => {
@@ -536,7 +536,7 @@ describe('Fulfillment Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await markAsCompleted('req-1');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should error if request not found', async () => {

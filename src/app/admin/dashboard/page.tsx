@@ -1,4 +1,4 @@
-import { getPendingEntities, getGlobalStats } from "./actions";
+import { getPendingEntities, getGlobalStats, getExpiringSubscriptions } from "./actions";
 import { PendingList } from "./_components/pending-list";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -18,6 +18,7 @@ export const metadata = {
 export default async function AdminDashboardPage() {
     const { agents, companies } = await getPendingEntities();
     const stats = await getGlobalStats();
+    const expiring = await getExpiringSubscriptions();
 
     return (
         <div className="min-h-screen bg-[#FAFAFB]">
@@ -117,6 +118,53 @@ export default async function AdminDashboardPage() {
                                 type="COMPANY"
                                 accentColor="purple"
                             />
+                        </section>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-8">
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-8 bg-rose-500 rounded-full" />
+                                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Subscription Alerts</h2>
+                            </div>
+
+                            <Card className="border-none shadow-sm overflow-hidden text-sm">
+                                <CardContent className="p-0">
+                                    <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-500 text-xs uppercase tracking-widest">
+                                        Expiring Soon (30 Days)
+                                    </div>
+                                    <div className="divide-y divide-gray-50">
+                                        {expiring.length === 0 ? (
+                                            <div className="p-8 text-center text-gray-400 font-medium">
+                                                No upcoming expirations.
+                                            </div>
+                                        ) : (
+                                            expiring.map((company) => (
+                                                <div key={company.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{company.name}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">
+                                                            {new Date(company.subscriptionExpiresAt!).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <Badge variant="outline" className="border-rose-100 bg-rose-50 text-rose-600">
+                                                            {Math.ceil((new Date(company.subscriptionExpiresAt!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} Days
+                                                        </Badge>
+                                                        <span className="text-[10px] font-bold text-gray-400">{company.plan}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    {expiring.length > 0 && (
+                                        <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
+                                            <a href="/admin/companies" className="text-xs font-black text-indigo-600 hover:underline">VIEW ALL COMPANIES</a>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </section>
                     </div>
                 </div>

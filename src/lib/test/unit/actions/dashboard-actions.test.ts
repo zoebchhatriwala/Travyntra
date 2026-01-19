@@ -47,6 +47,23 @@ vi.mock('@/lib/schemas/trip-preferences', () => ({
     }
 }));
 
+vi.mock('@/lib/services/plan-guard', () => ({
+    PlanFeature: {
+        CREATE_REQUEST: 'CREATE_REQUEST',
+        ADD_INTEGRATION: 'ADD_INTEGRATION',
+        ADD_TAX_TEMPLATE: 'ADD_TAX_TEMPLATE',
+        MAX_ACTIVE_BIDS: 'MAX_ACTIVE_BIDS',
+        ACCESS_ANALYTICS: 'ACCESS_ANALYTICS',
+        FULFILLMENTS_PER_MONTH: 'FULFILLMENTS_PER_MONTH'
+    },
+    PlanGuardService: {
+        checkUsage: vi.fn().mockResolvedValue({ allowed: true, limit: 10, usage: 0, planName: 'Free' }),
+        enforce: vi.fn().mockResolvedValue(undefined)
+    },
+    withPlanGuard: vi.fn((_feature, action) => action),
+    PlanGuard: vi.fn(() => (_target: any, _key: string, descriptor: PropertyDescriptor) => descriptor)
+}));
+
 vi.mock('@/lib/utils/money', async (importOriginal) => {
     const actual = await importOriginal();
     return {

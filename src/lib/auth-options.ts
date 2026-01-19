@@ -23,6 +23,8 @@ declare module "next-auth" {
         companySlug?: string | null;
         /** The URL of the user's profile image */
         image?: string | null;
+        /** Whether the company's plan is expired */
+        isPlanExpired?: boolean;
     }
     interface Session {
         /** The user profile stored in the session */
@@ -39,6 +41,8 @@ declare module "next-auth" {
             companySlug?: string | null;
             /** The URL of the user's profile image */
             image?: string | null;
+            /** Whether the company's plan is expired */
+            isPlanExpired?: boolean;
         } & DefaultSession["user"]
     }
 }
@@ -60,6 +64,8 @@ declare module "next-auth/jwt" {
         companySlug?: string | null;
         /** The URL of the user's profile image */
         picture?: string | null;
+        /** Whether the company's plan is expired */
+        isPlanExpired?: boolean;
     }
 }
 
@@ -155,7 +161,8 @@ export const createAuthOptions = (
                         companyId: user.companyId,
                         companyType: user.company?.type,
                         companySlug: user.company?.slug,
-                        image: user.avatarUrl
+                        image: user.avatarUrl,
+                        isPlanExpired: user.company?.subscriptionExpiresAt ? new Date(user.company.subscriptionExpiresAt) < new Date() : false
                     };
 
                     return impersonatedUserResult;
@@ -249,7 +256,8 @@ export const createAuthOptions = (
                     companyId: user.companyId,
                     companyType: companyType,
                     companySlug: companySlug,
-                    image: user.avatarUrl
+                    image: user.avatarUrl,
+                    isPlanExpired: companyDetails?.subscriptionExpiresAt ? new Date(companyDetails.subscriptionExpiresAt) < new Date() : false
                 };
 
                 return authenticatedUserResult;
@@ -282,6 +290,7 @@ export const createAuthOptions = (
                 token.companySlug = user.companySlug;
                 token.picture = user.image;
                 token.name = user.name;
+                token.isPlanExpired = user.isPlanExpired;
             }
 
             // identify if a session update was triggered (e.g., via clientside update())
@@ -351,6 +360,7 @@ export const createAuthOptions = (
                     session.user.companySlug = token.companySlug;
                     session.user.name = token.name;
                     session.user.image = token.picture;
+                    session.user.isPlanExpired = token.isPlanExpired;
                 }
             }
 

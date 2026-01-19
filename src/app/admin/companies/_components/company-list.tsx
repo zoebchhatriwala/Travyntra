@@ -50,7 +50,7 @@ export interface Company {
     _count: {
         users: number;
         requests: number;
-        assignedRequests: number;
+        agencyRequests: number;
     };
     users: User[];
 }
@@ -197,7 +197,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                             {company.type === 'AGENT' ? 'Fulfillments' : 'Trips'}
                                         </span>
                                         <p className="text-lg font-black text-gray-900">
-                                            {company.type === 'AGENT' ? company._count.assignedRequests : company._count.requests}
+                                            {company.type === 'AGENT' ? company._count.agencyRequests : company._count.requests}
                                         </p>
                                     </div>
                                 </div>
@@ -310,7 +310,7 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
 
                                     {/* Expiry */}
                                     <div className="space-y-4">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Link Expiry</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription Expiry</Label>
                                         <div className="flex items-center gap-3">
                                             <Input
                                                 type="date"

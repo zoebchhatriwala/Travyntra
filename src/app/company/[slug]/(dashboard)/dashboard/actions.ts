@@ -12,6 +12,7 @@ import { parseMoney, moneyToDecimal } from "@/lib/utils/money";
 import { convertMoney } from "@/lib/services/currency";
 import { type PartialAddress, formatAddressShort } from "@/lib/utils/address";
 import { BidTax } from "@/app/agent/bids/[requestId]/actions";
+import { PlanFeature, withPlanGuard } from "@/lib/services/plan-guard";
 
 /**
  * Retrieves dashboard statistics for the currently authenticated employee.
@@ -348,7 +349,7 @@ export async function updateEmployeeProfile(formData: FormData) {
  * @param {string} [data.parentTripId] - ID of parent group trip to link to.
  * @returns {Promise<Object>} Success result with requestId or error object.
  */
-export async function createTripRequest(data: {
+async function createTripRequestInternal(data: {
     title: string;
     destination: PartialAddress;
     startDate: Date;
@@ -412,6 +413,12 @@ export async function createTripRequest(data: {
         return { error: "Failed to create trip request." };
     }
 }
+
+/**
+ * Creates a new trip request for the current user.
+ * Wrapped with PlanGuard to enforce subscription limits.
+ */
+export const createTripRequest = withPlanGuard(PlanFeature.CREATE_REQUEST, createTripRequestInternal);
 
 /**
  * Fetches detailed information for a specific trip request.

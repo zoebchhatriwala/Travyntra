@@ -1,5 +1,5 @@
 import { getCompanies } from "../companies/actions";
-import { CompanyList, type Company } from "../companies/_components/company-list";
+import { CompanyList } from "../companies/_components/company-list";
 import { Briefcase } from "lucide-react";
 import { CompanyType } from "@prisma/client";
 
@@ -33,7 +33,7 @@ export default async function AgentsPage() {
             </div>
 
             <div className="container mx-auto px-6">
-                <CompanyList initialCompanies={agents as Company[]} />
+                <CompanyList initialCompanies={agents} />
             </div>
         </div>
     );

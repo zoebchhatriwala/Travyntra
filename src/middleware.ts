@@ -57,6 +57,29 @@ function middlewareHandler(req: any) {
         return NextResponse.redirect(homeUrl);
     }
 
+    // --- PlanGuard Binary Access (Gatekeeping) ---
+    // If plan is expired, restrict access to core features, but allow access to billing/plan pages
+    const isPlanExpired = !!token?.isPlanExpired;
+    const isSuperAdmin = token?.role === UserRole.SUPER_ADMIN;
+
+    if (isPlanExpired && !isSuperAdmin) {
+        const isPlanPage = pathname.includes("/settings/plan");
+        const isPublicHome = pathname === "/";
+
+        if (!isPlanPage && !isPublicHome) {
+            // Redirect Company users to their plan page
+            if (isCompanyPage) {
+                const pathSegments = pathname.split("/");
+                const slugFromUrl = pathSegments[2];
+                return NextResponse.redirect(new URL(`/company/${slugFromUrl}/admin/settings/plan`, req.url));
+            }
+            // Redirect Agent users to their plan page
+            if (isAgentPage) {
+                return NextResponse.redirect(new URL(`/agent/settings/plan`, req.url));
+            }
+        }
+    }
+
     // Handle authorization for company-specific routes
     if (isCompanyPage) {
         // Split the pathname into segments to extract the company slug

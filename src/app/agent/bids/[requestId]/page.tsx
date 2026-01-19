@@ -223,7 +223,7 @@ export default async function RequestDetailsPage({
                     existingBid={myBid ? {
                         id: myBid.id,
                         amount: moneyToDecimal(parseMoney(myBid.amount)),
-                        message: myBid.message,
+                        message: myBid.message || "",
                         taxes: (myBid.taxes as unknown as TaxItem[]) || []
                     } : null}
                 />

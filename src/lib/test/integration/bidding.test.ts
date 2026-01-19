@@ -3,7 +3,7 @@ import { submitBid } from '../../../app/agent/bids/[requestId]/actions';
 import { prismaMock } from '../helpers/prisma';
 import { getServerSession } from 'next-auth';
 import { createMockTripRequest, createMockCompany } from '../helpers/factories';
-import { BidStatus, UserRole, TripRequest, AgentBid, User } from '@prisma/client';
+import { BidStatus, UserRole, TripRequest, AgentBid, User, SubscriptionPlan, CompanyType } from '@prisma/client';
 import { AutoApprovalEngine } from '../../auto-approval-engine';
 
 vi.mock('next-auth');
@@ -22,6 +22,11 @@ describe('Bidding Integration (Server Actions)', () => {
         (getServerSession as Mock).mockResolvedValue({
             user: { id: userId, companyId: agencyId, role: UserRole.TRAVEL_AGENT, name: 'Agent User' }
         });
+        prismaMock.company.findUnique.mockResolvedValue(createMockCompany({
+            id: agencyId,
+            type: CompanyType.AGENT,
+            plan: SubscriptionPlan.ENTERPRISE
+        }));
     });
 
     describe('submitBid', () => {
@@ -60,7 +65,7 @@ describe('Bidding Integration (Server Actions)', () => {
 
             const result = await submitBid(requestId, 1000, 'Offer');
 
-            expect(result.error).toBe("Unauthorized");
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should auto-accept bid if request was auto-approved and bid is within threshold', async () => {

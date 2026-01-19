@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
+import { addDays } from "date-fns";
 
 export async function getPendingEntities() {
     const session = await getServerSession(authOptions);
@@ -117,3 +118,31 @@ export async function getGlobalStats() {
     }
 }
 
+export async function getExpiringSubscriptions() {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+        return [];
+    }
+
+    try {
+        const nextMonth = addDays(new Date(), 30);
+
+        const companies = await prisma.company.findMany({
+            where: {
+                status: 'ACTIVE',
+                subscriptionExpiresAt: {
+                    not: null,
+                    lte: nextMonth,
+                    gte: new Date() // Not already expired? Or maybe exclude expired? Let's say upcoming expiries.
+                }
+            },
+            take: 5,
+            orderBy: { subscriptionExpiresAt: 'asc' }
+        });
+
+        return companies;
+    } catch (error) {
+        console.error("Failed to fetch expiring subscriptions:", error);
+        return [];
+    }
+}

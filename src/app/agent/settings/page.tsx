@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth-options";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import Link from "next/link";
-import { Settings, Receipt } from "lucide-react";
+import { Settings, Receipt, CreditCard } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AgencySettingsMenuPage() {
@@ -26,6 +26,13 @@ export default async function AgencySettingsMenuPage() {
             href: "/agent/settings/tax-templates",
             icon: Receipt,
             color: "bg-emerald-50 text-emerald-600"
+        },
+        {
+            title: "Plan & Billing",
+            description: "View subscription details, feature limits, and current usage statistics",
+            href: "/agent/settings/plan",
+            icon: CreditCard,
+            color: "bg-purple-50 text-purple-600"
         }
     ];
 

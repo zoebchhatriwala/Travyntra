@@ -1,375 +1,378 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { submitBid, updateBid, getConversionPreview } from "../actions";
-import { RequestStatus } from "@prisma/client";
-import { getTaxTemplates } from "@/app/agent/settings/tax-templates/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Lock, Plus, Trash2, FileText } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
+import {
+    Plus,
+    Trash2,
+    Zap,
+    Edit2,
+    Receipt,
+    RefreshCw,
+    Info
+} from "lucide-react";
+import {
+    submitBid,
+    updateBid,
+    getConversionPreview
+} from "../actions";
+import { getTaxTemplates } from "@/app/agent/settings/tax-templates/actions";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
+    SelectValue
 } from "@/components/ui/select";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { RequestStatus } from "@prisma/client";
 
-const taxSchema = z.object({
-    label: z.string().min(1, "Label is required"),
-    type: z.enum(["PERCENTAGE", "FIXED"]),
-    value: z.number().min(0, "Value must be positive")
-});
-
-const bidSchema = z.object({
-    amount: z.number().min(0.01, "Amount must be positive"),
-    taxes: z.array(taxSchema),
-    message: z.string().min(10, "Please provide some details about your offer")
-});
-
-interface TaxTemplate {
-    id: string;
-    name: string;
-    description: string | null;
-    taxes: { label: string; type: "PERCENTAGE" | "FIXED"; value: number; }[];
-    isDefault: boolean;
+interface TaxItem {
+    label: string;
+    value: number;
+    type: "PERCENTAGE" | "FIXED";
 }
 
-type BidFormProps = {
+interface BidFormProps {
     requestId: string;
-    requestStatus?: string;
-    currency?: string;
-    requestCurrency?: string;
-    existingBid?: {
+    requestStatus: RequestStatus;
+    currency: string;
+    requestCurrency: string;
+    existingBid: {
         id: string;
-        amount: number | null;
-        message: string | null;
-        taxes: { label: string; type: "PERCENTAGE" | "FIXED"; value: number; }[];
+        amount: number;
+        message: string;
+        taxes: TaxItem[];
     } | null;
-};
+}
 
-export function BidForm({ requestId, requestStatus, currency = "USD", requestCurrency = "USD", existingBid }: BidFormProps) {
+export function BidForm({
+    requestId,
+    requestStatus,
+    currency,
+    requestCurrency,
+    existingBid
+}: BidFormProps) {
     const router = useRouter();
+
+    // State
+    const [amount, setAmount] = useState<string>(existingBid?.amount?.toString() || "");
+    const [message, setMessage] = useState(existingBid?.message || "");
+    const [taxes, setTaxes] = useState<TaxItem[]>(existingBid?.taxes || []);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [preview, setPreview] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [conversionPreview, setConversionPreview] = useState<string | null>(null);
-    const [taxTemplates, setTaxTemplates] = useState<TaxTemplate[]>([]);
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
-    const form = useForm<z.infer<typeof bidSchema>>({
-        resolver: zodResolver(bidSchema),
-        defaultValues: {
-            amount: existingBid?.amount || undefined,
-            taxes: Array.isArray(existingBid?.taxes) ? existingBid.taxes : [],
-            message: existingBid?.message || ""
-        }
+    // New Tax Input State
+    const [newTax, setNewTax] = useState<TaxItem>({
+        label: "",
+        value: 0,
+        type: "PERCENTAGE"
     });
 
-    const { fields, append, remove, replace } = useFieldArray({
-        control: form.control,
-        name: "taxes"
-    });
-
-    const watchedTaxes = form.watch("taxes") || [];
-    const watchedAmount = form.watch("amount") || 0;
-
-    // Load tax templates and auto-apply default
+    // Fetch Templates
     useEffect(() => {
-        async function loadTemplates() {
-            const templates = await getTaxTemplates();
-            setTaxTemplates(templates);
+        getTaxTemplates().then(setTemplates);
+    }, []);
 
-            // Auto-apply default template only for new bids (not editing)
-            if (!existingBid && templates.length > 0) {
-                const defaultTemplate = templates.find(t => t.isDefault);
-                if (defaultTemplate) {
-                    replace(defaultTemplate.taxes);
-                    setSelectedTemplateId(defaultTemplate.id);
-                }
-            }
+    // Conversion Preview
+    const updatePreview = useCallback(async (val: string) => {
+        const num = parseFloat(val);
+        if (isNaN(num) || num <= 0) {
+            setPreview("");
+            return;
         }
-        loadTemplates();
-    }, [existingBid, replace]);
 
-    const calculateTotal = () => {
-        let total = watchedAmount;
-        watchedTaxes.forEach(tax => {
-            if (tax.type === "PERCENTAGE") {
-                total += (watchedAmount * tax.value) / 100;
-            } else {
-                total += tax.value;
-            }
-        });
-        return total;
+        setIsPreviewLoading(true);
+        try {
+            const result = await getConversionPreview(num, currency, requestCurrency);
+            setPreview(result);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsPreviewLoading(false);
+        }
+    }, [currency, requestCurrency]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            updatePreview(amount);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [amount, updatePreview]);
+
+    // Totals Calculation
+    const subtotal = parseFloat(amount) || 0;
+    const taxTotal = taxes.reduce((acc, tax) => {
+        if (tax.type === "PERCENTAGE") {
+            return acc + (subtotal * tax.value) / 100;
+        }
+        return acc + tax.value;
+    }, 0);
+    const total = subtotal + taxTotal;
+
+    // Handlers
+    const handleAddTax = () => {
+        if (!newTax.label || newTax.value <= 0) return;
+        setTaxes([...taxes, newTax]);
+        setNewTax({ label: "", value: 0, type: "PERCENTAGE" });
+        toast.success("Line item added");
     };
 
-    const totalAmount = calculateTotal();
-
-    // Handle initial conversion preview for existing bids
-    useEffect(() => {
-        if (existingBid?.amount && currency !== requestCurrency) {
-            getConversionPreview(existingBid.amount, currency, requestCurrency)
-                .then(setConversionPreview)
-                .catch(() => setConversionPreview(null));
-        }
-    }, [existingBid?.amount, currency, requestCurrency]);
+    const handleRemoveTax = (index: number) => {
+        setTaxes(taxes.filter((_, i) => i !== index));
+    };
 
     const handleApplyTemplate = (templateId: string) => {
-        const template = taxTemplates.find(t => t.id === templateId);
+        const template = templates.find(t => t.id === templateId);
         if (template) {
-            replace(template.taxes);
-            setSelectedTemplateId(templateId);
-            toast.success(`Applied template: ${template.name}`);
+            setTaxes(template.taxes);
+            toast.success(`Applied ${template.name} tax template.`);
         }
     };
 
-    async function onSubmit(values: z.infer<typeof bidSchema>) {
+    const handleSubmit = async () => {
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount) || numAmount <= 0) {
+            toast.error("Invalid Amount");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            let result;
-            const taxesToSubmit = values.taxes || [];
-            if (existingBid) {
-                result = await updateBid(existingBid.id, requestId, values.amount, values.message, currency, taxesToSubmit);
-            } else {
-                result = await submitBid(requestId, values.amount, values.message, currency, taxesToSubmit);
-            }
+            const result = existingBid
+                ? await updateBid(existingBid.id, requestId, numAmount, message, currency, taxes)
+                : await submitBid(requestId, numAmount, message, currency, taxes);
 
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success(existingBid ? "Bid updated successfully" : "Bid submitted successfully");
+                toast.success(existingBid ? "Bid Updated" : "Bid Submitted");
                 router.refresh();
             }
-        } catch {
-            toast.error("Something went wrong");
+        } catch (e) {
+            toast.error("Something went wrong.");
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const isClosed = ([
+        RequestStatus.BOOKED,
+        RequestStatus.COMPLETED,
+        RequestStatus.REJECTED,
+        RequestStatus.CANCELLED
+    ] as RequestStatus[]).includes(requestStatus);
+
+    if (isClosed) {
+        return (
+            <Card className="border-none bg-gray-50/50 shadow-none ring-1 ring-gray-100">
+                <CardHeader>
+                    <CardTitle className="text-lg font-black text-gray-400 uppercase tracking-tight flex items-center gap-2">
+                        <Info size={18} /> Bid Console Closed
+                    </CardTitle>
+                    <CardDescription>
+                        This request is no longer accepting bids or modifications.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        );
     }
 
-    // Determine if the bidding window is open based on the request status
-    // Open for:
-    // - PENDING_QUOTATION: Standard bidding
-    // - APPROVED: Direct placement can occur
-    // - PENDING_AGENT_ACTION: Assigned agent can update details
-    const allowedStatuses: RequestStatus[] = [
-        RequestStatus.PENDING_QUOTATION,
-        RequestStatus.APPROVED,
-        RequestStatus.PENDING_AGENT_ACTION
-    ];
-
-    const isClosed = !requestStatus || !allowedStatuses.includes(requestStatus as RequestStatus);
-
     return (
-        <Card className={isClosed ? "opacity-75 bg-gray-50" : ""}>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    {existingBid ? "Update Your Bid" : "Submit a Bid"}
-                    {isClosed && <Lock size={16} className="text-gray-400" />}
+        <Card className="sticky top-8 border-none shadow-xl shadow-indigo-100/50 ring-1 ring-gray-100 rounded-corner-xl overflow-hidden animate-in slide-in-from-right duration-500">
+            <CardHeader className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-6">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Agent Quotation</span>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-none text-[10px] font-black">
+                        {existingBid ? 'MODIFYING BID' : 'NEW PROPOSAL'}
+                    </Badge>
+                </div>
+                <CardTitle className="text-xl font-black tracking-tight flex items-center gap-2">
+                    {existingBid ? <Edit2 size={20} /> : <Zap size={20} />}
+                    {existingBid ? 'Update Proposal' : 'Submit Quotation'}
                 </CardTitle>
-                {isClosed && (
-                    <CardDescription className="text-amber-600 font-medium">
-                        This request is currently closed for new bids.
-                    </CardDescription>
-                )}
+                <CardDescription className="text-indigo-100 font-medium">
+                    {existingBid ? 'Adjust your pricing or message for this trip.' : 'Provide your best offer for this travel request.'}
+                </CardDescription>
             </CardHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardContent className="space-y-4 pb-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Bid Amount ({currency})</Label>
+
+            <CardContent className="p-6 space-y-6">
+                {/* Amount Section */}
+                <div className="space-y-3">
+                    <div className="flex justify-between items-end">
+                        <Label className="text-xs font-black text-gray-500 uppercase tracking-wider">Base Quote Amount</Label>
+                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full uppercase">Currency: {currency}</span>
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold group-focus-within:text-indigo-600 transition-colors">
+                            {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : ''}
+                        </div>
                         <Input
-                            id="amount"
                             type="number"
-                            step="0.01"
                             placeholder="0.00"
-                            disabled={isClosed}
-                            {...form.register("amount", {
-                                valueAsNumber: true,
-                                onChange: async (e) => {
-                                    const val = parseFloat(e.target.value);
-                                    if (val > 0 && currency !== requestCurrency) {
-                                        try {
-                                            const preview = await getConversionPreview(val, currency, requestCurrency);
-                                            setConversionPreview(preview);
-                                        } catch {
-                                            setConversionPreview(null);
-                                        }
-                                    } else {
-                                        setConversionPreview(null);
-                                    }
-                                }
-                            })}
+                            className="pl-10 h-14 text-xl font-black bg-gray-50 border-none ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
                         />
-                        {currency !== requestCurrency && (
-                            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">
-                                {conversionPreview
-                                    ? `Note: Company sees this as approx. ${conversionPreview}`
-                                    : `Note: This will be converted to ${requestCurrency} automatically`
-                                }
-                            </p>
-                        )}
-                        {form.formState.errors.amount && (
-                            <p className="text-sm text-red-500">{form.formState.errors.amount.message}</p>
+                    </div>
+
+                    {currency !== requestCurrency && preview && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-corner-md text-amber-700 text-xs font-bold border border-amber-100 animate-in fade-in slide-in-from-top-1">
+                            <RefreshCw size={12} className={cn("shrink-0", isPreviewLoading && "animate-spin")} />
+                            Company will see approx: <span className="text-amber-900 underline underline-offset-2">{preview}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Tax Section */}
+                <div className="space-y-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-corner-sm">
+                                <Receipt size={14} />
+                            </div>
+                            <Label className="text-xs font-black text-gray-500 uppercase tracking-wider">Taxes & Fees</Label>
+                        </div>
+
+                        {templates.length > 0 && (
+                            <Select onValueChange={handleApplyTemplate}>
+                                <SelectTrigger className="w-[140px] h-8 text-[10px] font-black border-none bg-gray-100 hover:bg-gray-200 transition-colors">
+                                    <SelectValue placeholder="APPLY TEMPLATE" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {templates.map(t => (
+                                        <SelectItem key={t.id} value={t.id} className="text-xs font-medium">
+                                            {t.name} {t.isDefault && "(Default)"}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         )}
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-sm font-bold text-gray-700">Taxes & Additional Fees</Label>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={isClosed}
-                                onClick={() => append({ label: "", type: "PERCENTAGE", value: 0 })}
-                                className="h-7 text-[10px] font-bold uppercase tracking-wider rounded-corner-sm border-indigo-100 text-indigo-600 hover:bg-indigo-50"
-                            >
-                                <Plus size={14} className="mr-1" /> Add Tax
-                            </Button>
-                        </div>
-
-                        {taxTemplates.length > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-indigo-50/50 rounded-corner-md border border-indigo-100">
-                                <FileText size={16} className="text-indigo-600 shrink-0" />
-                                <div className="flex-1 flex items-center gap-2">
-                                    <span className="text-xs font-medium text-gray-700">Quick Apply:</span>
-                                    <Select
-                                        value={selectedTemplateId}
-                                        onValueChange={handleApplyTemplate}
-                                        disabled={isClosed}
-                                        aria-label="Select tax template"
-                                    >
-                                        <SelectTrigger className="h-8 text-xs flex-1">
-                                            <SelectValue placeholder="Select a tax template..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {taxTemplates.map((template) => (
-                                                <SelectItem key={template.id} value={template.id}>
-                                                    <div className="flex items-center gap-2">
-                                                        <span>{template.name}</span>
-                                                        {template.isDefault && (
-                                                            <span className="text-[10px] text-indigo-600 font-bold">(Default)</span>
-                                                        )}
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        )}
-
-                        {fields.map((field, index) => (
-                            <div key={field.id} className="space-y-2 bg-gray-50/50 p-3 rounded-corner-md border border-gray-100">
-                                <Input
-                                    placeholder="Label (e.g. VAT, GST, Service Tax)"
-                                    disabled={isClosed}
-                                    {...form.register(`taxes.${index}.label`)}
-                                    className="h-9 text-xs"
-                                    aria-label="Tax Name"
-                                />
-                                {form.formState.errors.taxes?.[index]?.label && (
-                                    <p className="text-[10px] text-red-500">{form.formState.errors.taxes[index]?.label?.message}</p>
-                                )}
-                                <div className="flex gap-2 items-start">
-                                    <Select
-                                        disabled={isClosed}
-                                        defaultValue={field.type}
-                                        onValueChange={(val) => form.setValue(`taxes.${index}.type`, val as "PERCENTAGE" | "FIXED")}
-                                        aria-label="Tax Type"
-                                    >
-                                        <SelectTrigger className="h-9 text-xs w-32">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="PERCENTAGE">Percentage</SelectItem>
-                                            <SelectItem value="FIXED">{currency}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <div className="flex-1">
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            disabled={isClosed}
-                                            {...form.register(`taxes.${index}.value`, { valueAsNumber: true })}
-                                            className="h-9 text-xs"
-                                            aria-label="Tax Value"
-                                        />
-                                        {form.formState.errors.taxes?.[index]?.value && (
-                                            <p className="text-[10px] text-red-500 mt-1">{form.formState.errors.taxes[index]?.value?.message}</p>
-                                        )}
+                    {/* Active Taxes List */}
+                    <div className="space-y-2">
+                        {taxes.map((tax, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-corner-lg group hover:border-indigo-200 transition-all">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-corner-md bg-gray-50 flex items-center justify-center text-gray-400 font-bold text-xs uppercase">
+                                        {tax.label.charAt(0)}
                                     </div>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        disabled={isClosed}
-                                        onClick={() => remove(index)}
-                                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-corner-sm shrink-0"
-                                        aria-label="Remove tax"
+                                    <div>
+                                        <p className="text-sm font-black text-gray-900 leading-none mb-1">{tax.label}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                                            {tax.type === 'PERCENTAGE' ? `${tax.value}% Applied` : `Fixed ${currency} ${tax.value}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-black text-emerald-600">
+                                        +{currency} {(tax.type === 'PERCENTAGE' ? (subtotal * tax.value) / 100 : tax.value).toFixed(2)}
+                                    </span>
+                                    <button
+                                        onClick={() => handleRemoveTax(idx)}
+                                        className="p-1.5 text-gray-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
                                     >
-                                        <Trash2 size={16} />
-                                    </Button>
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100">
-                        <div className="flex items-center justify-between text-sm mb-1 text-gray-500">
-                            <span>Base Amount</span>
-                            <span>{currency} {watchedAmount.toFixed(2)}</span>
+                    {/* Add Tax Form */}
+                    <div className="p-4 bg-gray-50/50 rounded-corner-lg ring-1 ring-gray-100 space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                            <Input
+                                placeholder="Label (e.g. VAT)"
+                                className="h-9 text-xs font-bold border-none bg-white ring-1 ring-gray-200 focus-visible:ring-indigo-500"
+                                value={newTax.label}
+                                onChange={(e) => setNewTax({ ...newTax, label: e.target.value })}
+                            />
+                            <div className="relative">
+                                <Input
+                                    type="number"
+                                    placeholder="Value"
+                                    className="h-9 text-xs font-bold border-none bg-white ring-1 ring-gray-200 focus-visible:ring-indigo-500"
+                                    value={newTax.value || ""}
+                                    onChange={(e) => setNewTax({ ...newTax, value: parseFloat(e.target.value) || 0 })}
+                                />
+                                <button
+                                    onClick={() => setNewTax({ ...newTax, type: newTax.type === 'PERCENTAGE' ? 'FIXED' : 'PERCENTAGE' })}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-indigo-600 hover:text-indigo-700"
+                                >
+                                    {newTax.type === 'PERCENTAGE' ? '%' : 'AMT'}
+                                </button>
+                            </div>
                         </div>
-                        {watchedTaxes.map((tax, i) => {
-                            const taxAmt = tax.type === "PERCENTAGE" ? (watchedAmount * tax.value) / 100 : tax.value;
-                            if (!tax.label && !tax.value) return null;
-                            return (
-                                <div key={i} className="flex items-center justify-between text-sm mb-1 text-gray-500">
-                                    <span>{tax.label || 'Tax'} {tax.type === 'PERCENTAGE' ? `(${tax.value}%)` : ''}</span>
-                                    <span>{currency} {taxAmt.toFixed(2)}</span>
-                                </div>
-                            );
-                        })}
-                        <div className="flex items-center justify-between text-lg font-black text-indigo-600 mt-2">
-                            <span>Total Proposal</span>
-                            <span>{currency} {totalAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 relative">
-                        <Label htmlFor="message">Proposal Details</Label>
-                        <Textarea
-                            id="message"
-                            placeholder="Describe flight options, layovers, baggage allowance..."
-                            className="min-h-[100px] rounded-corner-md"
-                            disabled={isClosed}
-                            {...form.register("message")}
-                        />
-                        {form.formState.errors.message && (
-                            <p className="absolute -bottom-5 left-0 text-sm text-red-500 animate-in fade-in slide-in-from-top-1">
-                                {form.formState.errors.message.message}
-                            </p>
-                        )}
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    {!isClosed && (
-                        <Button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 hover:bg-indigo-700">
-                            {isSubmitting ? "Submitting..." : (existingBid ? "Update Proposal" : "Submit Proposal")}
+                        <Button
+                            variant="outline"
+                            className="w-full h-9 text-xs font-black border-dashed border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-all rounded-corner-md"
+                            onClick={handleAddTax}
+                        >
+                            <Plus size={14} className="mr-2" /> ADD LINE ITEM
                         </Button>
+                    </div>
+                </div>
+
+                {/* Message Section */}
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                    <Label className="text-xs font-black text-gray-500 uppercase tracking-wider">Proposal Message</Label>
+                    <Textarea
+                        placeholder="Detail your offer, inclusions, and terms..."
+                        className="min-h-[120px] text-sm font-medium bg-gray-50 border-none ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-indigo-500 p-4 resize-none"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                    />
+                </div>
+            </CardContent>
+
+            {/* Summary & Footer */}
+            <CardFooter className="bg-gray-50 p-6 flex flex-col gap-6">
+                <div className="w-full space-y-3">
+                    <div className="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-tight">
+                        <span>Subtotal</span>
+                        <span>{currency} {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-emerald-600 uppercase tracking-tight">
+                        <span>Total Taxes</span>
+                        <span>+ {currency} {taxTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="pt-3 border-t border-gray-200 flex justify-between items-center">
+                        <span className="text-sm font-black text-gray-900 uppercase tracking-widest">Grand Total</span>
+                        <span className="text-2xl font-black text-indigo-600 tracking-tight">
+                            {currency} {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                    </div>
+                </div>
+
+                <Button
+                    className="w-full h-14 text-base font-black uppercase tracking-widest rounded-corner-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.01] transition-all group"
+                    disabled={isSubmitting || !amount || parseFloat(amount) <= 0}
+                    onClick={handleSubmit}
+                >
+                    {isSubmitting ? (
+                        <>
+                            <RefreshCw size={20} className="mr-2 animate-spin" />
+                            PROCESSING...
+                        </>
+                    ) : (
+                        <>
+                            {existingBid ? 'UPDATE PROPOSAL' : 'SEND QUOTATION'}
+                            {existingBid ? <Edit2 size={20} className="ml-2 group-hover:rotate-12 transition-transform" /> : <Zap size={20} className="ml-2 group-hover:scale-125 transition-transform" />}
+                        </>
                     )}
-                </CardFooter>
-            </form>
+                </Button>
+            </CardFooter>
         </Card>
     );
 }

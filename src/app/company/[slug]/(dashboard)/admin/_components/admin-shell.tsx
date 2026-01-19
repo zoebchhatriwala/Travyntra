@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-
 import { UserMenu } from "@/app/admin/_components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { CompanyNav } from "./company-nav";
@@ -14,7 +13,13 @@ interface AdminShellProps {
     companyPlan?: string | null;
 }
 
-function SupportPlanCard({ companyPlan }: { companyPlan?: string | null }) {
+function SupportPlanCard({
+    slug,
+    companyPlan
+}: {
+    slug: string;
+    companyPlan?: string | null;
+}) {
     const { isCollapsed } = useSidebar();
 
     if (isCollapsed) {
@@ -46,9 +51,9 @@ function SupportPlanCard({ companyPlan }: { companyPlan?: string | null }) {
                     Upgrade Tier
                 </Link>
             ) : (
-                <button className="w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase hover:bg-gray-50 transition-colors">
-                    View Billing
-                </button>
+                <Link href={`/company/${slug}/admin/settings/plan`} className="block w-full py-2 bg-white text-indigo-600 rounded-corner-md text-[10px] font-black uppercase text-center hover:bg-gray-50 transition-colors">
+                    View Plan
+                </Link>
             )}
         </div>
     );
@@ -58,7 +63,10 @@ export function AdminShell({ children, slug, companyPlan }: AdminShellProps) {
     return (
         <SidebarLayout
             sidebarContent={<CompanyNav slug={slug} />}
-            sidebarFooter={<SupportPlanCard companyPlan={companyPlan} />}
+            sidebarFooter={<SupportPlanCard
+                slug={slug}
+                companyPlan={companyPlan}
+            />}
             brandContent={
                 <SidebarBrand
                     href={`/company/${slug}/admin`}

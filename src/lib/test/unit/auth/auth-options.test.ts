@@ -10,6 +10,7 @@ vi.mock('bcryptjs', () => ({
 import { prismaMock } from '@/lib/test/helpers/prisma';
 import { compare } from 'bcryptjs';
 import { authOptions, createAuthOptions } from '@/lib/auth-options';
+import { addDays } from 'date-fns';
 
 describe('Auth Options', () => {
     // Helper to get providers
@@ -84,7 +85,11 @@ describe('Auth Options', () => {
                 name: 'Test',
                 role: 'EMPLOYEE',
                 companyId: 'comp-1',
-                company: { type: 'AGENCY', slug: 'agency' },
+                company: {
+                    type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: addDays(
+                        new Date(), 2
+                    )
+                },
                 avatarUrl: 'image.jpg'
             };
 
@@ -100,7 +105,8 @@ describe('Auth Options', () => {
                 companyId: 'comp-1',
                 companyType: 'AGENCY',
                 companySlug: 'agency',
-                image: 'image.jpg'
+                image: 'image.jpg',
+                isPlanExpired: false
             });
         });
 
@@ -155,7 +161,7 @@ describe('Auth Options', () => {
                 password: 'hash',
                 isActive: true,
                 companyId: 'comp-1',
-                company: { type: 'AGENCY', slug: 'agency' },
+                company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: new Date() },
                 avatarUrl: 'image.jpg'
             };
 
@@ -172,7 +178,8 @@ describe('Auth Options', () => {
                 companyId: 'comp-1',
                 companyType: 'AGENCY',
                 companySlug: 'agency',
-                image: 'image.jpg'
+                image: 'image.jpg',
+                isPlanExpired: false
             });
         });
     });

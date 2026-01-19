@@ -101,7 +101,7 @@ export async function getFulfillmentRequest(requestId: string) {
 export async function addFulfillmentItem(requestId: string, title: string, description?: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -151,7 +151,7 @@ export async function updateFulfillmentItem(
 ) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -190,7 +190,7 @@ export async function updateFulfillmentItem(
 export async function deleteFulfillmentItem(itemId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -236,7 +236,7 @@ export async function deleteFulfillmentItem(itemId: string, requestId: string) {
 export async function toggleFulfillmentItem(itemId: string, requestId: string, isCompleted: boolean) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -277,7 +277,7 @@ export async function toggleFulfillmentItem(itemId: string, requestId: string, i
 export async function uploadFulfillmentDocument(formData: FormData) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -409,7 +409,7 @@ export async function uploadFulfillmentDocument(formData: FormData) {
 export async function deleteDocument(documentId: string, requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -451,7 +451,7 @@ export async function deleteDocument(documentId: string, requestId: string) {
 export async function markAsBooked(requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;
@@ -521,7 +521,7 @@ export async function markAsBooked(requestId: string) {
 export async function markAsCompleted(requestId: string) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.companyId || (session.user.role !== UserRole.TRAVEL_AGENT && session.user.role !== UserRole.AGENCY_EMPLOYEE)) {
-        return { error: "Unauthorized" };
+        return { error: "Unauthenticated or not associated with a company." };
     }
 
     const agencyId = session.user.companyId;

@@ -8,8 +8,9 @@ import { Money } from "@/types/finance/money";
 import { EmployeeSpendStats, RequestSpendStats } from "@/types/analytics";
 
 import { convertCurrency } from "@/lib/services/currency";
+import { PlanFeature, withPlanGuard } from "@/lib/services/plan-guard";
 
-export async function getBudgetAnalytics(slug: string) {
+async function getBudgetAnalyticsInternal(slug: string) {
     const company = await prisma.company.findUnique({
         where: { slug },
         select: { id: true, currency: true, timezone: true }
@@ -199,3 +200,9 @@ export async function getBudgetAnalytics(slug: string) {
         requestBreakdown: requestBreakdown.slice(0, 50)
     };
 }
+
+/**
+ * Retrieves budget analytics for a company.
+ * Wrapped with PlanGuard to enforce analytics access.
+ */
+export const getBudgetAnalytics = withPlanGuard(PlanFeature.ACCESS_ANALYTICS, getBudgetAnalyticsInternal);

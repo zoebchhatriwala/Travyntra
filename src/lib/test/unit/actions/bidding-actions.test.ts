@@ -11,7 +11,7 @@ import {
 } from '@/app/agent/bids/[requestId]/actions';
 import { prismaMock } from '@/lib/test/helpers/prisma';
 import { getServerSession } from 'next-auth';
-import { BidStatus, RequestStatus } from '@prisma/client';
+import { BidStatus, CompanyType, RequestStatus, SubscriptionPlan } from '@prisma/client';
 import { AutoApprovalRuleType } from '@/types/workflow/auto-approval-policy';
 import { AutoApprovalEngine } from '@/lib/auto-approval-engine';
 import { WorkflowEngine } from '@/lib/workflow-engine';
@@ -64,6 +64,14 @@ describe('Bidding Actions', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+
+        // Mock PlanGuard requirements
+        prismaMock.company.findUnique.mockResolvedValue({
+            id: 'agency-1',
+            plan: SubscriptionPlan.ENTERPRISE,
+            type: CompanyType.AGENT,
+            timezone: 'UTC'
+        } as any);
     });
 
     describe('getConversionPreview', () => {
@@ -88,7 +96,7 @@ describe('Bidding Actions', () => {
         it('should return error if unauthorized', async () => {
             (getServerSession as Mock).mockResolvedValue({ user: { role: 'EMPLOYEE' } });
             const result = await submitBid('req-1', 100, 'Msg');
-            expect(result.error).toBe('Unauthorized');
+            expect(result.error).toBe("Unauthenticated or not associated with a company.");
         });
 
         it('should submit bid successfully', async () => {

@@ -5,7 +5,9 @@ import { CompanyStatus, SubscriptionPlan, UserRole, CompanyType } from "@prisma/
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
 
-export async function getCompanies(type: CompanyType = CompanyType.ENTERPRISE) {
+import { Company } from "./_components/company-list";
+
+export async function getCompanies(type: CompanyType = CompanyType.ENTERPRISE): Promise<Company[]> {
     try {
         const companies = await prisma.company.findMany({
             where: { type },
@@ -19,7 +21,7 @@ export async function getCompanies(type: CompanyType = CompanyType.ENTERPRISE) {
                     select: {
                         users: true,
                         requests: true,
-                        assignedRequests: true
+                        agencyRequests: true
                     }
                 }
             },

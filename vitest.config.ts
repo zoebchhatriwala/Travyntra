@@ -9,8 +9,14 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/lib/test/helpers/setup.ts'],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: 'istanbul',
+      thresholds: {
+        branches: 0,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
+      reporter: ['text-summary', 'html'],
       exclude: ['node_modules/', 'src/lib/test/**', 'e2e/**', 'playwright.config.ts'],
     },
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'e2e/**'],
