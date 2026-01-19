@@ -582,5 +582,35 @@ describe('Fulfillment Actions', () => {
             const result = await markAsCompleted('req-1');
             expect(result.error).toBe('Failed to complete request');
         });
+
+        it('should cover item not found in deleteFulfillmentItem', async () => {
+            prismaMock.fulfillmentItem.findFirst.mockResolvedValue(null);
+            const result = await deleteFulfillmentItem('item-1', 'req-1');
+            expect(result.error).toBe("Item not found");
+        });
+
+        it('should cover item not found in toggleFulfillmentItem', async () => {
+            prismaMock.fulfillmentItem.findFirst.mockResolvedValue(null);
+            const result = await toggleFulfillmentItem('item-1', 'req-1', true);
+            expect(result.error).toBe("Item not found");
+        });
+
+        it('should cover markAsBooked notification parameters', async () => {
+            prismaMock.tripRequest.findFirst.mockResolvedValue({
+                id: 'req-1',
+                companyId: 'co-1',
+                company: { slug: 'co' },
+                title: 'Trip',
+                userId: 'user-1'
+            } as any);
+
+            await markAsBooked('req-1');
+
+            expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                sendEmail: true,
+                type: 'SUCCESS'
+            }));
+        });
     });
 });
+

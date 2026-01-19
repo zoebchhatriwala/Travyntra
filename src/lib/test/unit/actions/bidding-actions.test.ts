@@ -660,6 +660,52 @@ describe('Bidding Actions', () => {
             const result = await updateBid('bid-4', 'req-4', 100, 'Update', 'USD');
             expect(result.success).toBe(true);
         });
+
+        it('should handle empty message and same currency in updateBid for coverage', async () => {
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
+                id: 'req-1',
+                company: { currency: 'USD', slug: 'comp' },
+                approvalSteps: [],
+                bids: []
+            } as any);
+            prismaMock.agentBid.update.mockResolvedValue({ id: 'bid-1' } as any);
+            prismaMock.user.findMany.mockResolvedValue([]);
+            prismaMock.message.create.mockResolvedValue({} as any);
+
+            const result = await updateBid('bid-1', 'req-1', 100, '', 'USD');
+            expect(result.success).toBe(true);
+            expect(prismaMock.message.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    content: expect.stringContaining('N/A')
+                })
+            }));
+        });
+    });
+
+    describe('submitBid coverage edge cases', () => {
+        beforeEach(() => {
+            (getServerSession as Mock).mockResolvedValue(mockAgentSession);
+        });
+
+        it('should handle empty message and same currency in submitBid', async () => {
+            prismaMock.tripRequest.findUnique.mockResolvedValue({
+                id: 'req-1',
+                company: { currency: 'USD', id: 'c1' },
+                approvalSteps: [],
+                bids: []
+            } as any);
+            prismaMock.agentBid.create.mockResolvedValue({ id: 'bid-1' } as any);
+            prismaMock.user.findMany.mockResolvedValue([]);
+            prismaMock.message.create.mockResolvedValue({} as any);
+
+            const result = await submitBid('req-1', 100, '', 'USD');
+            expect(result.success).toBe(true);
+            expect(prismaMock.message.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    content: expect.stringContaining('N/A')
+                })
+            }));
+        });
     });
 
     describe('approveBid', () => {
@@ -1761,4 +1807,5 @@ describe('Bidding Actions', () => {
             expect(result.error).toBe("Failed to withdraw bid");
         });
     });
+
 });

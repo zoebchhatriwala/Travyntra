@@ -16,7 +16,7 @@ export default defineConfig({
         lines: 100,
         statements: 100,
       },
-      reporter: ['text-summary', 'html'],
+      reporter: ['text', 'html'],
       exclude: ['node_modules/', 'src/lib/test/**', 'e2e/**', 'playwright.config.ts'],
     },
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'e2e/**'],

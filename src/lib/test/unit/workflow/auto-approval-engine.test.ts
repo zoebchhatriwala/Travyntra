@@ -357,7 +357,64 @@ describe('AutoApprovalEngine', () => {
             expect(result.reason).toBe('Request does not match any auto-approval criteria');
         });
 
+        it('should return false if budget is exactly 1', async () => {
+            const policyThreshold = {
+                enabled: true,
+                rules: [
+                    {
+                        id: 'rule-1',
+                        type: AutoApprovalRuleType.BUDGET_THRESHOLD,
+                        enabled: true,
+                        config: { maxAmount: 5000, currencyCode: 'USD' }
+                    }
+                ]
+            };
+
+            const mockRequest = createMockTripRequest({
+                id: 'req-1',
+                budget: { amount: 1, currencyCode: 'USD', multiplier: 1 },
+                company: createMockCompany({
+                    policyThreshold: policyThreshold
+                })
+            });
+
+            prismaMock.tripRequest.findUnique.mockResolvedValue(mockRequest as unknown as TripRequest);
+
+            const result = await AutoApprovalEngine.evaluateRequest('req-1');
+            expect(result.shouldAutoApprove).toBe(false);
+            expect(result.reason).toBe("Request does not match any auto-approval criteria");
+        });
+
+        it('should return false if budget is 0.5', async () => {
+            const policyThreshold = {
+                enabled: true,
+                rules: [
+                    {
+                        id: 'rule-1',
+                        type: AutoApprovalRuleType.BUDGET_THRESHOLD,
+                        enabled: true,
+                        config: { maxAmount: 5000, currencyCode: 'USD' }
+                    }
+                ]
+            };
+
+            const mockRequest = createMockTripRequest({
+                id: 'req-1',
+                budget: { amount: 0.5, currencyCode: 'USD', multiplier: 1 },
+                company: createMockCompany({
+                    policyThreshold: policyThreshold
+                })
+            });
+
+            prismaMock.tripRequest.findUnique.mockResolvedValue(mockRequest as unknown as TripRequest);
+
+            const result = await AutoApprovalEngine.evaluateRequest('req-1');
+            expect(result.shouldAutoApprove).toBe(false);
+            expect(result.reason).toBe("Request does not match any auto-approval criteria");
+        });
+
         it('should return false for unknown rule types', async () => {
+
             const policyThreshold = {
                 enabled: true,
                 rules: [

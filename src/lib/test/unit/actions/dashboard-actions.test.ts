@@ -1565,5 +1565,43 @@ describe('Dashboard Actions', () => {
             const result = await getEmployeeRequests({ page: 1 });
             expect(result.requests[0].isCollaborator).toBe(true);
         });
+
+        it('should use agent portal link when an agent is mentioned', async () => {
+            const mockRequest = {
+                id: 'req-1',
+                title: 'Trip',
+                userId: 'user-1',
+                companyId: 'company-1',
+                agencyId: 'agency-1',
+                collaborators: [],
+                company: { slug: 'test-co' }
+            };
+
+            prismaMock.tripRequest.findUnique.mockResolvedValue(mockRequest as any);
+            prismaMock.message.create.mockResolvedValue({ id: 'msg-1' } as any);
+
+            // Mock users: one from company, one from agency
+            prismaMock.user.findMany.mockResolvedValue([
+                { id: 'agent-1', name: 'Agent Smith', companyId: 'agency-1' },
+                { id: 'emp-1', name: 'Emp Jane', companyId: 'company-1' }
+            ] as any);
+
+            const content = "Hello @Agent Smith and @Emp Jane";
+
+            await postTripMessage('req-1', content);
+
+            // Verify Agent Smith notification link
+            expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                userId: 'agent-1',
+                link: '/agent/fulfillment/req-1/discussion'
+            }));
+
+            // Verify Emp Jane notification link
+            expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({
+                userId: 'emp-1',
+                link: '/company/test-co/dashboard/requests/req-1/discussion'
+            }));
+        });
+
     });
 });

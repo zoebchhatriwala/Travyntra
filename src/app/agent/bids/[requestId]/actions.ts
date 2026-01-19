@@ -562,7 +562,7 @@ class AgentBidActions {
 
         try {
             // Call internal approveBidInternal function (isAutoApproved = false)
-            await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id, false);
+            await AgentBidActions.approveBidInternal(bidId, requestId, session.user.id);
 
             // Revalidate paths
             revalidatePath(`/company/${session.user.companySlug}/dashboard/requests/${requestId}`);
