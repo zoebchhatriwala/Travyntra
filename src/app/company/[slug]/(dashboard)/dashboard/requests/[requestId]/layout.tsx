@@ -89,8 +89,7 @@ export default async function RequestLayout({
                             </Badge>
 
                             <RequestActions
-                                requestId={requestId}
-                                status={request.status}
+                                request={request}
                                 slug={slug}
                             />
 

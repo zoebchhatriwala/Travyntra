@@ -7,10 +7,9 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Ban, Trash2, Edit, Loader2 } from "lucide-react";
+import { MoreHorizontal, Ban, Trash2, Edit, Loader2, FileText } from "lucide-react";
 import { useState } from "react";
 import { cancelTripRequest, deleteTripRequest } from "../../../actions";
-
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -21,14 +20,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { generateRequestAuditPDF } from "@/lib/utils/request-export";
 
 interface RequestActionsProps {
-    requestId: string;
-    status: string;
+    request: any;
     slug: string;
 }
 
-export function RequestActions({ requestId, status, slug }: RequestActionsProps) {
+export function RequestActions({ request, slug }: RequestActionsProps) {
+    const requestId = request.id;
+    const status = request.status;
     const [isCancelling, setIsCancelling] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -89,6 +90,16 @@ export function RequestActions({ requestId, status, slug }: RequestActionsProps)
                     align="end"
                     className="w-48 rounded-lg p-1 border-gray-200 shadow-lg bg-white"
                 >
+                    <DropdownMenuItem
+                        onClick={() => generateRequestAuditPDF(request)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100"
+                    >
+                        <FileText size={18} className="text-blue-600" />
+                        <span>Export as PDF</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="my-1 bg-gray-100" />
+
                     <DropdownMenuItem
                         onClick={() => router.push(`/company/${slug}/dashboard/requests/${requestId}/edit`)}
                         className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100"

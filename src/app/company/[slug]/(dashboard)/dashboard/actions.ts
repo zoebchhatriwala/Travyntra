@@ -475,7 +475,16 @@ export async function getTripRequest(requestId: string) {
                 },
                 approvalSteps: {
                     include: {
-                        approvals: true
+                        step: {
+                            select: { name: true }
+                        },
+                        approvals: {
+                            include: {
+                                user: {
+                                    select: { name: true }
+                                }
+                            }
+                        }
                     }
                 }
             }
