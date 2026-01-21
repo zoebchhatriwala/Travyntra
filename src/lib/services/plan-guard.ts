@@ -193,7 +193,7 @@ export class PlanGuardService {
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 
-type ActionResponse = { error?: string; success?: boolean;[key: string]: any };
+type ActionResponse = { error?: string; success?: boolean } & Record<string, unknown>;
 
 /**
  * Higher-Order Function (Decorator-like) to wrap server actions with PlanGuard enforcement.
@@ -202,7 +202,7 @@ type ActionResponse = { error?: string; success?: boolean;[key: string]: any };
  * Usage:
  * export const myAction = withPlanGuard('FEATURE_NAME', async (arg1, arg2) => { ... })
  */
-export function withPlanGuard<T extends any[], R extends ActionResponse>(
+export function withPlanGuard<T extends unknown[], R extends ActionResponse>(
     feature: PlanFeature,
     action: (...args: T) => Promise<R>
 ) {
@@ -235,13 +235,13 @@ export function withPlanGuard<T extends any[], R extends ActionResponse>(
  */
 export function PlanGuard(feature: PlanFeature) {
     return function (
-        _target: any,
+        _target: unknown,
         _propertyKey: string,
         descriptor: PropertyDescriptor
     ) {
         const originalMethod = descriptor.value;
 
-        descriptor.value = async function (...args: any[]) {
+        descriptor.value = async function (...args: unknown[]) {
             const session = await getServerSession(authOptions);
 
             if (!session?.user?.companyId) {

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-interface Message {
+export interface Message {
     id: string;
     content: string;
     createdAt: Date;

@@ -14,6 +14,40 @@ type EmailPayload = {
     html: string;
 };
 
+
+import { Resend } from "resend";
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+/**
+ * Sends a mock email to the console.
+ * @param payload - The details of the email to be sent.
+ * @returns {Promise<{success: boolean, id?: string, error?: string}>} The result of the email operation.
+ */
+async function sendMockEmail(payload: EmailPayload) {
+    // Destructure properties from the payload
+    const { to, subject, html } = payload;
+
+    // Construct a console log message for the mock email
+    const logHeader = "📧 [MOCK EMAIL]";
+    const logTo = `To: ${to}`;
+    const logSubject = `Subject: ${subject}`;
+    const logSeparator = "---";
+    const emailContent = `${logHeader}\n${logTo}\n${logSubject}\n${logSeparator}\n${html}\n${logSeparator}`;
+
+    // Log the mock email content to the console
+    console.log(emailContent);
+
+    // Define the mock result object
+    const result = {
+        success: true,
+        id: "mock-id"
+    };
+
+    // Return the mock result
+    return result;
+}
+
 /**
  * Sends an email using the configured provider.
  * In development, this logs the email to the console.
@@ -27,40 +61,33 @@ export async function sendEmail(payload: EmailPayload) {
 
     // Check if the system is in development mode
     if (IS_DEVELOPMENT) {
-        // Construct a console log message for the mock email
-        const logHeader = "📧 [MOCK EMAIL]";
-        const logTo = `To: ${to}`;
-        const logSubject = `Subject: ${subject}`;
-        const logSeparator = "---";
-        const emailContent = `${logHeader}\n${logTo}\n${logSubject}\n${logSeparator}\n${html}\n${logSeparator}`;
-
-        // Log the mock email content to the console
-        console.log(emailContent);
-
-        // Define the mock result object
-        const result = {
-            success: true,
-            id: "mock-id"
-        };
-
-        // Return the mock result
-        return result;
+        return await sendMockEmail(payload);
     }
 
-    // TODO: Integrate actual email provider (e.g., Resend, SendGrid)
+    // If resend is not initialized, send a mock email
+    if (!resend) {
+        return await sendMockEmail(payload);
+    }
 
-    // Log a warning for missing production implementation
-    const warningMessage = "Email sending not implemented for production yet.";
-    console.warn(warningMessage);
+    // Send the email using Resend
+    try {
+        const { data, error } = await resend.emails.send({
+            from: "Travyntra <notifications@travyntra.chhatriwala.com>",
+            to: [to],
+            subject: subject,
+            html: html,
+        });
 
-    // Define the failure result object
-    const failureResult = {
-        success: false,
-        error: "Not implemented"
-    };
+        if (error) {
+            console.error("Resend error:", error);
+            return { success: false, error: error.message };
+        }
 
-    // Return the failure result
-    return failureResult;
+        return { success: true, id: data?.id };
+    } catch (error) {
+        console.error("Failed to send email via Resend:", error);
+        return { success: false, error: "Internal server error" };
+    }
 }
 
 /**

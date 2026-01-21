@@ -583,7 +583,7 @@ describe('Dashboard Actions', () => {
 
             // Mock uploadFile to fail
             const { uploadFile } = await import('@/lib/storage');
-            // @ts-ignore
+            // @ts-expect-error -- Mocking module property for testing
             uploadFile.mockRejectedValueOnce(new Error('Fail'));
 
             const result = await uploadMessageAttachment(formData);
@@ -762,7 +762,7 @@ describe('Dashboard Actions', () => {
         it('should validation preferences format', async () => {
             // Mock schema validation failure
             const { TripPreferencesSchema } = await import('@/lib/schemas/trip-preferences');
-            // @ts-ignore
+            // @ts-expect-error -- Overriding read-only property for mocking
             TripPreferencesSchema.safeParse = () => ({ success: false, error: 'Bad' });
 
             const mockRequest = {
@@ -1231,7 +1231,7 @@ describe('Dashboard Actions', () => {
 
         it('should validate preferences in create', async () => {
             const { TripPreferencesSchema } = await import('@/lib/schemas/trip-preferences');
-            // @ts-ignore
+            // @ts-expect-error -- Overriding read-only property for mocking
             TripPreferencesSchema.safeParse = () => ({ success: false, error: 'Bad' });
 
             await createTripRequest({ title: 'T', preferences: { bad: true } } as any);

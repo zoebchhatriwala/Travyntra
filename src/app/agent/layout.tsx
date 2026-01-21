@@ -29,8 +29,14 @@ export default async function AgentLayout({
         redirect("/");
     }
 
+    const companyId = session.user.companyId;
+
+    if (!companyId) {
+        redirect("/");
+    }
+
     const company = await prisma.company.findUnique({
-        where: { id: session.user.companyId! },
+        where: { id: companyId },
         select: { plan: true, slug: true }
     });
 

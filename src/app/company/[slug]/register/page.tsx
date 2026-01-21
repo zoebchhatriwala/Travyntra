@@ -8,15 +8,13 @@ import {
     Mail,
     Lock,
     User,
-    ArrowRight,
-    CheckCircle2,
+    ShieldCheck,
     ChevronLeft,
-    ShieldCheck
+    ArrowRight
 } from "lucide-react";
 import { registerEmployee } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function CompanyRegisterPage() {
@@ -25,7 +23,6 @@ export default function CompanyRegisterPage() {
     const slug = params.slug as string;
 
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -42,39 +39,14 @@ export default function CompanyRegisterPage() {
         });
 
         if (res.success) {
-            setSuccess(true);
-            toast.success("Registration successful!");
+            toast.success("Registration successful! Please verify your email.");
+            router.push(`/verify?email=${encodeURIComponent(formData.email)}`);
         } else {
             toast.error(res.error || "Failed to register");
         }
         setLoading(false);
     };
 
-    if (success) {
-        return (
-            <div className="min-h-screen bg-[#FAFAFB] flex flex-col items-center justify-center p-6 font-inter">
-                <div className="absolute top-0 left-0 right-0 h-96 bg-indigo-600/5 -z-10 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:32px_32px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
-
-                <Card className="w-full max-w-md border-none shadow-2xl shadow-indigo-100/50 rounded-[40px] overflow-hidden bg-white/80 backdrop-blur-xl animate-in zoom-in-95 duration-500">
-                    <CardContent className="p-12 text-center">
-                        <div className="w-20 h-20 bg-emerald-50 rounded-corner-xl flex items-center justify-center text-emerald-500 mx-auto mb-8 shadow-inner shadow-emerald-100/50 animate-bounce">
-                            <CheckCircle2 size={40} />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4 uppercase">Registration Sent</h2>
-                        <p className="text-gray-500 font-medium leading-relaxed mb-8">
-                            We&apos;ve sent your request to the <span className="text-indigo-600 font-bold uppercase tracking-wider">{slug}</span> administrators. You&apos;ll receive a notification once they verify your profile.
-                        </p>
-                        <Button
-                            onClick={() => router.push("/login")}
-                            className="w-full h-14 bg-gray-900 hover:bg-black text-white rounded-corner-lg font-black uppercase tracking-widest transition-all shadow-xl shadow-gray-200"
-                        >
-                            Return to Login
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-[#FAFAFB] flex flex-col lg:flex-row font-inter">

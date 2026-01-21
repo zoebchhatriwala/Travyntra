@@ -16,6 +16,7 @@ export const metadata = {
 };
 
 export default async function AdminDashboardPage() {
+    const now = new Date().getTime();
     const { agents, companies } = await getPendingEntities();
     const stats = await getGlobalStats();
     const expiring = await getExpiringSubscriptions();
@@ -150,7 +151,7 @@ export default async function AdminDashboardPage() {
                                                     </div>
                                                     <div className="flex flex-col items-end gap-1">
                                                         <Badge variant="outline" className="border-rose-100 bg-rose-50 text-rose-600">
-                                                            {Math.ceil((new Date(company.subscriptionExpiresAt!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} Days
+                                                            {Math.ceil((new Date(company.subscriptionExpiresAt!).getTime() - now) / (1000 * 60 * 60 * 24))} Days
                                                         </Badge>
                                                         <span className="text-[10px] font-bold text-gray-400">{company.plan}</span>
                                                     </div>

@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-    CheckCircle2,
     Loader2,
-    ArrowRight,
     User,
     Mail,
     KeyRound,
@@ -22,7 +20,7 @@ type RegType = "COMPANY" | "AGENT" | null;
 export default function RegisterPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
-    const [success, setSuccess] = React.useState(false);
+    const router = useRouter();
     const [regType, setRegType] = React.useState<RegType>(null);
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -56,7 +54,7 @@ export default function RegisterPage() {
                 throw new Error(data.message || "Registration failed");
             }
 
-            setSuccess(true);
+            router.push(`/verify?email=${encodeURIComponent(email)}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unexpected error occurred");
         } finally {
@@ -64,30 +62,6 @@ export default function RegisterPage() {
         }
     }
 
-    if (success) {
-        return (
-            <div className="text-center space-y-8 py-10">
-                <div className="flex justify-center">
-                    <div className="w-24 h-24 bg-emerald-50 rounded-corner-xl flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-100/50 animate-bounce">
-                        <CheckCircle2 size={48} strokeWidth={2.5} />
-                    </div>
-                </div>
-                <div className="space-y-4">
-                    <h2 className="text-4xl font-black text-slate-900 tracking-tight">Onboarding Started.</h2>
-                    <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-sm mx-auto">
-                        Your {regType === "COMPANY" ? "corporate portal" : "agency account"} is awaiting verification. You will receive an email once your workspace is live.
-                    </p>
-                </div>
-                <div className="pt-4">
-                    <Button variant="outline" asChild className="h-14 px-8 rounded-corner-lg font-bold border-2 border-slate-100">
-                        <Link href="/login" className="flex items-center gap-2">
-                            Back to Login <ArrowRight size={18} />
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-        );
-    }
 
     if (!regType) {
         return (

@@ -23,6 +23,8 @@ declare module "next-auth" {
         companySlug?: string | null;
         /** The URL of the user's profile image */
         image?: string | null;
+        /** Whether the user account is blocked/suspended */
+        isBlocked?: boolean;
         /** Whether the company's plan is expired */
         isPlanExpired?: boolean;
     }
@@ -41,6 +43,8 @@ declare module "next-auth" {
             companySlug?: string | null;
             /** The URL of the user's profile image */
             image?: string | null;
+            /** Whether the user account is blocked/suspended */
+            isBlocked?: boolean;
             /** Whether the company's plan is expired */
             isPlanExpired?: boolean;
         } & DefaultSession["user"]
@@ -64,6 +68,12 @@ declare module "next-auth/jwt" {
         companySlug?: string | null;
         /** The URL of the user's profile image */
         picture?: string | null;
+        /** Whether the user account is blocked/suspended */
+        isBlocked?: boolean;
+        /** Whether the user account is active */
+        isActive?: boolean;
+        /** Timestamp of the last backend status check */
+        lastStatusCheck?: number;
         /** Whether the company's plan is expired */
         isPlanExpired?: boolean;
     }
@@ -228,9 +238,27 @@ export const createAuthOptions = (
                     return null;
                 }
 
+                // Verify email verification status first
+                const isEmailVerified = !!user?.emailVerifiedAt;
+                if (!isEmailVerified) {
+                    throw new Error("Please verify your email before signing in.");
+                }
+
+                // Check if account is active (admin approved)
                 const isActiveAccount = !!user?.isActive;
                 if (!isActiveAccount) {
-                    return null;
+                    throw new Error("Your account is currently pending administrator approval.");
+                }
+
+                // Check if company is blocked
+                if (user?.company?.status === "BLOCKED") {
+                    throw new Error("Your workspace has been suspended. Please contact your company administrator.");
+                }
+
+                // Check if account is blocked/suspended
+                const isBlockedAccount = !!user?.isBlocked;
+                if (isBlockedAccount) {
+                    throw new Error("Your account has been suspended. Please contact support.");
                 }
 
                 // Compare the provided password with the stored hash
@@ -257,6 +285,7 @@ export const createAuthOptions = (
                     companyType: companyType,
                     companySlug: companySlug,
                     image: user.avatarUrl,
+                    isBlocked: user.isBlocked,
                     isPlanExpired: companyDetails?.subscriptionExpiresAt ? new Date(companyDetails.subscriptionExpiresAt) < new Date() : false
                 };
 
@@ -290,6 +319,7 @@ export const createAuthOptions = (
                 token.companySlug = user.companySlug;
                 token.picture = user.image;
                 token.name = user.name;
+                token.isBlocked = user.isBlocked;
                 token.isPlanExpired = user.isPlanExpired;
             }
 
@@ -332,6 +362,35 @@ export const createAuthOptions = (
                 }
             }
 
+            // --- Periodic Status Sync ---
+            // To ensure blocked users are kicked out quickly, we check their status in the DB
+            // We only do this if it hasn't been checked in the last 60 seconds to avoid DB spam
+            const lastCheck = (token.lastStatusCheck as number) || 0;
+            const now = Date.now();
+            if (token.id && now - lastCheck > 60000) {
+                try {
+                    const freshUser = await prisma.user.findUnique({
+                        where: { id: token.id },
+                        select: {
+                            isBlocked: true,
+                            isActive: true,
+                            company: {
+                                select: { status: true }
+                            }
+                        }
+                    });
+                    if (freshUser) {
+                        // User is blocked if either the user record is blocked OR the company is blocked
+                        const isUserBlocked = freshUser.isBlocked || freshUser.company?.status === "BLOCKED";
+                        token.isBlocked = isUserBlocked;
+                        token.isActive = freshUser.isActive;
+                        token.lastStatusCheck = now;
+                    }
+                } catch (e) {
+                    console.error("Failed to sync user status in JWT callback", e);
+                }
+            }
+
             // Return the finalized token
             return token;
         },
@@ -360,6 +419,7 @@ export const createAuthOptions = (
                     session.user.companySlug = token.companySlug;
                     session.user.name = token.name;
                     session.user.image = token.picture;
+                    session.user.isBlocked = token.isBlocked;
                     session.user.isPlanExpired = token.isPlanExpired;
                 }
             }

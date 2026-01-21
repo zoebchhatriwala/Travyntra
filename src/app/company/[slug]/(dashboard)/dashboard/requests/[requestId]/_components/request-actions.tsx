@@ -20,10 +20,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { generateRequestAuditPDF } from "@/lib/utils/request-export";
+import { generateRequestAuditPDF, type AuditRequestData } from "@/lib/utils/request-export";
 
 interface RequestActionsProps {
-    request: any;
+    request: AuditRequestData;
     slug: string;
 }
 

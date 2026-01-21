@@ -2,8 +2,11 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { formatMoney } from './money';
+import { type Money } from "@/types/finance/money";
 
-interface AuditRequestData {
+import { UserRole } from '@prisma/client';
+
+export interface AuditRequestData {
     id: string;
     title: string;
     status: string;
@@ -16,8 +19,8 @@ interface AuditRequestData {
     startDate: Date;
     endDate: Date;
     purpose?: string | null;
-    budget?: any;
-    cost?: any;
+    budget?: Money | null;
+    cost?: Money | null;
     approvalSteps: {
         step: {
             name: string;
@@ -35,18 +38,26 @@ interface AuditRequestData {
     messages: {
         sender: {
             name: string | null;
-            role: string;
+            role: UserRole | string;
         };
         content: string;
         createdAt: Date;
     }[];
 }
 
+
+
+interface jsPdfWithPlugin extends jsPDF {
+    lastAutoTable: {
+        finalY: number;
+    };
+}
+
 /**
  * Generates an auditable PDF report for a trip request
  */
 export const generateRequestAuditPDF = (data: AuditRequestData) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPdfWithPlugin;
     const pageWidth = doc.internal.pageSize.width;
 
     // Helper for section headers
@@ -106,10 +117,10 @@ export const generateRequestAuditPDF = (data: AuditRequestData) => {
     });
 
     // --- Section 2: Approval History ---
-    currentY = (doc as any).lastAutoTable.finalY + 15;
+    currentY = doc.lastAutoTable.finalY + 15;
     currentY = addSectionHeader("Approval Workflow Status", currentY);
 
-    const approvalData: any[] = [];
+    const approvalData: (string | number)[][] = [];
     data.approvalSteps.forEach(step => {
         if (step.approvals.length === 0) {
             approvalData.push([step.step.name, "Pending Assignment", "-", "PENDING", "-"]);
@@ -137,7 +148,7 @@ export const generateRequestAuditPDF = (data: AuditRequestData) => {
     });
 
     // --- Section 3: Discussions ---
-    currentY = (doc as any).lastAutoTable.finalY + 15;
+    currentY = doc.lastAutoTable.finalY + 15;
 
     // Check if we need a new page for discussions
     if (currentY > 230) {
@@ -177,7 +188,7 @@ export const generateRequestAuditPDF = (data: AuditRequestData) => {
     }
 
     // Footer with page numbers
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);

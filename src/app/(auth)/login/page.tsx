@@ -18,6 +18,12 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = React.useState(false);
 
     const navigateUser = (user: Session["user"]) => {
+        // Allow user to sign-in from a different account
+        if (user?.isBlocked) {
+            return
+        }
+
+        // Switch to user's dashboard
         if (user?.role === UserRole.SUPER_ADMIN) {
             window.location.href = "/admin/dashboard";
         } else if (user?.role === UserRole.TRAVEL_AGENT) {
@@ -28,8 +34,6 @@ export default function LoginPage() {
             window.location.href = `/company/${user.companySlug}/dashboard`;
         } else if (user?.role === UserRole.AGENCY_EMPLOYEE) {
             window.location.href = "/agent/dashboard";
-        } else {
-            window.location.href = "/";
         }
     };
 
@@ -48,7 +52,7 @@ export default function LoginPage() {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
 
-        const result = await signIn("credentials", {
+        const result = await signIn("normal-login", {
             email,
             password,
             redirect: false,
@@ -61,8 +65,6 @@ export default function LoginPage() {
         }
 
         const newSession = await getSession();
-        console.log("DEBUG: Login successful. Session:", newSession);
-        console.log("DEBUG: User Role:", newSession?.user?.role);
 
         setIsLoading(false);
 
@@ -103,9 +105,9 @@ export default function LoginPage() {
                             <Label htmlFor="password" className="text-sm font-bold text-slate-700">
                                 Password
                             </Label>
-                            <button type="button" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
+                            <Link href="/forgot-password" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
                                 Forgot password?
-                            </button>
+                            </Link>
                         </div>
                         <div className="relative group">
                             <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
@@ -130,9 +132,23 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="p-4 rounded-corner-lg bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
-                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                            {error}
+                        <div className="p-4 rounded-corner-lg bg-rose-50 border-2 border-rose-100 text-rose-600 text-sm font-bold flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-300">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                {error}
+                            </div>
+                            {error.includes("verify your email") && (
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-fit border-rose-200 text-rose-600 hover:bg-rose-100 font-black m-auto"
+                                >
+                                    <Link href={`/verify?email=${encodeURIComponent(document.querySelector<HTMLInputElement>('#email')?.value || '')}`}>
+                                        Verify Email Now
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     )}
 

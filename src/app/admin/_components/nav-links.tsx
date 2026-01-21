@@ -12,6 +12,7 @@ export function NavLinks() {
         { href: "/admin/companies", label: "Companies" },
         { href: "/admin/agents", label: "Agencies" },
         { href: "/admin/analytics", label: "Analytics" },
+        { href: "/admin/emails", label: "Emails" },
     ];
 
     return (

@@ -45,6 +45,9 @@ model User {
   companyId             String?
   isActive              Boolean          @default(false)
   isBlocked             Boolean          @default(false)
+  emailVerifiedAt       DateTime?
+  otpToken              String?
+  otpExpiresAt          DateTime?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
   accessLog             ActivityLog[]    @relation("ActivityActor")

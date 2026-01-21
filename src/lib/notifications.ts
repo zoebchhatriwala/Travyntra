@@ -63,11 +63,18 @@ export async function createNotification(params: {
 
     // Check if an email notification is required
     if (shouldSendEmail) {
+        // Construct an absolute URL for the link if it's relative
+        let absoluteLink = link;
+        if (link && !link.startsWith("http")) {
+            const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+            absoluteLink = `${baseUrl}${link.startsWith("/") ? "" : "/"}${link}`;
+        }
+
         // Define the button text for the email template
         const buttonText = "View in Portal";
 
         // Generate the HTML content for the notification email
-        const emailHtml = getGeneralNotificationTemplate(title, message, link, buttonText);
+        const emailHtml = getGeneralNotificationTemplate(title, message, absoluteLink, buttonText);
 
         // Initiate the email sending process without awaiting (to run in background)
         const emailPromise = sendUserEmail(userId, title, emailHtml);

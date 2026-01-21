@@ -23,6 +23,15 @@ function middlewareHandler(req: any) {
     // Base URL of the application for redirection purposes
     const appBaseUrl = req.url;
 
+    // Check if the user is blocked or inactive
+    const isBlocked = !!token?.isBlocked;
+    const isActive = token?.isActive !== false; // Default to true if not present (compat)
+
+    if (token && (isBlocked || !isActive)) {
+        // Force logout by redirecting to a page that will clear session or just home
+        return NextResponse.redirect(new URL("/", appBaseUrl));
+    }
+
     // Determine if the current path is an admin-specific route
     const isAdminPage = pathname.startsWith("/admin");
 
@@ -31,6 +40,11 @@ function middlewareHandler(req: any) {
 
     // Determine if the current path is a company-specific route
     const isCompanyPage = pathname.startsWith("/company/");
+
+    // Allow public access to the registration page
+    if (isCompanyPage && pathname.endsWith("/register")) {
+        return NextResponse.next();
+    }
 
     // Check if the user is attempting to access an admin page without SUPER_ADMIN role
     const isInvalidAdminAccess = isAdminPage && token?.role !== UserRole.SUPER_ADMIN;
@@ -169,6 +183,9 @@ const authMiddlewareOptions = {
             // Check if the current route is the root home page
             const isHomePage = pathname === "/";
 
+            // Check if it's a company-specific registration page (e.g., /company/slug/register)
+            const isCompanyRegisterPage = pathname.startsWith("/company/") && pathname.endsWith("/register");
+
             // If the route is one of the designated public pages
             if (isLoginPage) {
                 return true;
@@ -177,6 +194,9 @@ const authMiddlewareOptions = {
                 return true;
             }
             if (isHomePage) {
+                return true;
+            }
+            if (isCompanyRegisterPage) {
                 return true;
             }
 

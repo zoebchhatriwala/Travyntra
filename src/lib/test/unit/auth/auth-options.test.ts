@@ -166,14 +166,24 @@ describe('Auth Options', () => {
             expect(result).toBeNull();
         });
 
+        it('should reject if email is not verified', async () => {
+            prismaMock.user.findUnique.mockResolvedValue({
+                id: 'u1',
+                password: 'hash',
+                emailVerifiedAt: null
+            } as any);
+            const result = normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            await expect(result).rejects.toThrow("Please verify your email before signing in.");
+        });
+
         it('should reject if user is inactive', async () => {
-            prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: false } as any);
-            const result = await normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
-            expect(result).toBeNull();
+            prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: false, emailVerifiedAt: new Date() } as any);
+            const result = normalProvider.authorize({ email: 'test@test.com', password: 'pass' });
+            await expect(result).rejects.toThrow("Your account is currently pending administrator approval.");
         });
 
         it('should reject if password invalid', async () => {
-            prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: true } as any);
+            prismaMock.user.findUnique.mockResolvedValue({ id: 'u1', password: 'hash', isActive: true, emailVerifiedAt: new Date() } as any);
             (compare as Mock).mockResolvedValue(false);
 
             const result = await normalProvider.authorize({ email: 'test@test.com', password: 'wrong' });
@@ -188,6 +198,7 @@ describe('Auth Options', () => {
                 role: 'EMPLOYEE',
                 password: 'hash',
                 isActive: true,
+                emailVerifiedAt: new Date(),
                 companyId: 'comp-1',
                 company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: new Date() },
                 avatarUrl: 'image.jpg'
@@ -216,6 +227,7 @@ describe('Auth Options', () => {
                 id: 'u1',
                 password: 'hash',
                 isActive: true,
+                emailVerifiedAt: new Date(),
                 company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: new Date(Date.now() - 1000) }
             };
             prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
@@ -223,18 +235,42 @@ describe('Auth Options', () => {
             const result = await normalProvider.authorize({ email: 't@t.com', password: 'p' });
             expect(result.isPlanExpired).toBe(true);
         });
-
         it('should handle null subscription date in normal login', async () => {
             const mockUser = {
                 id: 'u1',
                 password: 'hash',
                 isActive: true,
+                emailVerifiedAt: new Date(),
                 company: { type: 'AGENCY', slug: 'agency', subscriptionExpiresAt: null }
             };
             prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
             (compare as Mock).mockResolvedValue(true);
             const result = await normalProvider.authorize({ email: 't@t.com', password: 'p' });
             expect(result.isPlanExpired).toBe(false);
+        });
+
+        it('should reject if company is blocked', async () => {
+            prismaMock.user.findUnique.mockResolvedValue({
+                id: 'u1',
+                password: 'hash',
+                isActive: true,
+                emailVerifiedAt: new Date(),
+                company: { status: 'BLOCKED' }
+            } as any);
+            const result = normalProvider.authorize({ email: 't@t.com', password: 'p' });
+            await expect(result).rejects.toThrow("Your workspace has been suspended. Please contact your company administrator.");
+        });
+
+        it('should reject if user is blocked', async () => {
+            prismaMock.user.findUnique.mockResolvedValue({
+                id: 'u1',
+                password: 'hash',
+                isActive: true,
+                emailVerifiedAt: new Date(),
+                isBlocked: true
+            } as any);
+            const result = normalProvider.authorize({ email: 't@t.com', password: 'p' });
+            await expect(result).rejects.toThrow("Your account has been suspended. Please contact support.");
         });
     });
 
@@ -351,6 +387,58 @@ describe('Auth Options', () => {
                 } as any);
 
                 expect(result).toBe(token);
+            });
+
+            describe('periodic status sync', () => {
+                it('should sync user status if sync interval has passed', async () => {
+                    const token = { id: 'u1', lastStatusCheck: 0 };
+                    prismaMock.user.findUnique.mockResolvedValue({
+                        isBlocked: false,
+                        isActive: true,
+                        company: { status: 'ACTIVE' }
+                    } as any);
+
+                    const result = await authOptions.callbacks!.jwt!({ token } as any);
+
+                    expect(prismaMock.user.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+                        where: { id: 'u1' }
+                    }));
+                    expect(result.isBlocked).toBe(false);
+                    expect(result.lastStatusCheck).toBeGreaterThan(0);
+                });
+
+                it('should mark user as blocked if database record says so', async () => {
+                    const token = { id: 'u1', lastStatusCheck: 0 };
+                    prismaMock.user.findUnique.mockResolvedValue({
+                        isBlocked: true,
+                        isActive: true,
+                        company: { status: 'ACTIVE' }
+                    } as any);
+
+                    const result = await authOptions.callbacks!.jwt!({ token } as any);
+
+                    expect(result.isBlocked).toBe(true);
+                });
+
+                it('should skip status sync if sync interval has not passed', async () => {
+                    const now = Date.now();
+                    const token = { id: 'u1', lastStatusCheck: now - 30000 }; // 30 seconds ago
+                    const result = await authOptions.callbacks!.jwt!({ token } as any);
+                    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
+                    expect(result.lastStatusCheck).toBe(token.lastStatusCheck);
+                });
+
+                it('should handle database errors during status sync', async () => {
+                    const token = { id: 'u1', lastStatusCheck: 0 };
+                    prismaMock.user.findUnique.mockRejectedValue(new Error('Sync error'));
+                    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+                    const result = await authOptions.callbacks!.jwt!({ token } as any);
+
+                    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to sync user status'), expect.any(Error));
+                    expect(result).toBeDefined();
+                    consoleSpy.mockRestore();
+                });
             });
         });
 

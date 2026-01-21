@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { getFulfillmentRequest } from "../../actions";
-import { ChatThread } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
+import { ChatThread, type Message } from "@/app/company/[slug]/(dashboard)/dashboard/requests/[requestId]/_components/chat-thread";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -66,7 +66,7 @@ export default async function FulfillmentDiscussionPage({
             <div className="bg-white rounded-corner-xl shadow-xl shadow-indigo-100/20 overflow-hidden ring-1 ring-gray-100">
                 <ChatThread
                     requestId={requestId}
-                    initialMessages={request.messages as any}
+                    initialMessages={request.messages as Message[]}
                     currentUserId={session?.user?.id || ""}
                     availableUsers={availableUsers}
                 />

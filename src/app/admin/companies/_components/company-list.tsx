@@ -37,6 +37,7 @@ export interface User {
     name: string | null;
     email: string | null;
     isBlocked: boolean;
+    emailVerifiedAt: Date | string | null;
 }
 
 export interface Company {
@@ -341,7 +342,14 @@ export function CompanyList({ initialCompanies }: CompanyListProps) {
                                                             {admin.name ? admin.name[0].toUpperCase() : 'A'}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-black text-gray-900">{admin.name || 'Admin'}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-xs font-black text-gray-900">{admin.name || 'Admin'}</p>
+                                                                {admin.emailVerifiedAt ? (
+                                                                    <Badge className="bg-emerald-50 text-emerald-600 border-none text-[8px] px-1 py-0 h-3 font-black">VERIFIED</Badge>
+                                                                ) : (
+                                                                    <Badge className="bg-rose-50 text-rose-600 border-none text-[8px] px-1 py-0 h-3 font-black animate-pulse">UNVERIFIED</Badge>
+                                                                )}
+                                                            </div>
                                                             <p className="text-[10px] font-bold text-gray-400">{admin.email}</p>
                                                         </div>
                                                     </div>

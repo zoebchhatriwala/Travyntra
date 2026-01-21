@@ -50,11 +50,15 @@ export async function registerEmployee(formData: z.infer<typeof employeeRegistra
             }
         });
 
-        // 5. Notify the new user
+        // 5. Send OTP verification
+        const { sendOtpVerification } = await import("@/lib/auth-utils");
+        await sendOtpVerification(user.id, user.email, user.name || "User");
+
+        // 6. Notify the new user
         await createNotification({
             userId: user.id,
             title: "Welcome to " + company.name,
-            message: "Your registration is successful. Your account is currently pending approval by your company administrator.",
+            message: "Your registration is successful. Please verify your email with the OTP sent to you. Your account is currently pending approval by your company administrator.",
             type: "INFO"
         });
 

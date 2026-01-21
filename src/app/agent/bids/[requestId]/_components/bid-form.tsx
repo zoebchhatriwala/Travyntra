@@ -40,6 +40,13 @@ interface TaxItem {
     type: "PERCENTAGE" | "FIXED";
 }
 
+interface TaxTemplate {
+    id: string;
+    name: string;
+    taxes: TaxItem[];
+    isDefault: boolean;
+}
+
 interface BidFormProps {
     requestId: string;
     requestStatus: RequestStatus;
@@ -66,7 +73,7 @@ export function BidForm({
     const [amount, setAmount] = useState<string>(existingBid?.amount?.toString() || "");
     const [message, setMessage] = useState(existingBid?.message || "");
     const [taxes, setTaxes] = useState<TaxItem[]>(existingBid?.taxes || []);
-    const [templates, setTemplates] = useState<any[]>([]);
+    const [templates, setTemplates] = useState<TaxTemplate[]>([]);
     const [preview, setPreview] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPreviewLoading, setIsPreviewLoading] = useState(false);
@@ -95,8 +102,8 @@ export function BidForm({
         try {
             const result = await getConversionPreview(num, currency, requestCurrency);
             setPreview(result);
-        } catch (e) {
-            console.error(e);
+        } catch (_e) {
+            console.error(_e);
         } finally {
             setIsPreviewLoading(false);
         }
@@ -159,7 +166,7 @@ export function BidForm({
                 toast.success(existingBid ? "Bid Updated" : "Bid Submitted");
                 router.refresh();
             }
-        } catch (e) {
+        } catch {
             toast.error("Something went wrong.");
         } finally {
             setIsSubmitting(false);

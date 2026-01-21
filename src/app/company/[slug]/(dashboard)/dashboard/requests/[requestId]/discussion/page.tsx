@@ -5,6 +5,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 
+import { UserRole } from "@prisma/client";
+
+interface MentionableUser {
+    id: string;
+    name: string | null;
+    role: UserRole;
+    avatarUrl: string | null;
+    company: { name: string } | null;
+}
+
 export default async function RequestDiscussionPage({
     params,
 }: {
@@ -21,7 +31,7 @@ export default async function RequestDiscussionPage({
     if (!request) return notFound();
 
     // Fetch available users from the company for mentions
-    const companyUsers = await prisma.user.findMany({
+    const companyUsers: MentionableUser[] = await prisma.user.findMany({
         where: {
             companyId: request.companyId,
             isActive: true,
@@ -36,7 +46,7 @@ export default async function RequestDiscussionPage({
         take: 50,
     });
 
-    let agencyUsers: any[] = [];
+    let agencyUsers: MentionableUser[] = [];
     if (request.agencyId) {
         agencyUsers = await prisma.user.findMany({
             where: {

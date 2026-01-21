@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { revalidatePath } from "next/cache";
-import { CompanyType, CompanyStatus, IntegrationStatus } from "@prisma/client";
+import { CompanyType, CompanyStatus, IntegrationStatus, UserRole, NotificationType } from "@prisma/client";
 import { PlanFeature, withPlanGuard } from "@/lib/services/plan-guard";
+import { createNotification } from "@/lib/notifications";
 
 export async function searchAgencies(query: string) {
     const session = await getServerSession(authOptions);
@@ -66,21 +67,81 @@ async function toggleIntegrationInternal(agencyId: string) {
             // Toggle status or DELETE? Requirement says "integrated", usually implies on/off.
             // Let's delete for "remove" behavior or toggle status. 
             // For now, let's delete to "disconnect".
-            await prisma.agencyIntegration.delete({
+            const integration = await prisma.agencyIntegration.delete({
                 where: {
                     id: existing.id
+                },
+                include: {
+                    company: {
+                        select: { name: true }
+                    },
+                    agency: {
+                        include: {
+                            users: {
+                                where: {
+                                    role: UserRole.TRAVEL_AGENT
+                                },
+                                select: {
+                                    id: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
+
+            // Inform agency admins
+            for (const admin of integration.agency.users) {
+                await createNotification({
+                    userId: admin.id,
+                    title: "Integration Removed",
+                    message: `${integration.company.name} has disconnected from your agency.`,
+                    type: NotificationType.INFO,
+                    link: "/agent/dashboard",
+                    sendEmail: true
+                });
+            }
+
             revalidatePath(`/company/${session.user.companyId}/dashboard/admin/integrations`);
             return { status: "removed" };
         } else {
-            await prisma.agencyIntegration.create({
+            const integration = await prisma.agencyIntegration.create({
                 data: {
                     companyId,
                     agencyId,
                     status: IntegrationStatus.ACTIVE
+                },
+                include: {
+                    company: {
+                        select: { name: true }
+                    },
+                    agency: {
+                        include: {
+                            users: {
+                                where: {
+                                    role: UserRole.TRAVEL_AGENT
+                                },
+                                select: {
+                                    id: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
+
+            // Inform agency admins (TRAVEL_AGENT role)
+            for (const admin of integration.agency.users) {
+                await createNotification({
+                    userId: admin.id,
+                    title: "New Integration",
+                    message: `${integration.company.name} has integrated with your agency. You will now receive trip requests from them.`,
+                    type: NotificationType.SUCCESS,
+                    link: "/agent/dashboard",
+                    sendEmail: true
+                });
+            }
+
             revalidatePath(`/company/${session.user.companyId}/dashboard/admin/integrations`);
             return { status: "added" };
         }

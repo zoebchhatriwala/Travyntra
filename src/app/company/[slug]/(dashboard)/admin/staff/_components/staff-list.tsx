@@ -44,6 +44,7 @@ interface StaffMember {
     isBlocked: boolean;
     createdAt: Date;
     avatarUrl: string | null;
+    emailVerifiedAt: Date | null;
 }
 
 interface StaffListProps {
@@ -385,6 +386,22 @@ function StaffCard({
                             {member.role.replace('_', ' ')}
                         </span>
                     </div>
+                    <div className="col-span-2 p-3 bg-gray-50/50 rounded-corner-lg ring-1 ring-gray-100">
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Email Verification</span>
+                        <div className="flex items-center gap-2">
+                            {member.emailVerifiedAt ? (
+                                <>
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200" />
+                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tight">Verified</span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-200 animate-pulse" />
+                                    <span className="text-[10px] font-black text-rose-600 uppercase tracking-tight">Not Verified</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-gray-50">
@@ -395,15 +412,16 @@ function StaffCard({
                     {!member.isActive && (
                         <Button
                             size="sm"
-                            className="h-8 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-black uppercase px-4 rounded-corner-md shadow-lg shadow-indigo-100"
+                            className="h-8 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-black uppercase px-4 rounded-corner-md shadow-lg shadow-indigo-100 disabled:grayscale disabled:opacity-50"
                             onClick={() => handleApprove(member.id)}
-                            disabled={isLoading === member.id}
+                            disabled={isLoading === member.id || !member.emailVerifiedAt}
+                            title={!member.emailVerifiedAt ? "Verification required" : "Approve member"}
                         >
-                            APPROVE
+                            {member.emailVerifiedAt ? "APPROVE" : "PENDING VERIFICATION"}
                         </Button>
                     )}
                 </div>
             </CardContent>
-        </Card>
+        </Card >
     );
 }

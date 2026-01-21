@@ -72,6 +72,7 @@ export async function createAgencyStaff(data: {
                 password: hashedPassword,
                 role: UserRole.AGENCY_EMPLOYEE,
                 companyId: currentUser.companyId,
+                emailVerifiedAt: new Date(),
                 isActive: true
             }
         });
